@@ -1282,6 +1282,8 @@ BattleHandlers::TargetAbilityOnHit.add(:AFTERMATH,
   proc { |ability,user,target,move,battle|
     next if !target.fainted?
     next if !move.pbContactMove?(user)
+	next unless user.takesIndirectDamage?()
+	next unless user.affectedByContactEffect?()
     battle.pbShowAbilitySplash(target)
     if !battle.moldBreaker
       dampBattler = battle.pbCheckGlobalAbility(:DAMP)
@@ -1298,12 +1300,9 @@ BattleHandlers::TargetAbilityOnHit.add(:AFTERMATH,
         next
       end
     end
-    if user.takesIndirectDamage?(PokeBattle_SceneConstants::USE_ABILITY_SPLASH) &&
-       user.affectedByContactEffect?(PokeBattle_SceneConstants::USE_ABILITY_SPLASH)
-      battle.scene.pbDamageAnimation(user)
-      user.pbReduceHP(user.totalhp/4,false)
-      battle.pbDisplay(_INTL("{1} was caught in the aftermath!",user.pbThis))
-    end
+    battle.scene.pbDamageAnimation(user)
+    user.pbReduceHP(user.totalhp/4,false)
+    battle.pbDisplay(_INTL("{1} was caught in the aftermath!",user.pbThis))
     battle.pbHideAbilitySplash(target)
   }
 )
@@ -1337,20 +1336,18 @@ BattleHandlers::TargetAbilityOnHit.add(:CURSEDBODY,
     end
     next if !regularMove || (regularMove.pp==0 && regularMove.total_pp>0)
     next if battle.pbRandom(100)>=30
+	next if move.pbMoveFailedAromaVeil?(target, user, false)
     battle.pbShowAbilitySplash(target)
-    if !move.pbMoveFailedAromaVeil?(target,user,PokeBattle_SceneConstants::USE_ABILITY_SPLASH)
-      user.effects[PBEffects::Disable]     = 3
-      user.effects[PBEffects::DisableMove] = regularMove.id
-      if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
-        battle.pbDisplay(_INTL("{1}'s {2} was disabled!",user.pbThis,regularMove.name))
-      else
-        battle.pbDisplay(_INTL("{1}'s {2} was disabled by {3}'s {4}!",
-           user.pbThis,regularMove.name,target.pbThis(true),target.abilityName))
-      end
-      battle.pbHideAbilitySplash(target)
-      user.pbItemStatusCureCheck
+    user.effects[PBEffects::Disable]     = 3
+    user.effects[PBEffects::DisableMove] = regularMove.id
+    if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
+      battle.pbDisplay(_INTL("{1}'s {2} was disabled!",user.pbThis,regularMove.name))
+    else
+      battle.pbDisplay(_INTL("{1}'s {2} was disabled by {3}'s {4}!",
+         user.pbThis,regularMove.name,target.pbThis(true),target.abilityName))
     end
     battle.pbHideAbilitySplash(target)
+    user.pbItemStatusCureCheck
   }
 )
 
@@ -1359,16 +1356,15 @@ BattleHandlers::TargetAbilityOnHit.add(:CUTECHARM,
     next if target.fainted?
     next if !move.pbContactMove?(user)
     next if battle.pbRandom(100)>=30
+	next unless user.pbCanAttract?(target, false)
+	next unless user.affectedByContactEffect?()
     battle.pbShowAbilitySplash(target)
-    if user.pbCanAttract?(target,PokeBattle_SceneConstants::USE_ABILITY_SPLASH) &&
-       user.affectedByContactEffect?(PokeBattle_SceneConstants::USE_ABILITY_SPLASH)
-      msg = nil
-      if !PokeBattle_SceneConstants::USE_ABILITY_SPLASH
-        msg = _INTL("{1}'s {2} made {3} fall in love!",target.pbThis,
-           target.abilityName,user.pbThis(true))
-      end
-      user.pbAttract(target,msg)
+    msg = nil
+    if !PokeBattle_SceneConstants::USE_ABILITY_SPLASH
+      msg = _INTL("{1}'s {2} made {3} fall in love!",target.pbThis,
+         target.abilityName,user.pbThis(true))
     end
+    user.pbAttract(target,msg)
     battle.pbHideAbilitySplash(target)
   }
 )
@@ -1384,40 +1380,43 @@ BattleHandlers::TargetAbilityOnHit.add(:EFFECTSPORE,
     next if r==0 && user.asleep?
     next if r==1 && user.poisoned?
     next if r==2 && user.paralyzed?
-    battle.pbShowAbilitySplash(target)
-    if user.affectedByPowder?(PokeBattle_SceneConstants::USE_ABILITY_SPLASH) &&
-       user.affectedByContactEffect?(PokeBattle_SceneConstants::USE_ABILITY_SPLASH)
-      case r
-      when 0
-        if user.pbCanSleep?(target,PokeBattle_SceneConstants::USE_ABILITY_SPLASH)
-          msg = nil
-          if !PokeBattle_SceneConstants::USE_ABILITY_SPLASH
-            msg = _INTL("{1}'s {2} made {3} fall asleep!",target.pbThis,
-               target.abilityName,user.pbThis(true))
-          end
-          user.pbSleep(msg)
+	next unless user.affectedByPowder?()
+	next unless user.affectedByContactEffect?()
+    case r
+    when 0
+      if user.pbCanSleep?(target,PokeBattle_SceneConstants::USE_ABILITY_SPLASH)
+        battle.pbShowAbilitySplash(target)
+        msg = nil
+        if !PokeBattle_SceneConstants::USE_ABILITY_SPLASH
+          msg = _INTL("{1}'s {2} made {3} fall asleep!",target.pbThis,
+             target.abilityName,user.pbThis(true))
         end
-      when 1
-        if user.pbCanPoison?(target,PokeBattle_SceneConstants::USE_ABILITY_SPLASH)
-          msg = nil
-          if !PokeBattle_SceneConstants::USE_ABILITY_SPLASH
-            msg = _INTL("{1}'s {2} poisoned {3}!",target.pbThis,
-               target.abilityName,user.pbThis(true))
-          end
-          user.pbPoison(target,msg)
+        user.pbSleep(msg)
+        battle.pbHideAbilitySplash(target)
+      end
+    when 1
+      if user.pbCanPoison?(target,PokeBattle_SceneConstants::USE_ABILITY_SPLASH)
+        battle.pbShowAbilitySplash(target)
+        msg = nil
+        if !PokeBattle_SceneConstants::USE_ABILITY_SPLASH
+          msg = _INTL("{1}'s {2} poisoned {3}!",target.pbThis,
+             target.abilityName,user.pbThis(true))
         end
-      when 2
-        if user.pbCanParalyze?(target,PokeBattle_SceneConstants::USE_ABILITY_SPLASH)
-          msg = nil
-          if !PokeBattle_SceneConstants::USE_ABILITY_SPLASH
-            msg = _INTL("{1}'s {2} paralyzed {3}! It may be unable to move!",
-               target.pbThis,target.abilityName,user.pbThis(true))
-          end
-          user.pbParalyze(target,msg)
+        user.pbPoison(target,msg)
+        battle.pbHideAbilitySplash(target)
+      end
+    when 2
+      if user.pbCanParalyze?(target,PokeBattle_SceneConstants::USE_ABILITY_SPLASH)
+        battle.pbShowAbilitySplash(target)
+        msg = nil
+        if !PokeBattle_SceneConstants::USE_ABILITY_SPLASH
+          msg = _INTL("{1}'s {2} paralyzed {3}! It may be unable to move!",
+             target.pbThis,target.abilityName,user.pbThis(true))
         end
+        user.pbParalyze(target,msg)
+        battle.pbHideAbilitySplash(target)
       end
     end
-    battle.pbHideAbilitySplash(target)
   }
 )
 
@@ -1425,15 +1424,14 @@ BattleHandlers::TargetAbilityOnHit.add(:FLAMEBODY,
   proc { |ability,user,target,move,battle|
     next if !move.pbContactMove?(user)
     next if user.burned? || battle.pbRandom(100)>=30
+	next unless user.pbCanBurn?(target, false)
+	next unless user.affectedByContactEffect?()
     battle.pbShowAbilitySplash(target)
-    if user.pbCanBurn?(target,PokeBattle_SceneConstants::USE_ABILITY_SPLASH) &&
-       user.affectedByContactEffect?(PokeBattle_SceneConstants::USE_ABILITY_SPLASH)
-      msg = nil
-      if !PokeBattle_SceneConstants::USE_ABILITY_SPLASH
-        msg = _INTL("{1}'s {2} burned {3}!",target.pbThis,target.abilityName,user.pbThis(true))
-      end
-      user.pbBurn(target,msg)
+    msg = nil
+    if !PokeBattle_SceneConstants::USE_ABILITY_SPLASH
+      msg = _INTL("{1}'s {2} burned {3}!",target.pbThis,target.abilityName,user.pbThis(true))
     end
+    user.pbBurn(target,msg)
     battle.pbHideAbilitySplash(target)
   }
 )
@@ -1461,16 +1459,15 @@ BattleHandlers::TargetAbilityOnHit.add(:ILLUSION,
 BattleHandlers::TargetAbilityOnHit.add(:INNARDSOUT,
   proc { |ability,user,target,move,battle|
     next if !target.fainted? || user.dummy
+	next unless user.takesIndirectDamage?()
     battle.pbShowAbilitySplash(target)
-    if user.takesIndirectDamage?(PokeBattle_SceneConstants::USE_ABILITY_SPLASH)
-      battle.scene.pbDamageAnimation(user)
-      user.pbReduceHP(target.damageState.hpLost,false)
-      if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
-        battle.pbDisplay(_INTL("{1} is hurt!",user.pbThis))
-      else
-        battle.pbDisplay(_INTL("{1} is hurt by {2}'s {3}!",user.pbThis,
-           target.pbThis(true),target.abilityName))
-      end
+    battle.scene.pbDamageAnimation(user)
+    user.pbReduceHP(target.damageState.hpLost,false)
+    if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
+      battle.pbDisplay(_INTL("{1} is hurt!",user.pbThis))
+    else
+      battle.pbDisplay(_INTL("{1} is hurt by {2}'s {3}!",user.pbThis,
+         target.pbThis(true),target.abilityName))
     end
     battle.pbHideAbilitySplash(target)
   }
@@ -1479,17 +1476,16 @@ BattleHandlers::TargetAbilityOnHit.add(:INNARDSOUT,
 BattleHandlers::TargetAbilityOnHit.add(:IRONBARBS,
   proc { |ability,user,target,move,battle|
     next if !move.pbContactMove?(user)
+	next unless user.takesIndirectDamage?()
+	next unless user.affectedByContactEffect?()
     battle.pbShowAbilitySplash(target)
-    if user.takesIndirectDamage?(PokeBattle_SceneConstants::USE_ABILITY_SPLASH) &&
-       user.affectedByContactEffect?(PokeBattle_SceneConstants::USE_ABILITY_SPLASH)
-      battle.scene.pbDamageAnimation(user)
-      user.pbReduceHP(user.totalhp/8,false)
-      if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
-        battle.pbDisplay(_INTL("{1} is hurt!",user.pbThis))
-      else
-        battle.pbDisplay(_INTL("{1} is hurt by {2}'s {3}!",user.pbThis,
-           target.pbThis(true),target.abilityName))
-      end
+    battle.scene.pbDamageAnimation(user)
+    user.pbReduceHP(user.totalhp/8,false)
+    if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
+      battle.pbDisplay(_INTL("{1} is hurt!",user.pbThis))
+    else
+      battle.pbDisplay(_INTL("{1} is hurt by {2}'s {3}!",user.pbThis,
+         target.pbThis(true),target.abilityName))
     end
     battle.pbHideAbilitySplash(target)
   }
@@ -1509,21 +1505,19 @@ BattleHandlers::TargetAbilityOnHit.add(:MUMMY,
     next if !move.pbContactMove?(user)
     next if user.fainted?
     next if user.unstoppableAbility? || user.ability == ability
-    oldAbil = nil
+	next unless user.affectedByContactEffect?()
     battle.pbShowAbilitySplash(target) if user.opposes?(target)
-    if user.affectedByContactEffect?(PokeBattle_SceneConstants::USE_ABILITY_SPLASH)
-      oldAbil = user.ability
-      battle.pbShowAbilitySplash(user,true,false) if user.opposes?(target)
-      user.ability = ability
-      battle.pbReplaceAbilitySplash(user) if user.opposes?(target)
-      if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
-        battle.pbDisplay(_INTL("{1}'s Ability became {2}!",user.pbThis,user.abilityName))
-      else
-        battle.pbDisplay(_INTL("{1}'s Ability became {2} because of {3}!",
-           user.pbThis,user.abilityName,target.pbThis(true)))
-      end
-      battle.pbHideAbilitySplash(user) if user.opposes?(target)
+    oldAbil = user.ability
+    battle.pbShowAbilitySplash(user,true,false) if user.opposes?(target)
+    user.ability = ability
+    battle.pbReplaceAbilitySplash(user) if user.opposes?(target)
+    if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
+      battle.pbDisplay(_INTL("{1}'s Ability became {2}!",user.pbThis,user.abilityName))
+    else
+      battle.pbDisplay(_INTL("{1}'s Ability became {2} because of {3}!",
+         user.pbThis,user.abilityName,target.pbThis(true)))
     end
+    battle.pbHideAbilitySplash(user) if user.opposes?(target)
     battle.pbHideAbilitySplash(target) if user.opposes?(target)
     user.pbOnAbilityChanged(oldAbil) if oldAbil != nil
   }
@@ -1533,15 +1527,14 @@ BattleHandlers::TargetAbilityOnHit.add(:POISONPOINT,
   proc { |ability,user,target,move,battle|
     next if !move.pbContactMove?(user)
     next if user.poisoned? || battle.pbRandom(100)>=30
+	next unless user.pbCanPoison?(target, false)
+	next unless user.affectedByContactEffect?()
     battle.pbShowAbilitySplash(target)
-    if user.pbCanPoison?(target,PokeBattle_SceneConstants::USE_ABILITY_SPLASH) &&
-       user.affectedByContactEffect?(PokeBattle_SceneConstants::USE_ABILITY_SPLASH)
-      msg = nil
-      if !PokeBattle_SceneConstants::USE_ABILITY_SPLASH
-        msg = _INTL("{1}'s {2} poisoned {3}!",target.pbThis,target.abilityName,user.pbThis(true))
-      end
-      user.pbPoison(target,msg)
+    msg = nil
+    if !PokeBattle_SceneConstants::USE_ABILITY_SPLASH
+      msg = _INTL("{1}'s {2} poisoned {3}!",target.pbThis,target.abilityName,user.pbThis(true))
     end
+    user.pbPoison(target,msg)
     battle.pbHideAbilitySplash(target)
   }
 )
@@ -1563,16 +1556,15 @@ BattleHandlers::TargetAbilityOnHit.add(:STATIC,
   proc { |ability,user,target,move,battle|
     next if !move.pbContactMove?(user)
     next if user.paralyzed? || battle.pbRandom(100)>=30
+	next unless user.pbCanParalyze?(target, false)
+	next unless user.affectedByContactEffect?()
     battle.pbShowAbilitySplash(target)
-    if user.pbCanParalyze?(target,PokeBattle_SceneConstants::USE_ABILITY_SPLASH) &&
-       user.affectedByContactEffect?(PokeBattle_SceneConstants::USE_ABILITY_SPLASH)
-      msg = nil
-      if !PokeBattle_SceneConstants::USE_ABILITY_SPLASH
-        msg = _INTL("{1}'s {2} paralyzed {3}! It may be unable to move!",
-           target.pbThis,target.abilityName,user.pbThis(true))
-      end
-      user.pbParalyze(target,msg)
+    msg = nil
+    if !PokeBattle_SceneConstants::USE_ABILITY_SPLASH
+      msg = _INTL("{1}'s {2} paralyzed {3}! It may be unable to move!",
+         target.pbThis,target.abilityName,user.pbThis(true))
     end
+    user.pbParalyze(target,msg)
     battle.pbHideAbilitySplash(target)
   }
 )
@@ -1605,6 +1597,7 @@ BattleHandlers::UserAbilityOnHit.add(:POISONTOUCH,
   proc { |ability,user,target,move,battle|
     next if !move.contactMove?
     next if battle.pbRandom(100)>=30
+	next unless target.pbCanPoison(user, false)
     battle.pbShowAbilitySplash(user)
     if target.hasActiveAbility?(:SHIELDDUST) && !battle.moldBreaker
       battle.pbShowAbilitySplash(target)
@@ -1612,7 +1605,7 @@ BattleHandlers::UserAbilityOnHit.add(:POISONTOUCH,
         battle.pbDisplay(_INTL("{1} is unaffected!",target.pbThis))
       end
       battle.pbHideAbilitySplash(target)
-    elsif target.pbCanPoison?(user,PokeBattle_SceneConstants::USE_ABILITY_SPLASH)
+    else
       msg = nil
       if !PokeBattle_SceneConstants::USE_ABILITY_SPLASH
         msg = _INTL("{1}'s {2} poisoned {3}!",user.pbThis,user.abilityName,target.pbThis(true))
