@@ -175,6 +175,7 @@ class PokeBattle_Scene
           idxPartyRet = i
           break
         end
+        @lastCmd[idxBattler] = 0
         break if yield idxPartyRet, switchScreen
       elsif cmdSummary>=0 && command==cmdSummary   # Summary
         scene.pbSummary(idxParty,true)
