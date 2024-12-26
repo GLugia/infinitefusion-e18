@@ -131,7 +131,7 @@ module Settings
   # Note that this isn't perfect. Essentials doesn't accurately replicate every
   # single generation's mechanics. It's considered to be good enough. Only
   # generations 5 and later are reasonably supported.
-  MECHANICS_GENERATION = 5
+  MECHANICS_GENERATION = 9
 
   #=============================================================================
 
@@ -153,10 +153,10 @@ module Settings
   # Number of badges in the game
   NB_BADGES = 16
   # The odds of a newly generated Pokémon being shiny (out of 65536).
-  SHINY_POKEMON_CHANCE = 16#(MECHANICS_GENERATION >= 6) ? 16 : 8
+  SHINY_POKEMON_CHANCE = (MECHANICS_GENERATION >= 6) ? 64 : 32 # 16 : 8
 
   # The odds of a wild Pokémon/bred egg having Pokérus (out of 65536).
-  POKERUS_CHANCE = 3
+  POKERUS_CHANCE = (MECHANICS_GENERATION >= 6) ? 12 : 6 # 3
   # Whether a bred baby Pokémon can inherit any TM/HM moves from its father. It
   # can never inherit TM/HM moves from its mother.
   BREEDING_CAN_INHERIT_MACHINE_MOVES = (MECHANICS_GENERATION <= 5)
@@ -176,13 +176,13 @@ module Settings
   # The amount of money the player starts the game with.
   INITIAL_MONEY = 3000
   # The maximum amount of money the player can have.
-  MAX_MONEY = 999_999
+  MAX_MONEY = 9_999_999 # 999_999
   # The maximum number of Game Corner coins the player can have.
-  MAX_COINS = 99_999
+  MAX_COINS = 999_999 # 99_999
   # The maximum number of Battle Points the player can have.
-  MAX_BATTLE_POINTS = 9_999
+  MAX_BATTLE_POINTS = 999_999 # 9_999
   # The maximum amount of soot the player can have.
-  MAX_SOOT = 9_999
+  MAX_SOOT = 999_999 # 9_999
   # The maximum length, in characters, that the player's name can be.
   MAX_PLAYER_NAME_SIZE = 10
   # The maximum number of Pokémon that can be in the party.
@@ -207,7 +207,7 @@ module Settings
   #=============================================================================
 
   # Whether poisoned Pokémon will lose HP while walking around in the field.
-  POISON_IN_FIELD = true #(MECHANICS_GENERATION <= 4)
+  POISON_IN_FIELD = (MECHANICS_GENERATION <= 5)
   # Whether poisoned Pokémon will faint while walking around in the field
   # (true), or survive the poisoning with 1 HP (false).
   POISON_FAINT_IN_FIELD = (MECHANICS_GENERATION >= 3)
@@ -216,7 +216,7 @@ module Settings
   NEW_BERRY_PLANTS = (MECHANICS_GENERATION >= 4)
   # Whether fishing automatically hooks the Pokémon (true), or whether there is
   # a reaction test first (false).
-  FISHING_AUTO_HOOK = false
+  FISHING_AUTO_HOOK = (MECHANICS_GENERATION >= 6)
   # The ID of the common event that runs when the player starts fishing (runs
   # instead of showing the casting animation).
   FISHING_BEGIN_COMMON_EVENT = -1
@@ -246,7 +246,7 @@ module Settings
   # Whether you need at least a certain number of badges to use some hidden
   # moves in the field (true), or whether you need one specific badge to use
   # them (false). The amounts/specific badges are defined below.
-  FIELD_MOVES_COUNT_BADGES = true
+  FIELD_MOVES_COUNT_BADGES = false
   # Depending on FIELD_MOVES_COUNT_BADGES, either the number of badges required
   # to use each hidden move in the field, or the specific badge number required
   # to use each move. Remember that badge 0 is the first badge, badge 1 is the
@@ -254,29 +254,29 @@ module Settings
   #   e.g. To require the second badge, put false and 1.
   #        To require at least 2 badges, put true and 2.
   BADGE_FOR_CUT = 1
-  BADGE_FOR_FLASH = 1
+  BADGE_FOR_FLASH = 2
   BADGE_FOR_ROCKSMASH = 0
-  BADGE_FOR_SURF = 6
+  BADGE_FOR_SURF = 5
   BADGE_FOR_FLY = 3
-  BADGE_FOR_STRENGTH = 5
-  BADGE_FOR_DIVE = 9
-  BADGE_FOR_WATERFALL = 9
+  BADGE_FOR_STRENGTH = 4
+  BADGE_FOR_DIVE = 8
+  BADGE_FOR_WATERFALL = 10
   BADGE_FOR_TELEPORT = 3
-  BADGE_FOR_BOUNCE = 8
-  BADGE_FOR_ROCKCLIMB = 16
+  BADGE_FOR_BOUNCE = 11
+  BADGE_FOR_ROCKCLIMB = 15
   #=============================================================================
 
   # If a move taught by a TM/HM/TR replaces another move, this setting is
   # whether the machine's move retains the replaced move's PP (true), or whether
   # the machine's move has full PP (false).
-  TAUGHT_MACHINES_KEEP_OLD_PP = (MECHANICS_GENERATION == 5)
+  TAUGHT_MACHINES_KEEP_OLD_PP = (MECHANICS_GENERATION >= 5) # == bug fix to disallow reteaching moves to restore PP
   # Whether the Black/White Flutes will raise/lower the levels of wild Pokémon
   # respectively (true), or will lower/raise the wild encounter rate
   # respectively (false).
   FLUTES_CHANGE_WILD_ENCOUNTER_LEVELS = (MECHANICS_GENERATION >= 6)
   # Whether Repel uses the level of the first Pokémon in the party regardless of
   # its HP (true), or it uses the level of the first unfainted Pokémon (false).
-  REPEL_COUNTS_FAINTED_POKEMON = (MECHANICS_GENERATION >= 6)
+  REPEL_COUNTS_FAINTED_POKEMON = false# (MECHANICS_GENERATION >= 6)
   # Whether Rage Candy Bar acts as a Full Heal (true) or a Potion (false).
   RAGE_CANDY_BAR_CURES_STATUS_PROBLEMS = (MECHANICS_GENERATION >= 7)
 
@@ -310,10 +310,10 @@ module Settings
   # the first number (0).
   BAG_MAX_POCKET_SIZE = [0, -1, -1, -1, -1, -1, -1, -1, -1]
   # The maximum number of items each slot in the Bag can hold.
-  BAG_MAX_PER_SLOT = 999
+  BAG_MAX_PER_SLOT = 9_999 # 999
   # Whether each pocket in turn auto-sorts itself by item ID number. Ignore the
   # first entry (the 0).
-  BAG_POCKET_AUTO_SORT = [0, false, false, false, true, true, false, false, false]
+  BAG_POCKET_AUTO_SORT = [0, true, true, true, true, true, true, true, true] # sort everything
 
   #=============================================================================
 
