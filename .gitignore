@@ -6,3 +6,4 @@ Data/sprites/*
 Data/VERSION
  
 Data/pokedex/rate_limit.log
+Data/pokedex/generated_entries.json

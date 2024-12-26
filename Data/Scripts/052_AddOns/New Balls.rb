@@ -5,7 +5,7 @@
 #GENDER BALL (24) - swap gender
 #catch rate: pokeball unless genderless
 BallHandlers::ModifyCatchRate.add(:GENDERBALL, proc{|ball, catchRate, battle, pokemon|
-  catchRate = 0 if pokemon.gender == -1
+  catchRate = -1 if pokemon.gender == 2
   next catchRate
 })
 BallHandlers::OnCatch.add(:GENDERBALL, proc{|ball, battle, pokemon|
