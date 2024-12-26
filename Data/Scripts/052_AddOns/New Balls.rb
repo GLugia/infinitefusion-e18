@@ -63,10 +63,13 @@ next catchRate
 })
 BallHandlers::OnCatch.add(:PERFECTBALL,proc{|ball,battle,pokemon|
   stats = [:ATTACK, :SPECIAL_ATTACK, :SPECIAL_DEFENSE, :SPEED, :DEFENSE, :HP]
-  first = rand(stats.length)
-  second = rand(stats.length)
-  pokemon.iv[stats[first]] = 31
-  pokemon.iv[stats[second]] = 31
+  stat_count = rand(stats.length - 2) + 2
+  stat_id = nil
+  until stat_count == 0 do
+    stat_id = rand(stats.length)
+    pokemon.iv[stats[stat_id]] = 31
+    stat_count = stat_count - 1
+  end
 })
 
 
