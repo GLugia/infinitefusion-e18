@@ -79,6 +79,7 @@ BallHandlers::OnCatch.add(:PERFECTBALL, proc{|ball, battle, pokemon|
     pokemon.iv[stats[stat_id]] = 31
     stat_count = stat_count - 1
   end
+  pokemon.calc_stats
 })
 
 #DREAMBALL  - sleep
