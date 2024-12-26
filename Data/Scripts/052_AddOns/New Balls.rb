@@ -58,7 +58,7 @@ BallHandlers::OnCatch.add(:SHINYBALL,proc{|ball,battle,pokemon|
 #PERFECTBALL 29
 #catch rate: 10% pokeball
 BallHandlers::ModifyCatchRate.add(:PERFECTBALL,proc{|ball,catchRate,battle,pokemon|
-  catchRate=(catchRate*0.1).floor(1)
+  catchRate=(catchRate*0.5).floor(1)
 next catchRate
 })
 BallHandlers::OnCatch.add(:PERFECTBALL,proc{|ball,battle,pokemon|
