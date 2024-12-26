@@ -89,7 +89,8 @@ Events.onStepTakenTransferPossible += proc { |_sender, e|
   handled = e[0]
   next if handled[0]
   next if $game_switches[SWITCH_GAME_DIFFICULTY_EASY]
-  if $PokemonGlobal.stepcount % 4 == 0 && Settings::POISON_IN_FIELD
+  next unless Settings::POISON_IN_FIELD
+  if $PokemonGlobal.stepcount % 4 == 0
     flashed = false
     for i in $Trainer.able_party
       if i.status == :POISON && !i.hasAbility?(:IMMUNITY)
@@ -347,8 +348,8 @@ Events.onMapSceneChange += proc { |_sender, e|
   # Update map trail
   if $game_map
     $PokemonGlobal.mapTrail = [] if !$PokemonGlobal.mapTrail
-    if $PokemonGlobal.mapTrail[0] != $game_map.map_id
-      $PokemonGlobal.mapTrail.pop if $PokemonGlobal.mapTrail.length >= 4
+    if $PokemonGlobal.mapTrail[0] != $game_map.map_id && $PokemonGlobal.mapTrail.length >= 4
+      $PokemonGlobal.mapTrail.pop
     end
     $PokemonGlobal.mapTrail = [$game_map.map_id] + $PokemonGlobal.mapTrail
   end
@@ -865,7 +866,7 @@ def pbReceiveItem(item, quantity = 1, item_name = "", music = nil, canRandom = t
   canRandom = false if !$game_switches[SWITCH_RANDOM_ITEMS_GENERAL]
   original_item = GameData::Item.get(item)
   if canRandom && ((!original_item.is_TM? && $game_switches[SWITCH_RANDOM_GIVEN_ITEMS]) || (original_item.is_TM? && $game_switches[SWITCH_RANDOM_GIVEN_TMS]))
-    item = pbGetRandomItem(item) if canRandom #fait rien si pas activé
+    item = pbGetRandomItem(item) # if canRandom (why was this here? it's checked in the line above)
   else
     item = GameData::Item.get(item)
   end
