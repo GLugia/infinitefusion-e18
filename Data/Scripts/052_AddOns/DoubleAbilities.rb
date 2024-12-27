@@ -136,77 +136,39 @@ class Pokemon
 
   #Primary ability utility methods for pokemon class
   def ability_index
-    @ability_index = (@personalID & 1) if !@ability_index
+    @ability_index = species_data.abilities[rand(species_data.abilities.length)] if !@ability_index
     return @ability_index
   end
 
   def ability
-    return GameData::Ability.try_get(ability_id())
+    return GameData::Ability.try_get(self.ability_index)
   end
 
-  def ability=(value)
+  def ability_index=(value)
     return if value && !GameData::Ability.exists?(value)
-    @ability = (value) ? GameData::Ability.get(value).id : value
+    @ability_index = (value) ? GameData::Ability.get(value).id : value
   end
 
   #Secondary ability utility methods for pokemon class
   def ability2_index
     return nil if !$game_switches[SWITCH_DOUBLE_ABILITIES]
-    @ability2_index = (@personalID & 1) if !@ability2_index
+    @ability2_index = species_data.abilities[rand(species_data.abilities.length)] if !@ability2_index
     return @ability2_index
   end
 
   def ability2
     return nil if !$game_switches[SWITCH_DOUBLE_ABILITIES]
-    return GameData::Ability.try_get(ability2_id())
+    return GameData::Ability.try_get(self.ability2_index)
   end
 
-  def ability2=(value)
+  def ability2_index=(value)
     return if !$game_switches[SWITCH_DOUBLE_ABILITIES]
     return if value && !GameData::Ability.exists?(value)
-    @ability2 = (value) ? GameData::Ability.get(value).id : value
-  end
-
-
-  def ability_id
-    if !@ability
-      sp_data = species_data
-      abil_index = ability_index
-      #echoln abil_index
-      if abil_index >= 2 # Hidden ability
-        @ability = sp_data.hidden_abilities[abil_index - 2]
-        abil_index = (@personalID & 1) if !@ability
-      end
-      if !@ability # Natural ability or no hidden ability defined
-        if $game_switches[SWITCH_NO_LEVELS_MODE]
-          @ability = sp_data.abilities[0] || sp_data.abilities[0]
-          @ability2 = sp_data.abilities[1] || sp_data.abilities[0]
-        else
-          @ability = sp_data.abilities[abil_index] || sp_data.abilities[0]
-        end
-      end
-    end
-    return @ability
-  end
-
-  def ability2_id
-    return nil if !$game_switches[SWITCH_DOUBLE_ABILITIES]
-    if !@ability2
-      sp_data = species_data
-      abil_index = ability_index
-      if abil_index >= 2 # Hidden ability
-        @ability2 = sp_data.hidden_abilities[abil_index - 2]
-        abil_index = (@personalID & 1) if !@ability2
-      end
-      if !@ability2 # Natural ability or no hidden ability defined
-        @ability2 = sp_data.abilities[abil_index] || sp_data.abilities[0]
-      end
-    end
-    return @ability2
+    @ability2_index = (value) ? GameData::Ability.get(value).id : value
   end
 
   def adjustHPForWonderGuard(stats)
-    return self.ability == :WONDERGUARD ? 1 : stats[:HP] || ($game_switches[SWITCH_DOUBLE_ABILITIES] && self.ability2 == :WONDERGUARD)
+    return self.ability_index == :WONDERGUARD ? 1 : stats[:HP] || ($game_switches[SWITCH_DOUBLE_ABILITIES] && self.ability2_index == :WONDERGUARD)
   end
 
 end
@@ -215,12 +177,12 @@ end
 
 class PokemonFusionScene
 
-  def pbChooseAbility(ability1Id,ability2Id)
+  def pbChooseAbility(ability1Id, ability2Id)
     ability1 = GameData::Ability.get(ability1Id)
     ability2 = GameData::Ability.get(ability2Id)
     availableNatures = []
-    availableNatures << @pokemon1.nature
-    availableNatures << @pokemon2.nature
+    availableNatures << @pokemon1.nature_index
+    availableNatures << @pokemon2.nature_index
 
     setAbilityAndNatureAndNickname([ability1,ability2], availableNatures)
   end
@@ -233,22 +195,21 @@ class PokemonFusionScene
       screen = PokemonOptionScreen.new(scene)
       screen.pbStartScreen
 
-      @pokemon1.ability = abilitiesList[0]
-      @pokemon1.ability2 = abilitiesList[1]
+      @pokemon1.ability_index = abilitiesList[0]
+      @pokemon1.ability2_index = abilitiesList[1]
     else
       scene = FusionSelectOptionsScene.new(abilitiesList, naturesList, @pokemon1, @pokemon2)
       screen = PokemonOptionScreen.new(scene)
       screen.pbStartScreen
 
-      selectedAbility = scene.selectedAbility
-      @pokemon1.body_original_ability_index = @pokemon1.ability_index
-      @pokemon1.head_original_ability_index = @pokemon2.ability_index
-
-      @pokemon1.ability = selectedAbility
-      @pokemon1.ability_index = getAbilityIndexFromID(selectedAbility.id,@pokemon1)
+      @pokemon1.head_ability_index = @pokemon2.ability_index
+      @pokemon1.body_ability_index = @pokemon1.ability_index
+      @pokemon1.ability_index = scene.selectedAbility
     end
-
-    @pokemon1.nature = scene.selectedNature
+    
+    @pokemon1.head_nature_index = @pokemon2.nature_index
+    @pokemon1.body_nature_index = @pokemon1.nature_index
+    @pokemon1.nature_index = scene.selectedNature
     if scene.hasNickname
       @pokemon1.name = scene.nickname
     end

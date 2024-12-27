@@ -59,7 +59,7 @@ class PokeBattle_Battler
     pbInitEffects(false)
     # Reset status
     self.status      = :NONE
-    self.statusCount = 0
+    self.status_count = 0
     # Lose happiness
     if @pokemon && @battle.internalBattle
       badLoss = false
@@ -278,7 +278,7 @@ class PokeBattle_Battler
       @battle.pbDisplay(_INTL("But it failed..."))
       return
     end
-    oldAbil = @ability_id
+    oldAbil = @ability_index
     @effects[PBEffects::Transform]        = true
     @effects[PBEffects::TransformSpecies] = target.species
     pbChangeTypes(target)

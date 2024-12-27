@@ -18,8 +18,8 @@ class Pokemon
   # @return [Integer] the current experience points
   attr_reader :exp
 
-  attr_accessor :exp_when_fused_head
-  attr_accessor :exp_when_fused_body
+  attr_accessor :head_exp
+  attr_accessor :body_exp
   attr_accessor :exp_gained_since_fused
 
   attr_accessor :hat
@@ -34,23 +34,27 @@ class Pokemon
   attr_reader :status
   # @return [Integer] sleep count / toxic flag / 0:
   #   sleep (number of rounds before waking up), toxic (0 = regular poison, 1 = toxic)
-  attr_accessor :statusCount
+  attr_accessor :status_count
   # This Pokémon's shininess (true, false, nil). Is recalculated if made nil.
   # @param value [Boolean, nil] whether this Pokémon is shiny
   #attr_writer :shiny
   attr_accessor :glitter
-  attr_accessor :head_shiny
-  attr_accessor :body_shiny
+  attr_accessor :body_shiny, :head_shiny
   attr_accessor :debug_shiny
   attr_accessor :natural_shiny
+  
+  attr_accessor :gender
+  attr_accessor :body_gender, :head_gender
 
   # The index of this Pokémon's ability (0, 1 are natural abilities, 2+ are
   # hidden abilities)as defined for its species/form. An ability may not be
   # defined at this index. Is recalculated (as 0 or 1) if made nil.
   # @param value [Integer, nil] forced ability index (nil if none is set)
   attr_writer :ability_index
-  attr_accessor :body_original_ability_index
-  attr_accessor :head_original_ability_index
+  attr_accessor :body_ability_index, :head_ability_index
+  
+  attr_accessor :nature_index
+  attr_accessor :body_nature_index, :head_nature_index
 
   # @return [Array<Pokemon::Move>] the moves known by this Pokémon
   attr_accessor :moves
@@ -58,56 +62,69 @@ class Pokemon
   attr_accessor :first_moves
   # @return [Array<Symbol>] an array of ribbons owned by this Pokémon
   attr_accessor :ribbons
+  attr_accessor :body_ribbons, :head_ribbons
   # @return [Integer] contest stats
   attr_accessor :cool, :beauty, :cute, :smart, :tough, :sheen
   # @return [Integer] the Pokérus strain and infection time
   attr_accessor :pokerus
+  attr_accessor :body_pokerus, :head_pokerus # TODO: update pokerus for each part
   # @return [Integer] this Pokémon's current happiness (an integer between 0 and 255)
   attr_accessor :happiness
+  attr_accessor :body_happiness, :head_happiness
   # @return [Symbol] the item ID of the Poké Ball this Pokémon is in
   attr_accessor :poke_ball
+  attr_accessor :body_poke_ball, :head_poke_ball
   # @return [Integer] this Pokémon's markings, one bit per marking
   attr_accessor :markings
+  attr_accessor :body_markings, :head_markings
   # @return [Hash<Integer>] a hash of IV values for HP, Atk, Def, Speed, Sp. Atk and Sp. Def
   attr_accessor :iv
+  attr_accessor :body_iv, :head_iv
   # An array of booleans indicating whether a stat is made to have maximum IVs
-  # (for Hyper Training). Set like @ivMaxed[:ATTACK] = true
+  # (for Hyper Training). Set like @iv_maxed[:ATTACK] = true
   # @return [Hash<Boolean>] a hash of booleans that max each IV value
-  attr_accessor :ivMaxed
+  attr_accessor :iv_maxed
+  attr_accessor :body_iv_maxed, :head_iv_maxed
   # @return [Hash<Integer>] this Pokémon's effort values
   attr_accessor :ev
+  attr_accessor :body_ev, :head_ev
   # @return [Integer] calculated stats
   attr_reader :totalhp, :attack, :defense, :spatk, :spdef, :speed
   # @return [Owner] this Pokémon's owner
   attr_reader :owner
+  attr_accessor :head_owner, :body_owner
   # @return [Integer] the manner this Pokémon was obtained:
   #   0 (met), 1 (as egg), 2 (traded), 4 (fateful encounter)
   attr_accessor :obtain_method
+  attr_accessor :body_obtain_method, :head_obtain_method
   # @return [Integer] the ID of the map this Pokémon was obtained in
   attr_accessor :obtain_map
+  attr_accessor :body_obtain_map, :head_obtain_map
   # Describes the manner this Pokémon was obtained. If left undefined,
   # the obtain map's name is used.
   # @return [String] the obtain text
   attr_accessor :obtain_text
   # @return [Integer] the level of this Pokémon when it was obtained
   attr_accessor :obtain_level
+  attr_accessor :body_obtain_level, :head_obtain_level
   # If this Pokémon hatched from an egg, returns the map ID where the hatching happened.
   # Otherwise returns 0.
   # @return [Integer] the map ID where egg was hatched (0 by default)
   attr_accessor :hatched_map
+  attr_accessor :body_hatched_map, :head_hatched_map
   # Another Pokémon which has been fused with this Pokémon (or nil if there is none).
   # Currently only used by Kyurem, to record a fused Reshiram or Zekrom.
   # @return [Pokemon, nil] the Pokémon fused into this one (nil if there is none)
   attr_accessor :fused
-  # @return [Integer] this Pokémon's personal ID
-  attr_accessor :personalID
 
-  attr_accessor :hiddenPowerType
+  attr_accessor :hidden_power
+  attr_accessor :body_hidden_power, :head_hidden_power
 
   attr_accessor :sprite_scale #the size attribute for scaling the sprite (used only for gourgeist/pumpkaboo)
   attr_accessor :size_category #the size attribute for scaling the sprite (used only for gourgeist/pumpkaboo)
 
   attr_accessor :force_disobey
+  attr_accessor :body_force_disobey, :head_force_disobey
 
   # Max total IVs
   IV_STAT_LIMIT = 31
@@ -129,8 +146,8 @@ class Pokemon
     echoln("Forced Form: #{@forced_form}")
     echoln("Time Form Set: #{@time_form_set}")
     echoln("Experience: #{@exp}")
-    echoln("EXP When Fused Head: #{@exp_when_fused_head}")
-    echoln("EXP When Fused Body: #{@exp_when_fused_body}")
+    echoln("EXP When Fused Head: #{@head_exp}")
+    echoln("EXP When Fused Body: #{@body_exp}")
     echoln("EXP Gained Since Fused: #{@exp_gained_since_fused}")
     echoln("Hat: #{@hat}")
     echoln("Hat X: #{@hat_x}")
@@ -138,19 +155,27 @@ class Pokemon
     echoln("Steps to Hatch: #{@steps_to_hatch}")
     echoln("HP: #{@hp}")
     echoln("Status: #{@status}")
-    echoln("Status Count: #{@statusCount}")
+    echoln("Status Count: #{@status_count}")
     echoln("Glitter: #{@glitter}")
     echoln("Head Shiny: #{@head_shiny}")
     echoln("Body Shiny: #{@body_shiny}")
     echoln("Debug Shiny: #{@debug_shiny}")
     echoln("Natural Shiny: #{@natural_shiny}")
+    
+    echoln("Gender: #{@gender}")
+    echoln("Head Gender: #{@head_gender}")
+    echoln("Body Gender: #{@body_gender}")
 
     echoln("Calculated ability: #{@ability}")
     echoln("Abilities hash: #{getAbilityList()}")
 
     echoln("Ability Index: #{@ability_index}")
-    echoln("Body Original Ability Index: #{@body_original_ability_index}")
-    echoln("Head Original Ability Index: #{@head_original_ability_index}")
+    echoln("Head Ability Index: #{@head_ability_index}")
+    echoln("Body Ability Index: #{@body_ability_index}")
+    
+    echoln("Nature Index: #{@nature_index}")
+    echoln("Head Nature Index: #{@head_nature_index}")
+    echoln("Body Nature Index: #{@body_nature_index}")
 
     move1, move2, move3, move4 = "", "", "", ""
 
@@ -162,24 +187,51 @@ class Pokemon
     echoln("Moves: #{move1} #{move2} #{move3} #{move4}")
     echoln("First Moves: #{@first_moves}")
     echoln("Ribbons: #{@ribbons}")
+    echoln("Head Ribbons: #{@head_ribbons}")
+    echoln("Body Ribbons: #{@body_ribbons}")
     echoln("Cool: #{@cool}, Beauty: #{@beauty}, Cute: #{@cute}, Smart: #{@smart}, Tough: #{@tough}, Sheen: #{@sheen}")
     echoln("Pokerus: #{@pokerus}")
+    echoln("Head Pokerus: #{@head_pokerus}")
+    echoln("Body Pokerus: #{@body_pokerus}")
     echoln("Happiness: #{@happiness}")
+    echoln("Head Happiness: #{@head_happiness}")
+    echoln("Body Happiness: #{@body_happiness}")
     echoln("Poke Ball: #{@poke_ball}")
+    echoln("Head Poke Ball: #{@head_poke_ball}")
+    echoln("Body Poke Ball: #{@body_poke_ball}")
     echoln("Markings: #{@markings}")
+    echoln("Head Markings: #{@head_markings}")
+    echoln("Body Markings: #{@body_markings}")
     echoln("IV: #{@iv}")
-    echoln("IV Maxed: #{@ivMaxed}")
+    echoln("Head IV: #{@head_iv}")
+    echoln("Body IV: #{@body_iv}")
+    echoln("IV Maxed: #{@iv_maxed}")
+    echoln("Head IV Maxed: #{@head_iv_maxed}")
+    echoln("Body IV Maxed: #{@body_iv_maxed}")
     echoln("EV: #{@ev}")
+    echoln("Head EV: #{@head_ev}")
+    echoln("Body EV: #{@body_ev}")
     echoln("Total HP: #{@totalhp}, Attack: #{@attack}, Defense: #{@defense}, Sp. Attack: #{@spatk}, Sp. Defense: #{@spdef}, Speed: #{@speed}")
     echoln("Owner: #{@owner}")
+    echoln("Head Owner: #{@head_owner}")
+    echoln("Body Owner: #{@body_owner}")
     echoln("Obtain Method: #{@obtain_method}")
+    echoln("Head Obtain Method: #{@head_obtain_method}")
+    echoln("Body Obtain Method: #{@body_obtain_method}")
     echoln("Obtain Map: #{@obtain_map}")
+    echoln("Head Obtain Map: #{@head_obtain_map}")
+    echoln("Body Obtain Map: #{@body_obtain_map}")
     echoln("Obtain Text: #{@obtain_text}")
     echoln("Obtain Level: #{@obtain_level}")
+    echoln("Head Obtain Level: #{@head_obtain_level}")
+    echoln("Body Obtain Level: #{@body_obtain_level}")
     echoln("Hatched Map: #{@hatched_map}")
+    echoln("Head Hatched Map: #{@head_hatched_map}")
+    echoln("Body Hatched Map: #{@body_hatched_map}")
     echoln("Fused: #{@fused}")
-    echoln("Personal ID: #{@personalID}")
-    echoln("Hidden Power Type: #{@hiddenPowerType}")
+    echoln("Hidden Power: #{@hidden_power}")
+    echoln("Head Hidden Power: #{@head_hidden_power}")
+    echoln("Body Hidden Power: #{@body_hidden_power}")
     echoln("Scale: #{sprite_scale}")
 
     # Add other attribute print statements here
@@ -212,7 +264,7 @@ class Pokemon
   # Species and form
   #=============================================================================
   def hiddenPower=(type)
-    @hiddenPowerType = type
+    @hidden_power = type
   end
 
   # Changes the Pokémon's species and re-calculates its statistics.
@@ -494,7 +546,7 @@ class Pokemon
   def heal_status
     return if egg?
     @status = :NONE
-    @statusCount = 0
+    @status_count = 0
   end
 
   # Restores all PP of this Pokémon. If a move index is given, restores the PP
@@ -584,7 +636,7 @@ class Pokemon
         @gender = 2
       else
         female_chance = GameData::GenderRatio.get(gender_ratio).female_chance
-        @gender = ((@personalID & 0xFF) < female_chance) ? 1 : 0
+        @gender = (rand(256) < female_chance) ? 1 : 0
       end
     end
     return @gender
@@ -593,8 +645,8 @@ class Pokemon
   # Sets this Pokémon's gender to a particular gender (if possible).
   # @param value [0, 1] new gender (0 = male, 1 = female)
   def gender=(value)
-    return if singleGendered?
-    @gender = value if value.nil? || value == 0 || value == 1
+    return if singleGendered? && !@fused
+    @gender = value
   end
 
   # Makes this Pokémon male.
@@ -636,22 +688,21 @@ class Pokemon
   # @return [Boolean] whether this Pokémon is shiny (differently colored)
   def shiny?
     if @shiny.nil?
-      a = @personalID ^ @owner.id
-      b = a & 0xFFFF
-      c = (a >> 16) & 0xFFFF
-      d = b ^ c
-      is_shiny = d < Settings::SHINY_POKEMON_CHANCE
+      is_shiny = rand(65535) < Settings::SHINY_POKEMON_CHANCE
       if is_shiny
         @shiny = true
         @natural_shiny = true
       end
-
     end
     if @shiny && Settings::SHINY_POKEMON_CHANCE != S_CHANCE_VALIDATOR
       @debug_shiny = true
       @natural_shiny = false
     end
     return @shiny
+  end
+  
+  def shiny(value)
+    @shiny = value
   end
 
   #=============================================================================
@@ -660,38 +711,22 @@ class Pokemon
 
   # @return [Integer] the index of this Pokémon's ability
   def ability_index
-    @ability_index = (@personalID & 1) if !@ability_index
+    @ability_index = species_data.abilities[rand(species_data.abilities.length)] if !@ability_index
     return @ability_index
   end
 
   def forced_ability
-    return @ability
+    return @ability_index
   end
 
   # @return [GameData::Ability, nil] an Ability object corresponding to this Pokémon's ability
   def ability
-    return GameData::Ability.try_get(ability_id)
+    return GameData::Ability.try_get(self.ability_index)
   end
 
-  # @return [Symbol, nil] the ability symbol of this Pokémon's ability
-  def ability_id
-    if !@ability
-      sp_data = species_data
-      abil_index = ability_index
-      if abil_index >= 2 # Hidden ability
-        @ability = sp_data.hidden_abilities[abil_index - 2]
-        abil_index = (@personalID & 1) if !@ability
-      end
-      if !@ability # Natural ability or no hidden ability defined
-        @ability = sp_data.abilities[abil_index] || sp_data.abilities[0]
-      end
-    end
-    return @ability
-  end
-
-  def ability=(value)
+  def ability_index=(value)
     return if value && !GameData::Ability.exists?(value)
-    @ability = (value) ? GameData::Ability.get(value).id : value
+    @ability_index = (value) ? GameData::Ability.get(value).id : value
   end
 
   # Returns whether this Pokémon has a particular ability. If no value
@@ -707,16 +742,15 @@ class Pokemon
 
   # @return [Boolean] whether this Pokémon has a hidden ability
   def hasHiddenAbility?
-    return ability_index >= 2
+    return @ability_index >= 2
   end
 
   # @return [Array<Array<Symbol,Integer>>] the abilities this Pokémon can have,
   #   where every element is [ability ID, ability index]
   def getAbilityList
     ret = []
-    sp_data = species_data
-    sp_data.abilities.each_with_index { |a, i| ret.push([a, i]) if a }
-    sp_data.hidden_abilities.each_with_index { |a, i| ret.push([a, i + 2]) if a }
+    species_data.abilities.each_with_index { |a, i| ret.push([a, i]) if a }
+    species_data.hidden_abilities.each_with_index { |a, i| ret.push([a, i + 2]) if a }
     return ret
   end
 
@@ -724,42 +758,27 @@ class Pokemon
   # Nature
   #=============================================================================
 
+  def nature_index
+    @nature_index = GameData::Nature.get(rand(GameData::Nature::DATA.keys.length / 2)).id if !@nature_index
+    return @nature_index
+  end
+
   # @return [GameData::Nature, nil] a Nature object corresponding to this Pokémon's nature
   def nature
-    @nature = GameData::Nature.get(@personalID % (GameData::Nature::DATA.keys.length / 2)).id if !@nature
-    return GameData::Nature.try_get(@nature)
+    @nature_index = GameData::Nature.get(rand(GameData::Nature::DATA.keys.length / 2)).id if !@nature_index
+    return GameData::Nature.try_get(@nature_index)
   end
 
   def nature_id
-    return @nature
+    return @nature_index
   end
 
   # Sets this Pokémon's nature to a particular nature.
   # @param value [Symbol, String, Integer, nil] nature to change to
-  def nature=(value)
+  def nature_index=(value)
     return if value && !GameData::Nature.exists?(value)
-    @nature = (value) ? GameData::Nature.get(value).id : value
-    calc_stats if !@nature_for_stats
-  end
-
-  # Returns the calculated nature, taking into account things that change its
-  # stat-altering effect (i.e. Gen 8 mints). Only used for calculating stats.
-  # @return [GameData::Nature, nil] this Pokémon's calculated nature
-  def nature_for_stats
-    return GameData::Nature.try_get(@nature_for_stats) if @nature_for_stats
-    return self.nature
-  end
-
-  def nature_for_stats_id
-    return @nature_for_stats
-  end
-
-  # If defined, this Pokémon's nature is considered to be this when calculating stats.
-  # @param value [Integer, nil] ID of the nature to use for calculating stats
-  def nature_for_stats=(value)
-    return if value && !GameData::Nature.exists?(value)
-    @nature_for_stats = (value) ? GameData::Nature.get(value).id : value
-    calc_stats
+    @nature_index = (value) ? GameData::Nature.get(value).id : value
+    self.calc_stats
   end
 
   # Returns whether this Pokémon has a particular nature. If no value is given,
@@ -768,8 +787,115 @@ class Pokemon
   # @return [Boolean] whether this Pokémon has a particular nature or a nature
   #   at all
   def hasNature?(check_nature = nil)
-    return !@nature_id.nil? if check_nature.nil?
+    return !@nature_index.nil? if check_nature.nil?
     return self.nature == check_nature
+  end
+  
+  #=============================================================================
+  # IVs
+  #=============================================================================
+  
+  def iv
+    if !@iv
+      @iv = {}
+      GameData::Stat.each_main do |s|
+        @iv[s.id] = (self.iv_maxed[s.id]) ? IV_STAT_LIMIT : rand(IV_STAT_LIMIT)
+      end
+    end
+    return @iv
+  end
+  
+  def head_iv
+    if !@head_iv
+      @head_iv = {}
+      GameData::Stat.each_main do |s|
+        @head_iv[s.id] = 0
+      end
+    end
+    return @head_iv
+  end
+  
+  def body_iv
+    if !@body_iv
+      @body_iv = {}
+      GameData::Stat.each_main do |s|
+        @body_iv[s.id] = 0
+      end
+    end
+    return @body_iv
+  end
+  
+  def iv_maxed
+    if !@iv_maxed
+      @iv_maxed = {}
+      GameData::Stat.each_main do |s|
+        @iv_maxed[s.id] = false
+      end
+    end
+    return @iv_maxed
+  end
+  
+  def head_iv_maxed
+    if !@head_iv_maxed
+      @head_iv_maxed = {}
+      GameData::Stat.each_main do |s|
+        @head_iv_maxed[s.id] = false
+      end
+    end
+    return @head_iv_maxed
+  end
+  
+  def body_iv_maxed
+    if !@body_iv_maxed
+      @body_iv_maxed = {}
+      GameData::Stat.each_main do |s|
+        @body_iv_maxed[s.id] = false
+      end
+    end
+    return @body_iv_maxed
+  end
+  
+  #=============================================================================
+  # EVs
+  #=============================================================================
+  
+  def ev
+    if !@ev
+      @ev = {}
+      GameData::Stat.each_main do |s|
+        @ev[s.id] = 0
+      end
+    end
+    return @ev
+  end
+  
+  def head_ev
+    if !@head_ev
+      @head_ev = {}
+      GameData::Stat.each_main do |s|
+        @head_ev[s.id] = 0
+      end
+    end
+    return @head_ev
+  end
+  
+  def body_ev
+    if !@body_ev
+      @body_ev = {}
+      GameData::Stat.each_main do |s|
+        @body_ev[s.id] = 0
+      end
+    end
+    return @body_ev
+  end
+  
+  #=============================================================================
+  # Hidden Power
+  #=============================================================================
+  
+  def hidden_power
+    @hidden_power = 0 if !@hidden_power
+    return @hidden_power
   end
 
   #=============================================================================
@@ -1351,10 +1477,9 @@ class Pokemon
   # Only used for calculating stats.
   # @return [Hash<Integer>] hash containing this Pokémon's effective IVs
   def calcIV
-    this_ivs = self.iv
     ret = {}
     GameData::Stat.each_main do |s|
-      ret[s.id] = (@ivMaxed[s.id]) ? IV_STAT_LIMIT : this_ivs[s.id]
+      ret[s.id] = (self.iv_maxed[s.id]) ? IV_STAT_LIMIT : self.iv[s.id]
     end
     return ret
   end
@@ -1402,8 +1527,8 @@ class Pokemon
   # Recalculates this Pokémon's stats.
   def calc_stats
     base_stats = self.baseStats
-      this_level = self.level
-    this_IV = self.calcIV
+    this_level = self.level
+    this_IV    = self.calcIV
 
     if $game_switches[SWITCH_NO_LEVELS_MODE]
       this_level = adjust_level_for_base_stats_mode()
@@ -1412,7 +1537,7 @@ class Pokemon
     # Format stat multipliers due to nature
     nature_mod = {}
     GameData::Stat.each_main { |s| nature_mod[s.id] = 100 }
-    this_nature = self.nature_for_stats
+    this_nature = GameData::Nature.get(self.nature_index)
     if this_nature
       this_nature.stat_changes.each { |change| nature_mod[change[0]] += change[1] }
     end
@@ -1427,7 +1552,7 @@ class Pokemon
     end
     hpDiff = @totalhp - @hp
     #@totalhp = stats[:HP]
-    @totalhp = adjustHPForWonderGuard(stats)
+    @totalhp = self.adjustHPForWonderGuard(stats)
     calculated_hp = @totalhp - hpDiff
     @hp = calculated_hp > 0 ? calculated_hp : 0
     @attack = stats[:ATTACK]
@@ -1446,11 +1571,11 @@ class Pokemon
   def clone
     ret = super
     ret.iv = {}
-    ret.ivMaxed = {}
+    ret.iv_maxed = {}
     ret.ev = {}
     GameData::Stat.each_main do |s|
       ret.iv[s.id] = @iv[s.id]
-      ret.ivMaxed[s.id] = @ivMaxed[s.id]
+      ret.iv_maxed[s.id] = @iv_maxed[s.id]
       ret.ev[s.id] = @ev[s.id]
     end
     ret.moves = []
@@ -1459,6 +1584,115 @@ class Pokemon
     ret.owner = @owner.clone
     ret.ribbons = @ribbons.clone
     return ret
+  end
+  
+  def copy(other)
+    self.species = other.species
+    
+    self.exp = other.exp
+    self.exp_gained_since_fused = other.exp_gained_since_fused if other.exp_gained_since_fused
+    self.head_exp = other.head_exp if other.head_exp
+    self.body_exp = other.body_exp if other.body_exp
+    
+    self.steps_to_hatch = other.steps_to_hatch
+    
+    self.hp = other.hp
+    
+    self.status = other.status
+    self.status_count = other.status_count
+    
+    self.glitter = other.glitter
+    self.head_shiny = other.head_shiny
+    self.body_shiny = other.body_shiny
+    self.debug_shiny = other.debug_shiny
+    self.natural_shiny = other.natural_shiny
+    
+    self.gender = other.gender
+    self.head_gender = other.head_gender if other.head_gender
+    self.body_gender = other.body_gender if other.body_gender
+    
+    self.ability_index = other.ability_index
+    self.ability2_index = other.ability2_index
+    self.head_ability_index = other.head_ability_index if other.head_ability_index
+    self.body_ability_index = other.body_ability_index if other.body_ability_index
+    
+    self.nature_index = other.nature_index
+    self.head_nature_index = other.head_nature_index if other.head_nature_index
+    self.body_nature_index = other.body_nature_index if other.body_nature_index
+    
+    self.moves = other.moves
+    self.first_moves = other.first_moves
+    
+    self.ribbons = other.ribbons
+    self.head_ribbons = other.head_ribbons if other.head_ribbons
+    self.body_ribbons = other.body_ribbons if other.body_ribbons
+    
+    self.cool = other.cool
+    self.beauty = other.beauty
+    self.cute = other.cute
+    self.smart = other.smart
+    self.tough = other.tough
+    self.sheen = other.sheen
+    
+    self.pokerus = other.pokerus
+    self.head_pokerus = other.head_pokerus if other.head_pokerus
+    self.body_pokerus = other.body_pokerus if other.body_pokerus
+    
+    self.happiness = other.happiness
+    self.head_happiness = other.head_happiness if other.head_happiness
+    self.body_happiness = other.body_happiness if other.body_happiness
+    
+    self.poke_ball = other.poke_ball
+    self.head_poke_ball = other.head_poke_ball if other.head_poke_ball
+    self.body_poke_ball = other.body_poke_ball if other.body_poke_ball
+    
+    self.markings = other.markings
+    self.head_markings = other.head_markings if other.head_markings
+    self.body_markings = other.body_markings if other.body_markings
+    
+    self.iv = other.iv
+    self.head_iv = other.head_iv if other.head_iv
+    self.body_iv = other.body_iv if other.body_iv
+    self.iv_maxed = other.iv_maxed
+    self.head_iv_maxed = other.head_iv_maxed if other.head_iv_maxed
+    self.body_iv_maxed = other.body_iv_maxed if other.body_iv_maxed
+    
+    self.ev = other.ev
+    self.head_ev = other.head_ev if other.head_ev
+    self.body_ev = other.body_ev if other.body_ev
+    
+    self.owner = other.owner
+    self.head_owner = other.head_owner if other.head_owner
+    self.body_owner = other.body_owner if other.body_owner
+    
+    self.obtain_method = other.obtain_method
+    self.head_obtain_method = other.head_obtain_method if other.head_obtain_method
+    self.body_obtain_method = other.body_obtain_method if other.body_obtain_method
+    
+    self.obtain_map = other.obtain_map
+    self.head_obtain_map = other.head_obtain_map if other.head_obtain_map
+    self.body_obtain_map = other.body_obtain_map if other.body_obtain_map
+    
+    self.obtain_level = other.obtain_level
+    self.head_obtain_level = other.head_obtain_level if other.head_obtain_level
+    self.body_obtain_level = other.body_obtain_level if other.body_obtain_level
+    
+    self.hatched_map = other.hatched_map
+    self.head_hatched_map = other.head_hatched_map if other.head_hatched_map
+    self.body_hatched_map = other.body_hatched_map if other.body_hatched_map
+    
+    self.fused = other.fused
+    
+    self.hidden_power = other.hidden_power
+    self.head_hidden_power = other.head_hidden_power if other.head_hidden_power
+    self.body_hidden_power = other.body_hidden_power if other.body_hidden_power
+    
+    self.force_disobey = other.force_disobey
+    self.head_force_disobey = other.head_force_disobey if other.head_force_disobey
+    self.body_force_disobey = other.body_force_disobey if other.body_force_disobey
+    
+    self.name = other.name
+    self.calc_stats
   end
 
   # Creates a new Pokémon object.
@@ -1509,11 +1743,7 @@ class Pokemon
     @shiny = nil
     @ability_index = nil
     @ability2_index = nil
-
-    @ability = nil
-    @ability2 = nil
-
-    @nature = nil
+    @nature_index = nil
     @nature_for_stats = nil
     @item = nil
     @mail = nil
@@ -1533,9 +1763,9 @@ class Pokemon
     @poke_ball = :POKEBALL
     @markings = 0
     @iv = {}
-    @ivMaxed = {}
+    @iv_maxed = {}
     @ev = {}
-    @hiddenPowerType = nil
+    @hidden_power = nil
     @glitter = nil
     GameData::Stat.each_main do |s|
       @iv[s.id] = rand(IV_STAT_LIMIT + 1)
@@ -1557,7 +1787,6 @@ class Pokemon
     @timeReceived = Time.new.to_i
     @timeEggHatched = nil
     @fused = nil
-    @personalID = rand(2 ** 16) | rand(2 ** 16) << 16
     @hp = 1
     @totalhp = 1
     @spriteform_body = nil

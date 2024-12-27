@@ -1512,12 +1512,15 @@ class PokemonStorageScene
   def pbUpdateOverlay(selection, party = nil)
     overlay = @sprites["overlay"].bitmap
     overlay.clear
+    
     buttonbase = Color.new(248, 248, 248)
     buttonshadow = Color.new(80, 80, 80)
+    
     pbDrawTextPositions(overlay, [
       [_INTL("Party: {1}", (@storage.party.length rescue 0)), 270, 326, 2, buttonbase, buttonshadow, 1],
       [_INTL("Exit"), 446, 326, 2, buttonbase, buttonshadow, 1],
     ])
+    
     pokemon = nil
     if @screen.pbHeldPokemon && !@screen.fusionMode
       pokemon = @screen.pbHeldPokemon
@@ -1529,6 +1532,7 @@ class PokemonStorageScene
       return
     end
     @sprites["pokemon"].visible = true
+    
     base = Color.new(88, 88, 80)
     shadow = Color.new(168, 184, 184)
     nonbase = Color.new(208, 208, 208)
@@ -1537,6 +1541,7 @@ class PokemonStorageScene
     textstrings = [
       [pokename, 10, 2, false, base, shadow]
     ]
+    
     if !pokemon.egg?
       imagepos = []
       if pokemon.male?
@@ -1546,20 +1551,52 @@ class PokemonStorageScene
       end
       imagepos.push(["Graphics/Pictures/Storage/overlay_lv", 6, 246])
       textstrings.push([pokemon.level.to_s, 28, 228, false, base, shadow])
+      
+      #if !pokemon.ability || (!pokemon.species_data.abilities.include?(pokemon.ability_index) && !pokemon.species_data.hidden_abilities.include?(pokemon.ability_index))
+      #  if pokemon.fused
+      #    head = GameData::Species.get(getHeadID(pokemon.species))
+      #    body = GameData::Species.get(getBodyID(pokemon.species))
+      #    abilities = {}
+      #    if pokemon.poke_ball == :ABILITYBALL
+      #      for i in 0...head.hidden_abilities.length
+      #        abilities << head.hidden_abilities[i]
+      #      end
+      #      for i in 0...body.hidden_abilities.length
+      #        abilities << body.hidden_abilities[i]
+      #      end
+      #    else
+      #      for i in 0...head.abilities.length
+      #        abilities << head.abilities[i]
+      #      end
+      #      for i in 0...body.abilities.length
+      #        abilities << body.abilities[i]
+      #      end
+      #    end
+      #    if (!pokemon.ability || !abilities.include?(pokemon.ability_index))
+      #      pokemon.ability_index = abilities[rand(abilities.length)]
+      #    end
+      #  else
+      #    pokemon.ability_index = pokemon.species_data.abilities[rand(pokemon.species_data.abilities.length)]
+      #  end
+      #end
+      
       if pokemon.ability
         textstrings.push([pokemon.ability.name, 86, 300, 2, base, shadow])
       else
         textstrings.push([_INTL("No ability"), 86, 300, 2, nonbase, nonshadow])
       end
+      
       if pokemon.item
         textstrings.push([pokemon.item.name, 86, 336, 2, base, shadow])
       else
         textstrings.push([_INTL("No item"), 86, 336, 2, nonbase, nonshadow])
       end
+      
       if pokemon.shiny?
         addShinyStarsToGraphicsArray(imagepos,156,198,pokemon.bodyShiny?,pokemon.headShiny?,pokemon.debugShiny?,nil,nil,nil,nil,false,true)
         #imagepos.push(["Graphics/Pictures/shiny", 156, 198])
       end
+      
       typebitmap = AnimatedBitmap.new(_INTL("Graphics/Pictures/types"))
       type1_number = GameData::Type.get(pokemon.type1).id_number
       type2_number = GameData::Type.get(pokemon.type2).id_number
@@ -1571,9 +1608,12 @@ class PokemonStorageScene
         overlay.blt(18, 272, typebitmap.bitmap, type1rect)
         overlay.blt(88, 272, typebitmap.bitmap, type2rect)
       end
+      
       drawMarkings(overlay, 70, 240, 128, 20, pokemon.markings)
+      
       pbDrawImagePositions(overlay, imagepos)
     end
+    
     pbDrawTextPositions(overlay, textstrings)
     @sprites["pokemon"].setPokemonBitmap(pokemon)
 

@@ -21,13 +21,13 @@ class PokeBattle_Battler
     @level          = 0
     @hp = @totalhp  = 0
     @type1 = @type2 = nil
-    @ability_id     = nil
-    @ability2_id     = nil
+    @ability_index  = nil
+    @ability2_index = nil
     @item_id        = nil
     @gender         = 0
     @attack = @defense = @spatk = @spdef = @speed = 0
     @status         = :NONE
-    @statusCount    = 0
+    @status_count   = 0
     @pokemon        = nil
     @pokemonIndex   = -1
     @participants   = []
@@ -55,7 +55,7 @@ class PokeBattle_Battler
     @spdef        = pkmn.spdef
     @speed        = pkmn.speed
     @status       = pkmn.status
-    @statusCount  = pkmn.statusCount
+    @status_count = pkmn.status_count
     @pokemon      = pkmn
     @pokemonIndex = idxParty
     @participants = []
@@ -73,29 +73,29 @@ class PokeBattle_Battler
 
   def pbInitPokemon(pkmn,idxParty)
     raise _INTL("An egg can't be an active Pokémon.") if pkmn.egg?
-    @name         = pkmn.name
-    @species      = pkmn.species
-    @form         = pkmn.form
-    @level        = pkmn.level
-    @hp           = pkmn.hp
-    @totalhp      = pkmn.totalhp
-    @type1        = pkmn.type1
-    @type2        = pkmn.type2
-    @ability_id   = pkmn.ability_id
-    @ability2_id   = pkmn.ability2_id
-    @item_id      = pkmn.item_id
-    @gender       = pkmn.gender
-    @attack       = pkmn.attack
-    @defense      = pkmn.defense
-    @spatk        = pkmn.spatk
-    @spdef        = pkmn.spdef
-    @speed        = pkmn.speed
-    @status       = pkmn.status
-    @statusCount  = pkmn.statusCount
-    @pokemon      = pkmn
-    @pokemonIndex = idxParty
-    @participants = []   # Participants earn Exp. if this battler is defeated
-    @moves        = []
+    @name           = pkmn.name
+    @species        = pkmn.species
+    @form           = pkmn.form
+    @level          = pkmn.level
+    @hp             = pkmn.hp
+    @totalhp        = pkmn.totalhp
+    @type1          = pkmn.type1
+    @type2          = pkmn.type2
+    @ability_index  = pkmn.ability_index
+    @ability2_index = pkmn.ability2_index
+    @item_id        = pkmn.item_id
+    @gender         = pkmn.gender
+    @attack         = pkmn.attack
+    @defense        = pkmn.defense
+    @spatk          = pkmn.spatk
+    @spdef          = pkmn.spdef
+    @speed          = pkmn.speed
+    @status         = pkmn.status
+    @status_count   = pkmn.status_count
+    @pokemon        = pkmn
+    @pokemonIndex   = idxParty
+    @participants   = []   # Participants earn Exp. if this battler is defeated
+    @moves          = []
     pkmn.moves.each_with_index do |m,i|
       @moves[i] = PokeBattle_Move.from_pokemon_move(@battle,m)
     end
@@ -289,19 +289,19 @@ class PokeBattle_Battler
   def pbUpdate(fullChange=false)
     return if !@pokemon
     @pokemon.calc_stats
-    @level          = @pokemon.level
-    @hp             = @pokemon.hp
-    @totalhp        = @pokemon.totalhp
+    @level             = @pokemon.level
+    @hp                = @pokemon.hp
+    @totalhp           = @pokemon.totalhp
     if !@effects[PBEffects::Transform]
-      @attack       = @pokemon.attack
-      @defense      = @pokemon.defense
-      @spatk        = @pokemon.spatk
-      @spdef        = @pokemon.spdef
-      @speed        = @pokemon.speed
+      @attack          = @pokemon.attack
+      @defense         = @pokemon.defense
+      @spatk           = @pokemon.spatk
+      @spdef           = @pokemon.spdef
+      @speed           = @pokemon.speed
       if fullChange
-        @type1      = @pokemon.type1
-        @type2      = @pokemon.type2
-        @ability_id = @pokemon.ability_id
+        @type1         = @pokemon.type1
+        @type2         = @pokemon.type2
+        @ability_index = @pokemon.ability_index
       end
     end
   end
@@ -315,7 +315,7 @@ class PokeBattle_Battler
     @participants = []
     # Reset status
     @status       = :NONE
-    @statusCount  = 0
+    @status_count  = 0
     # Reset choice
     @battle.pbClearChoice(@index)
   end

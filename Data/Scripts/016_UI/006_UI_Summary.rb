@@ -634,9 +634,8 @@ class PokemonSummary_Scene
       best_stat = nil
       best_iv = 0
       stats_order = [:HP, :ATTACK, :DEFENSE, :SPEED, :SPECIAL_ATTACK, :SPECIAL_DEFENSE]
-      start_point = @pokemon.personalID % stats_order.length # Tiebreaker
       for i in 0...stats_order.length
-        stat = stats_order[(i + start_point) % stats_order.length]
+        stat = stats_order[i % stats_order.length]
         if !best_stat || @pokemon.iv[stat] > @pokemon.iv[best_stat]
           best_stat = stat
           best_iv = @pokemon.iv[best_stat]
@@ -688,7 +687,7 @@ class PokemonSummary_Scene
     statshadows = {}
     GameData::Stat.each_main { |s| statshadows[s.id] = shadow }
     if !@pokemon.shadowPokemon? || @pokemon.heartStage > 3
-      @pokemon.nature_for_stats.stat_changes.each do |change|
+      @pokemon.nature.stat_changes.each do |change|
         statshadows[change[0]] = Color.new(136, 96, 72) if change[1] > 0
         statshadows[change[0]] = Color.new(64, 120, 152) if change[1] < 0
       end
@@ -711,11 +710,9 @@ class PokemonSummary_Scene
     ]
     # Draw ability name and description
     ability = @pokemon.ability
-    ability2 = @pokemon.ability2
-
     if ability
-      textpos.push([ability.name, 362, 278, 0, Color.new(64, 64, 64), Color.new(176, 176, 176)])
-      drawTextEx(overlay, 224, 320, 282, 2, ability.description, Color.new(64, 64, 64), Color.new(176, 176, 176))
+      textpos.push([@pokemon.ability.name, 362, 278, 0, Color.new(64, 64, 64), Color.new(176, 176, 176)])
+      drawTextEx(overlay, 224, 320, 282, 2, @pokemon.ability.description, Color.new(64, 64, 64), Color.new(176, 176, 176))
     end
 
     #fixme temp double abilities

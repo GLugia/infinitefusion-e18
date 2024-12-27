@@ -37,8 +37,11 @@ class PokeBattle_Pokemon
     ret.gender           = pkmn.genderflag
     ret.shiny            = pkmn.shinyflag
     ret.ability_index    = pkmn.abilityflag
-    ret.nature           = pkmn.natureflag
-    ret.nature_for_stats = pkmn.natureOverride
+    if !pkmn.natureOverride
+      ret.nature_index   = pkmn.natureflag
+    else
+      ret.nature_index   = pkmn.natureOverride
+    end
     ret.item             = pkmn.item
     ret.mail             = PokemonMail.convert(pkmn.mail) if pkmn.mail
     pkmn.moves.each { |m| ret.moves.push(PBMove.convert(m)) if m && m.id > 0 }
@@ -177,7 +180,7 @@ class Pokemon
   deprecated_method_alias :isGenderless?, :genderless?, removal_in: 'v20'
   deprecated_method_alias :isSingleGendered?, :singleGendered?, removal_in: 'v20'
   deprecated_method_alias :setAbility, :ability_index=, removal_in: 'v20'
-  deprecated_method_alias :setNature, :nature=, removal_in: 'v20'
+  deprecated_method_alias :setNature, :nature_index=, removal_in: 'v20'
   deprecated_method_alias :setItem, :item=, removal_in: 'v20'
   deprecated_method_alias :healStatus, :heal_status, removal_in: 'v20'
   deprecated_method_alias :knowsMove?, :hasMove?, removal_in: 'v20'

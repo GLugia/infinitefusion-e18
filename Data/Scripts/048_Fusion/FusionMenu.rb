@@ -37,19 +37,19 @@ class FusionSelectOptionsScene < PokemonOption_Scene
 
 
   def getAbilityName(ability)
-    return GameData::Ability.get(ability.id).real_name
+    return GameData::Ability.get(ability).real_name
   end
 
   def getAbilityDescription(ability)
-    return GameData::Ability.get(ability.id).real_description
+    return GameData::Ability.get(ability).real_description
   end
 
   def getNatureName(nature)
-    return GameData::Nature.get(nature.id).real_name
+    return GameData::Nature.get(nature).real_name
   end
 
   def getNatureDescription(nature)
-    change= GameData::Nature.get(nature.id).stat_changes
+    change= GameData::Nature.get(nature).stat_changes
     return "Neutral nature" if change.empty?
     positiveChange = change[0]
     negativeChange = change[1]
