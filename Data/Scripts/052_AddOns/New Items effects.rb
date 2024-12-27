@@ -1356,7 +1356,7 @@ def pbUnfuse(pokemon, scene, supersplicers, pcPosition = nil)
     return false if keepInParty == 2
   end
   
-  # tell the player
+  # notify the player we've started the unfusing process
   scene.pbDisplay(_INTL("Unfusing ... "))
   scene.pbDisplay(_INTL(" ... "))
   scene.pbDisplay(_INTL(" ... "))
