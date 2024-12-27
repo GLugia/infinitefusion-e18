@@ -60,7 +60,7 @@ class PokemonEncounters
     return encounter_data.types[enc_type] && encounter_data.types[enc_type].length > 0
   end
 
-  # Returns whether land-like encounters have been defined for the current map.
+  # Returns whether land - like encounters have been defined for the current map.
   # Applies only to encounters triggered by moving around.
   def has_land_encounters?
     GameData::EncounterType.each do |enc_type|
@@ -70,7 +70,7 @@ class PokemonEncounters
     return false
   end
 
-  # Returns whether land-like encounters have been defined for the current map
+  # Returns whether land - like encounters have been defined for the current map
   # (ignoring the Bug Catching Contest one).
   # Applies only to encounters triggered by moving around.
   def has_normal_land_encounters?
@@ -80,7 +80,7 @@ class PokemonEncounters
     return false
   end
 
-  # Returns whether cave-like encounters have been defined for the current map.
+  # Returns whether cave - like encounters have been defined for the current map.
   # Applies only to encounters triggered by moving around.
   def has_cave_encounters?
     GameData::EncounterType.each do |enc_type|
@@ -89,7 +89,7 @@ class PokemonEncounters
     return false
   end
 
-  # Returns whether water-like encounters have been defined for the current map.
+  # Returns whether water - like encounters have been defined for the current map.
   # Applies only to encounters triggered by moving around (i.e. not fishing).
   def has_water_encounters?
     GameData::EncounterType.each do |enc_type|
@@ -120,7 +120,7 @@ class PokemonEncounters
     return false if $game_system.encounter_disabled
     return false if !$Trainer
     return false if $DEBUG && Input.press?(Input::CTRL)
-    # Check if enc_type has a defined step chance/encounter table
+    # Check if enc_type has a defined step chance / encounter table
     return false if !@step_chances[enc_type] || @step_chances[enc_type] == 0
     return false if !has_encounter_type?(enc_type)
     #Always check encounter if pokeradar is active
@@ -259,7 +259,7 @@ class PokemonEncounters
     terrain_tag = $game_map.terrain_tag($game_player.x, $game_player.y)
     if $PokemonGlobal.surfing
       ret = find_valid_encounter_type_for_time(:Water, time)
-    else   # Land/Cave (can have both in the same map)
+    else   # Land / Cave (can have both in the same map)
       if has_land_encounters? && $game_map.terrain_tag($game_player.x, $game_player.y).land_wild_encounters
         ret = :BugContest if pbInBugContest? && has_encounter_type?(:BugContest)
         baseType = :Land  #default grass
@@ -286,7 +286,7 @@ class PokemonEncounters
     end
     enc_list = @encounter_tables[enc_type]
     return nil if !enc_list || enc_list.length == 0
-    # Static/Magnet Pull prefer wild encounters of certain types, if possible.
+    # Static / Magnet Pull prefer wild encounters of certain types, if possible.
     # If they activate, they remove all Pokémon from the encounter table that do
     # not have the type they favor. If none have that type, nothing is changed.
     first_pkmn = $Trainer.first_pokemon
@@ -399,21 +399,21 @@ end
 #
 #===============================================================================
 # Creates and returns a Pokémon based on the given species and level.
-# Applies wild Pokémon modifiers (wild held item, shiny chance modifiers,
-# Pokérus, gender/nature forcing because of player's lead Pokémon).
-def pbGenerateWildPokemon(species,level,isRoamer=false)
-  genwildpoke = Pokemon.new(species,level)
+# Applies wild Pokémon modifiers (wild held item, shiny chance modifiers, 
+# Pokérus, gender / nature forcing because of player's lead Pokémon).
+def pbGenerateWildPokemon(species, level, isRoamer = false)
+  genwildpoke = Pokemon.new(species, level)
   # Give the wild Pokémon a held item
   items = genwildpoke.wildHoldItems
   first_pkmn = $Trainer.first_pokemon
-  chances = [50,5,1]
-  chances = [60,20,5] if first_pkmn && first_pkmn.hasAbility?(:COMPOUNDEYES)
+  chances = [50, 5,1]
+  chances = [60, 20, 5] if first_pkmn && first_pkmn.hasAbility?(:COMPOUNDEYES)
   itemrnd = rand(100)
-  if (items[0]==items[1] && items[1]==items[2]) || itemrnd<chances[0]
+  if (items[0] == items[1] && items[1] == items[2]) || itemrnd < chances[0]
     genwildpoke.item = items[0]
-  elsif itemrnd<(chances[0]+chances[1])
+  elsif itemrnd < (chances[0] + chances[1])
     genwildpoke.item = items[1]
-  elsif itemrnd<(chances[0]+chances[1]+chances[2])
+  elsif itemrnd < (chances[0] + chances[1] + chances[2])
     genwildpoke.item = items[2]
   end
   # Shiny Charm makes shiny Pokémon more likely to generate
@@ -421,29 +421,32 @@ def pbGenerateWildPokemon(species,level,isRoamer=false)
     2.times do   # 3 times as likely
       break if genwildpoke.shiny?
       genwildpoke.shiny = rand(65536) < Settings::SHINY_POKEMON_CHANCE
+      if genwildpoke.shiny?
+        genwildpoke.natural_shiny = true
+      end
     end
   end
   # Give Pokérus
   genwildpoke.givePokerus if rand(65536) < Settings::POKERUS_CHANCE
-  # Change wild Pokémon's gender/nature depending on the lead party Pokémon's
+  # Change wild Pokémon's gender / nature depending on the lead party Pokémon's
   # ability
   if first_pkmn
     if first_pkmn.hasAbility?(:CUTECHARM) && !genwildpoke.singleGendered?
       if first_pkmn.male?
-        (rand(3)<2) ? genwildpoke.makeFemale : genwildpoke.makeMale
+        (rand(3) < 2) ? genwildpoke.makeFemale : genwildpoke.makeMale
       elsif first_pkmn.female?
-        (rand(3)<2) ? genwildpoke.makeMale : genwildpoke.makeFemale
+        (rand(3) < 2) ? genwildpoke.makeMale : genwildpoke.makeFemale
       end
     elsif first_pkmn.hasAbility?(:SYNCHRONIZE)
-      genwildpoke.nature = first_pkmn.nature if !isRoamer && rand(100)<50
+      genwildpoke.nature = first_pkmn.nature if !isRoamer && rand(100) < 50
     end
   end
   # Trigger events that may alter the generated Pokémon further
-  Events.onWildPokemonCreate.trigger(nil,genwildpoke)
+  Events.onWildPokemonCreate.trigger(nil, genwildpoke)
   return genwildpoke
 end
 
-# Used by fishing rods and Headbutt/Rock Smash/Sweet Scent to generate a wild
+# Used by fishing rods and Headbutt / Rock Smash / Sweet Scent to generate a wild
 # Pokémon (or two) for a triggered wild encounter.
 def pbEncounter(enc_type)
   $PokemonTemp.encounterType = enc_type
