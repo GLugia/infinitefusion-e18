@@ -342,9 +342,18 @@ class Pokemon
   def naturalShiny?
     return @natural_shiny
   end
+  
+  def natural_shiny=(value)
+    return unless @shiny
+    @natural_shiny = value
+    if value && Settings::SHINY_POKEMON_CHANCE != S_CHANCE_VALIDATOR
+      @debug_shiny = true
+      @natural_shiny = false
+    end
+  end
 
   def debugShiny?
-    return !@natural_shiny || @debug_shiny
+    return @shiny && !@natural_shiny && @debug_shiny
   end
 
   def bodyShiny?
@@ -688,11 +697,8 @@ class Pokemon
   # @return [Boolean] whether this Pokémon is shiny (differently colored)
   def shiny?
     if @shiny.nil?
-      is_shiny = rand(65535) < Settings::SHINY_POKEMON_CHANCE
-      if is_shiny
-        @shiny = true
-        @natural_shiny = true
-      end
+      @shiny = rand(65535) < Settings::SHINY_POKEMON_CHANCE
+      @natural_shiny = @shiny
     end
     if @shiny && Settings::SHINY_POKEMON_CHANCE != S_CHANCE_VALIDATOR
       @debug_shiny = true
@@ -1740,11 +1746,10 @@ class Pokemon
     @steps_to_hatch = 0
     heal_status
     @gender = nil
-    @shiny = nil
-    @ability_index = nil
+    self.shiny?
+    self.ability_index
     @ability2_index = nil
-    @nature_index = nil
-    @nature_for_stats = nil
+    self.nature_index
     @item = nil
     @mail = nil
     @moves = []
@@ -1765,12 +1770,12 @@ class Pokemon
     @iv = {}
     @iv_maxed = {}
     @ev = {}
-    @hidden_power = nil
-    @glitter = nil
     GameData::Stat.each_main do |s|
       @iv[s.id] = rand(IV_STAT_LIMIT + 1)
       @ev[s.id] = 0
     end
+    @hidden_power = nil
+    @glitter = nil
     if owner.is_a?(Owner)
       @owner = owner
     elsif owner.is_a?(Player) || owner.is_a?(NPCTrainer)
