@@ -6,9 +6,9 @@ class PokeBattle_Battle
   def pbAttackPhasePriorityChangeMessages
     pbPriority.each do |b|
       if b.effects[PBEffects::PriorityAbility] && b.abilityActive?
-        BattleHandlers.triggerPriorityBracketUseAbility(b.ability,b,self)
+        BattleHandlers.triggerPriorityBracketUseAbility(b.ability, b, self)
       elsif b.effects[PBEffects::PriorityItem] && b.itemActive?
-        BattleHandlers.triggerPriorityBracketUseItem(b.item,b,self)
+        BattleHandlers.triggerPriorityBracketUseItem(b.item, b, self)
       end
     end
   end
@@ -25,10 +25,10 @@ class PokeBattle_Battle
     @switching = true
     pbPriority.each do |b|
       next if b.fainted? || !b.opposes?(idxSwitcher)   # Shouldn't hit an ally
-      next if b.movedThisRound? || !pbChoseMoveFunctionCode?(b.index,"088")   # Pursuit
+      next if b.movedThisRound? || !pbChoseMoveFunctionCode?(b.index, "088")   # Pursuit
       # Check whether Pursuit can be used
-      next unless pbMoveCanTarget?(b.index,idxSwitcher,@choices[b.index][2].pbTarget(b))
-      next unless pbCanChooseMove?(b.index,@choices[b.index][1],false)
+      next unless pbMoveCanTarget?(b.index, idxSwitcher, @choices[b.index][2].pbTarget(b))
+      next unless pbCanChooseMove?(b.index, @choices[b.index][1], false)
       next if b.status == :SLEEP || b.status == :FROZEN
       next if b.effects[PBEffects::SkyDrop]>=0
       next if b.hasActiveAbility?(:TRUANT) && b.effects[PBEffects::Truant]
@@ -39,7 +39,7 @@ class PokeBattle_Battle
       end
       # Use Pursuit
       @choices[b.index][3] = idxSwitcher   # Change Pursuit's target
-      if b.pbProcessTurn(@choices[b.index],false)
+      if b.pbProcessTurn(@choices[b.index], false)
         b.effects[PBEffects::Pursuit] = true
       end
       break if @decision>0 || @battlers[idxSwitcher].fainted?
@@ -59,7 +59,7 @@ class PokeBattle_Battle
       pbPursuit(b.index)
       return if @decision>0
       # Switch Pokémon
-      pbRecallAndReplace(b.index,idxNewPkmn)
+      pbRecallAndReplace(b.index, idxNewPkmn)
       b.pbEffectsOnSwitchIn(true)
     end
   end
@@ -164,7 +164,7 @@ class PokeBattle_Battle
   def pbAttackPhase
     @scene.pbBeginAttackPhase
     # Reset certain effects
-    @battlers.each_with_index do |b,i|
+    @battlers.each_with_index do |b, i|
       next if !b
       b.turnCount += 1 if !b.fainted?
       @successStates[i].clear
@@ -172,7 +172,7 @@ class PokeBattle_Battle
         b.effects[PBEffects::DestinyBond] = false
         b.effects[PBEffects::Grudge]      = false
       end
-      b.effects[PBEffects::Rage] = false if !pbChoseMoveFunctionCode?(i,"093")   # Rage
+      b.effects[PBEffects::Rage] = false if !pbChoseMoveFunctionCode?(i, "093")   # Rage
     end
     PBDebug.log("")
     # Calculate move order for this round

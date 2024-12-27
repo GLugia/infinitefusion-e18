@@ -91,10 +91,10 @@ class PokeBattle_Battle
   #=============================================================================
   # Creating the battle class
   #=============================================================================
-  def initialize(scene,p1,p2,player,opponent)
-    if p1.length==0
+  def initialize(scene, p1, p2, player, opponent)
+    if p1.length == 0
       raise ArgumentError.new(_INTL("Party 1 has no Pokémon."))
-    elsif p2.length==0
+    elsif p2.length == 0
       raise ArgumentError.new(_INTL("Party 2 has no Pokémon."))
     end
     @scene             = scene
@@ -105,7 +105,7 @@ class PokeBattle_Battle
                           PokeBattle_ActiveSide.new]   # Foe's side
     @positions         = []                            # Battler positions
     @battlers          = []
-    @sideSizes         = [1,1]   # Single battle, 1v1
+    @sideSizes         = [1, 1]   # Single battle, 1v1
     @backdrop          = ""
     @backdropBase      = nil
     @time              = 0
@@ -140,11 +140,11 @@ class PokeBattle_Battle
     @priorityTrickRoom = false
     @choices           = []
     @megaEvolution     = [
-       [-1] * (@player ? @player.length : 1),
+       [-1] * (@player ? @player.length : 1), 
        [-1] * (@opponent ? @opponent.length : 1)
     ]
     @initialItems      = [
-       Array.new(@party1.length) { |i| (@party1[i]) ? @party1[i].item_id : nil },
+       Array.new(@party1.length) { |i| (@party1[i]) ? @party1[i].item_id : nil }, 
        Array.new(@party2.length) { |i| (@party2[i]) ? @party2[i].item_id : nil }
     ]
     @recycleItems      = [Array.new(@party1.length, nil),   Array.new(@party2.length, nil)]
@@ -179,7 +179,7 @@ class PokeBattle_Battle
     when 1 then return [2, 2]
     when 2 then return [3, 3]
     end
-    return [1,1]
+    return [1, 1]
   end
 
   # Sets the number of battler slots on each side of the field independently.
@@ -204,15 +204,15 @@ class PokeBattle_Battle
   end
 
   def singleBattle?
-    return pbSideSize(0)==1 && pbSideSize(1)==1
+    return pbSideSize(0) == 1 && pbSideSize(1) == 1
   end
 
   def pbSideSize(index)
-    return @sideSizes[index%2]
+    return @sideSizes[index % 2]
   end
 
   def maxBattlerIndex
-    return (pbSideSize(0)>pbSideSize(1)) ? (pbSideSize(0)-1)*2 : pbSideSize(1)*2-1
+    return (pbSideSize(0) > pbSideSize(1)) ? (pbSideSize(0) - 1) * 2 : pbSideSize(1) * 2 - 1
   end
 
   #=============================================================================
@@ -229,11 +229,11 @@ class PokeBattle_Battle
     return 0 if !trainer
     case trainer.length
     when 2
-      n = pbSideSize(idxBattler%2)
-      return [0,0,1][idxBattler/2] if n==3
-      return idxBattler/2   # Same as [0,1][idxBattler/2], i.e. 2 battler slots
+      n = pbSideSize(idxBattler % 2)
+      return [0, 0,1][idxBattler / 2] if n == 3
+      return idxBattler / 2   # Same as [0, 1][idxBattler/2], i.e. 2 battler slots
     when 3
-      return idxBattler/2
+      return idxBattler / 2
     end
     return 0
   end
@@ -243,10 +243,10 @@ class PokeBattle_Battle
     return (opposes?(idxBattler)) ? @opponent[idxTrainer] : @player[idxTrainer]
   end
 
-  def pbGetOwnerIndexFromPartyIndex(idxBattler,idxParty)
+  def pbGetOwnerIndexFromPartyIndex(idxBattler, idxParty)
     ret = -1
-    pbPartyStarts(idxBattler).each_with_index do |start,i|
-      break if start>idxParty
+    pbPartyStarts(idxBattler).each_with_index do |start, i|
+      break if start > idxParty
       ret = i
     end
     return ret
@@ -254,15 +254,15 @@ class PokeBattle_Battle
 
   # Only used for the purpose of an error message when one trainer tries to
   # switch another trainer's Pokémon.
-  def pbGetOwnerFromPartyIndex(idxBattler,idxParty)
-    idxTrainer = pbGetOwnerIndexFromPartyIndex(idxBattler,idxParty)
+  def pbGetOwnerFromPartyIndex(idxBattler, idxParty)
+    idxTrainer = pbGetOwnerIndexFromPartyIndex(idxBattler, idxParty)
     return (opposes?(idxBattler)) ? @opponent[idxTrainer] : @player[idxTrainer]
   end
 
   def pbGetOwnerName(idxBattler)
     idxTrainer = pbGetOwnerIndexFromBattlerIndex(idxBattler)
     return @opponent[idxTrainer].full_name if opposes?(idxBattler)   # Opponent
-    return @player[idxTrainer].full_name if idxTrainer>0   # Ally trainer
+    return @player[idxTrainer].full_name if idxTrainer > 0   # Ally trainer
     return @player[idxTrainer].name   # Player
   end
 
@@ -274,24 +274,24 @@ class PokeBattle_Battle
   # Returns whether the battler in position idxBattler is owned by the same
   # trainer that owns the Pokémon in party slot idxParty. This assumes that
   # both the battler position and the party slot are from the same side.
-  def pbIsOwner?(idxBattler,idxParty)
+  def pbIsOwner?(idxBattler, idxParty)
     idxTrainer1 = pbGetOwnerIndexFromBattlerIndex(idxBattler)
-    idxTrainer2 = pbGetOwnerIndexFromPartyIndex(idxBattler,idxParty)
-    return idxTrainer1==idxTrainer2
+    idxTrainer2 = pbGetOwnerIndexFromPartyIndex(idxBattler, idxParty)
+    return idxTrainer1 == idxTrainer2
   end
 
   def pbOwnedByPlayer?(idxBattler)
     return false if opposes?(idxBattler)
-    return pbGetOwnerIndexFromBattlerIndex(idxBattler)==0
+    return pbGetOwnerIndexFromBattlerIndex(idxBattler) == 0
   end
 
   # Returns the number of Pokémon positions controlled by the given trainerIndex
   # on the given side of battle.
-  def pbNumPositions(side,idxTrainer)
+  def pbNumPositions(side, idxTrainer)
     ret = 0
     for i in 0...pbSideSize(side)
-      t = pbGetOwnerIndexFromBattlerIndex(i*2+side)
-      next if t!=idxTrainer
+      t = pbGetOwnerIndexFromBattlerIndex(i * 2 + side)
+      next if t != idxTrainer
       ret += 1
     end
     return ret
@@ -318,27 +318,27 @@ class PokeBattle_Battle
 
   # Returns the player's team in its display order. Used when showing the party
   # screen.
-  def pbPlayerDisplayParty(idxBattler=0)
+  def pbPlayerDisplayParty(idxBattler = 0)
     partyOrders = pbPartyOrder(idxBattler)
     idxStart, _idxEnd = pbTeamIndexRangeFromBattlerIndex(idxBattler)
     ret = []
-    eachInTeamFromBattlerIndex(idxBattler) { |pkmn,i| ret[partyOrders[i]-idxStart] = pkmn }
+    eachInTeamFromBattlerIndex(idxBattler) { |pkmn, i| ret[partyOrders[i] - idxStart] = pkmn }
     return ret
   end
 
-  def pbAbleCount(idxBattler=0)
+  def pbAbleCount(idxBattler = 0)
     party = pbParty(idxBattler)
     count = 0
     party.each { |pkmn| count += 1 if pkmn && pkmn.able? }
     return count
   end
 
-  def pbAbleNonActiveCount(idxBattler=0)
+  def pbAbleNonActiveCount(idxBattler = 0)
     party = pbParty(idxBattler)
     inBattleIndices = []
     eachSameSideBattler(idxBattler) { |b| inBattleIndices.push(b.pokemonIndex) }
     count = 0
-    party.each_with_index do |pkmn,idxParty|
+    party.each_with_index do |pkmn, idxParty|
       next if !pkmn || !pkmn.able?
       next if inBattleIndices.include?(idxParty)
       count += 1
@@ -346,8 +346,8 @@ class PokeBattle_Battle
     return count
   end
 
-  def pbAllFainted?(idxBattler=0)
-    return pbAbleCount(idxBattler)==0
+  def pbAllFainted?(idxBattler = 0)
+    return pbAbleCount(idxBattler) == 0
   end
 
   # For the given side of the field (0=player's, 1=opponent's), returns an array
@@ -358,10 +358,10 @@ class PokeBattle_Battle
     ret = []
     idxTeam = -1
     nextStart = 0
-    party.each_with_index do |pkmn,i|
-      if i>=nextStart
+    party.each_with_index do |pkmn, i|
+      if i >= nextStart
         idxTeam += 1
-        nextStart = (idxTeam<partyStarts.length-1) ? partyStarts[idxTeam+1] : party.length
+        nextStart = (idxTeam < partyStarts.length - 1) ? partyStarts[idxTeam + 1] : party.length
       end
       next if !pkmn || !pkmn.able?
       ret[idxTeam] = 0 if !ret[idxTeam]
@@ -378,31 +378,31 @@ class PokeBattle_Battle
     partyStarts = pbPartyStarts(idxBattler)
     idxTrainer = pbGetOwnerIndexFromBattlerIndex(idxBattler)
     idxPartyStart = partyStarts[idxTrainer]
-    idxPartyEnd   = (idxTrainer<partyStarts.length-1) ? partyStarts[idxTrainer+1] : pbParty(idxBattler).length
+    idxPartyEnd   = (idxTrainer < partyStarts.length - 1) ? partyStarts[idxTrainer + 1] : pbParty(idxBattler).length
     return idxPartyStart, idxPartyEnd
   end
 
   def pbTeamLengthFromBattlerIndex(idxBattler)
     idxPartyStart, idxPartyEnd = pbTeamIndexRangeFromBattlerIndex(idxBattler)
-    return idxPartyEnd-idxPartyStart
+    return idxPartyEnd - idxPartyStart
   end
 
   def eachInTeamFromBattlerIndex(idxBattler)
     party = pbParty(idxBattler)
     idxPartyStart, idxPartyEnd = pbTeamIndexRangeFromBattlerIndex(idxBattler)
-    party.each_with_index { |pkmn,i| yield pkmn,i if pkmn && i>=idxPartyStart && i<idxPartyEnd }
+    party.each_with_index { |pkmn, i| yield pkmn, i if pkmn && i >= idxPartyStart && i < idxPartyEnd }
   end
 
-  def eachInTeam(side,idxTrainer)
+  def eachInTeam(side, idxTrainer)
     party       = pbParty(side)
     partyStarts = pbPartyStarts(side)
     idxPartyStart = partyStarts[idxTrainer]
-    idxPartyEnd   = (idxTrainer<partyStarts.length-1) ? partyStarts[idxTrainer+1] : party.length
-    party.each_with_index { |pkmn,i| yield pkmn,i if pkmn && i>=idxPartyStart && i<idxPartyEnd }
+    idxPartyEnd   = (idxTrainer < partyStarts.length - 1) ? partyStarts[idxTrainer + 1] : party.length
+    party.each_with_index { |pkmn, i| yield pkmn, i if pkmn && i >= idxPartyStart && i < idxPartyEnd }
   end
 
   # Used for Illusion.
-  # NOTE: This cares about the temporary rearranged order of the team. That is,
+  # NOTE: This cares about the temporary rearranged order of the team. That is, 
   #       if you do some switching, the last Pokémon in the team could change
   #       and the Illusion could be a different Pokémon.
   def pbLastInTeam(idxBattler)
@@ -410,8 +410,8 @@ class PokeBattle_Battle
     partyOrders = pbPartyOrder(idxBattler)
     idxPartyStart, idxPartyEnd = pbTeamIndexRangeFromBattlerIndex(idxBattler)
     ret = -1
-    party.each_with_index do |pkmn,i|
-      next if i<idxPartyStart || i>=idxPartyEnd   # Check the team only
+    party.each_with_index do |pkmn, i|
+      next if i < idxPartyStart || i >= idxPartyEnd   # Check the team only
       next if !pkmn || !pkmn.able?   # Can't copy a non-fainted Pokémon or egg
       ret = i if ret < 0 || partyOrders[i] > partyOrders[ret]
     end
@@ -419,10 +419,10 @@ class PokeBattle_Battle
   end
 
   # Used to calculate money gained/lost after winning/losing a battle.
-  def pbMaxLevelInTeam(side,idxTrainer)
+  def pbMaxLevelInTeam(side, idxTrainer)
     ret = 1
-    eachInTeam(side,idxTrainer) do |pkmn,_i|
-      ret = pkmn.level if pkmn.level>ret
+    eachInTeam(side, idxTrainer) do |pkmn, _i|
+      ret = pkmn.level if pkmn.level > ret
     end
     return ret
   end
@@ -434,23 +434,23 @@ class PokeBattle_Battle
     @battlers.each { |b| yield b if b && !b.fainted? }
   end
 
-  def eachSameSideBattler(idxBattler=0)
+  def eachSameSideBattler(idxBattler = 0)
     idxBattler = idxBattler.index if idxBattler.respond_to?("index")
     @battlers.each { |b| yield b if b && !b.fainted? && !b.opposes?(idxBattler) }
   end
 
-  def eachOtherSideBattler(idxBattler=0)
+  def eachOtherSideBattler(idxBattler = 0)
     idxBattler = idxBattler.index if idxBattler.respond_to?("index")
     @battlers.each { |b| yield b if b && !b.fainted? && b.opposes?(idxBattler) }
   end
 
-  def pbSideBattlerCount(idxBattler=0)
+  def pbSideBattlerCount(idxBattler = 0)
     ret = 0
     eachSameSideBattler(idxBattler) { |_b| ret += 1 }
     return ret
   end
 
-  def pbOpposingBattlerCount(idxBattler=0)
+  def pbOpposingBattlerCount(idxBattler = 0)
     ret = 0
     eachOtherSideBattler(idxBattler) { |_b| ret += 1 }
     return ret
@@ -468,7 +468,7 @@ class PokeBattle_Battle
     return nil
   end
 
-  def pbCheckOpposingAbility(abil,idxBattler=0,nearOnly=false)
+  def pbCheckOpposingAbility(abil, idxBattler = 0, nearOnly=false)
     eachOtherSideBattler(idxBattler) do |b|
       next if nearOnly && !b.near?(idxBattler)
       return b if b.hasActiveAbility?(abil)
@@ -490,31 +490,31 @@ class PokeBattle_Battle
         return [1]
       when 2   # 1v2
         return [0] if opposes?(idxBattler)
-        return [3,1]
+        return [3, 1]
       when 3   # 1v3
         return [0] if opposes?(idxBattler)
-        return [3,5,1]
+        return [3, 5,1]
       end
     when 2
       case pbSideSize(1)
       when 1   # 2v1
-        return [0,2] if opposes?(idxBattler)
+        return [0, 2] if opposes?(idxBattler)
         return [1]
       when 2   # 2v2 double
-        return [[3,1],[2,0],[1,3],[0,2]][idxBattler]
+        return [[3, 1], [2, 0], [1, 3], [0, 2]][idxBattler]
       when 3   # 2v3
-        return [[5,3,1],[2,0],[3,1,5]][idxBattler] if idxBattler<3
-        return [0,2]
+        return [[5, 3,1], [2, 0], [3, 1,5]][idxBattler] if idxBattler < 3
+        return [0, 2]
       end
     when 3
       case pbSideSize(1)
       when 1   # 3v1
-        return [2,0,4] if opposes?(idxBattler)
+        return [2, 0,4] if opposes?(idxBattler)
         return [1]
       when 2   # 3v2
-        return [[3,1],[2,4,0],[3,1],[2,0,4],[1,3]][idxBattler]
+        return [[3, 1], [2, 4,0], [3, 1], [2, 0,4], [1, 3]][idxBattler]
       when 3   # 3v3 triple
-        return [[5,3,1],[4,2,0],[3,5,1],[2,0,4],[1,3,5],[0,2,4]][idxBattler]
+        return [[5, 3,1], [4, 2,0], [3, 5,1], [2, 0,4], [1, 3,5], [0, 2,4]][idxBattler]
       end
     end
     return [idxBattler]
@@ -523,30 +523,30 @@ class PokeBattle_Battle
   #=============================================================================
   # Comparing the positions of two battlers
   #=============================================================================
-  def opposes?(idxBattler1,idxBattler2=0)
+  def opposes?(idxBattler1, idxBattler2 = 0)
     idxBattler1 = idxBattler1.index if idxBattler1.respond_to?("index")
     idxBattler2 = idxBattler2.index if idxBattler2.respond_to?("index")
-    return (idxBattler1&1)!=(idxBattler2&1)
+    return (idxBattler1 & 1) != (idxBattler2 & 1)
   end
 
-  def nearBattlers?(idxBattler1,idxBattler2)
-    return false if idxBattler1==idxBattler2
-    return true if pbSideSize(0)<=2 && pbSideSize(1)<=2
+  def nearBattlers?(idxBattler1, idxBattler2)
+    return false if idxBattler1 == idxBattler2
+    return true if pbSideSize(0) <= 2 && pbSideSize(1) <= 2
     # Get all pairs of battler positions that are not close to each other
-    pairsArray = [[0,4],[1,5]]   # Covers 3v1 and 1v3
+    pairsArray = [[0, 4], [1, 5]]   # Covers 3v1 and 1v3
     case pbSideSize(0)
     when 3
       case pbSideSize(1)
       when 3   # 3v3 (triple)
-        pairsArray.push([0,1])
-        pairsArray.push([4,5])
+        pairsArray.push([0, 1])
+        pairsArray.push([4, 5])
       when 2   # 3v2
-        pairsArray.push([0,1])
-        pairsArray.push([3,4])
+        pairsArray.push([0, 1])
+        pairsArray.push([3, 4])
       end
     when 2       # 2v3
-      pairsArray.push([0,1])
-      pairsArray.push([2,5])
+      pairsArray.push([0, 1])
+      pairsArray.push([2, 5])
     end
     # See if any pair matches the two battlers being assessed
     pairsArray.each do |pair|
@@ -558,7 +558,7 @@ class PokeBattle_Battle
   #=============================================================================
   # Altering a party or rearranging battlers
   #=============================================================================
-  def pbRemoveFromParty(idxBattler,idxParty)
+  def pbRemoveFromParty(idxBattler, idxParty)
     party = pbParty(idxBattler)
     # Erase the Pokémon from the party
     party[idxParty] = nil
@@ -566,27 +566,27 @@ class PokeBattle_Battle
     # in it (to avoid gaps)
     partyOrders = pbPartyOrder(idxBattler)
     partyStarts = pbPartyStarts(idxBattler)
-    idxTrainer = pbGetOwnerIndexFromPartyIndex(idxBattler,idxParty)
+    idxTrainer = pbGetOwnerIndexFromPartyIndex(idxBattler, idxParty)
     idxPartyStart = partyStarts[idxTrainer]
-    idxPartyEnd   = (idxTrainer<partyStarts.length-1) ? partyStarts[idxTrainer+1] : party.length
+    idxPartyEnd   = (idxTrainer < partyStarts.length - 1) ? partyStarts[idxTrainer + 1] : party.length
     origPartyPos = partyOrders[idxParty]   # Position of erased Pokémon initially
     partyOrders[idxParty] = idxPartyEnd   # Put erased Pokémon last in the team
-    party.each_with_index do |_pkmn,i|
-      next if i<idxPartyStart || i>=idxPartyEnd   # Only check the team
-      next if partyOrders[i]<origPartyPos   # Appeared before erased Pokémon
+    party.each_with_index do |_pkmn, i|
+      next if i < idxPartyStart || i >= idxPartyEnd   # Only check the team
+      next if partyOrders[i] < origPartyPos   # Appeared before erased Pokémon
       partyOrders[i] -= 1   # Appeared after erased Pokémon; bump it up by 1
     end
   end
 
-  def pbSwapBattlers(idxA,idxB)
+  def pbSwapBattlers(idxA, idxB)
     return false if !@battlers[idxA] || !@battlers[idxB]
     # Can't swap if battlers aren't owned by the same trainer
-    return false if opposes?(idxA,idxB)
-    return false if pbGetOwnerIndexFromBattlerIndex(idxA)!=pbGetOwnerIndexFromBattlerIndex(idxB)
+    return false if opposes?(idxA, idxB)
+    return false if pbGetOwnerIndexFromBattlerIndex(idxA) != pbGetOwnerIndexFromBattlerIndex(idxB)
     @battlers[idxA],       @battlers[idxB]       = @battlers[idxB],       @battlers[idxA]
     @battlers[idxA].index, @battlers[idxB].index = @battlers[idxB].index, @battlers[idxA].index
     @choices[idxA],        @choices[idxB]        = @choices[idxB],        @choices[idxA]
-    @scene.pbSwapBattlerSprites(idxA,idxB)
+    @scene.pbSwapBattlerSprites(idxA, idxB)
     # Swap the target of any battlers' effects that point at either of the
     # swapped battlers, to ensure they still point at the correct target
     # NOTE: LeechSeed is not swapped, because drained HP goes to whichever
@@ -594,18 +594,18 @@ class PokeBattle_Battle
     # NOTE: PerishSongUser doesn't need to change, as it's only used to
     #       determine which side the Perish Song user was on, and a battler
     #       can't change sides.
-    effectsToSwap = [PBEffects::Attract,
-                     PBEffects::BideTarget,
-                     PBEffects::CounterTarget,
-                     PBEffects::LockOnPos,
-                     PBEffects::MeanLook,
-                     PBEffects::MirrorCoatTarget,
-                     PBEffects::SkyDrop,
+    effectsToSwap = [PBEffects::Attract, 
+                     PBEffects::BideTarget, 
+                     PBEffects::CounterTarget, 
+                     PBEffects::LockOnPos, 
+                     PBEffects::MeanLook, 
+                     PBEffects::MirrorCoatTarget, 
+                     PBEffects::SkyDrop, 
                      PBEffects::TrappingUser]
     eachBattler do |b|
       for i in effectsToSwap
-        next if b.effects[i]!=idxA && b.effects[i]!=idxB
-        b.effects[i] = (b.effects[i]==idxA) ? idxB : idxA
+        next if b.effects[i] != idxA && b.effects[i] != idxB
+        b.effects[i] = (b.effects[i] == idxA) ? idxB : idxA
       end
     end
     return true
@@ -614,27 +614,27 @@ class PokeBattle_Battle
   #=============================================================================
   #
   #=============================================================================
-  # Returns the battler representing the Pokémon at index idxParty in its party,
+  # Returns the battler representing the Pokémon at index idxParty in its party, 
   # on the same side as a battler with battler index of idxBattlerOther.
-  def pbFindBattler(idxParty,idxBattlerOther=0)
-    eachSameSideBattler(idxBattlerOther) { |b| return b if b.pokemonIndex==idxParty }
+  def pbFindBattler(idxParty, idxBattlerOther = 0)
+    eachSameSideBattler(idxBattlerOther) { |b| return b if b.pokemonIndex == idxParty }
     return nil
   end
 
   # Only used for Wish, as the Wishing Pokémon will no longer be in battle.
-  def pbThisEx(idxBattler,idxParty)
+  def pbThisEx(idxBattler, idxParty)
     party = pbParty(idxBattler)
     if opposes?(idxBattler)
-      return _INTL("The opposing {1}",party[idxParty].name) if trainerBattle?
-      return _INTL("The wild {1}",party[idxParty].name)
+      return _INTL("The opposing {1}", party[idxParty].name) if trainerBattle?
+      return _INTL("The wild {1}", party[idxParty].name)
     end
-    return _INTL("The ally {1}",party[idxParty].name) if !pbOwnedByPlayer?(idxBattler)
+    return _INTL("The ally {1}", party[idxParty].name) if !pbOwnedByPlayer?(idxBattler)
     return party[idxParty].name
   end
 
   def pbSetSeen(battler)
     return if !battler || !@internalBattle
-    pbPlayer.pokedex.register(battler.displaySpecies,battler.displayGender,battler.displayForm)
+    pbPlayer.pokedex.register(battler.displaySpecies, battler.displayGender, battler.displayForm)
   end
 
   def nextPickupUse
@@ -658,13 +658,13 @@ class PokeBattle_Battle
   end
 
   # Used for causing weather by a move or by an ability.
-  def pbStartWeather(user,newWeather,fixedDuration=false,showAnim=true)
-    return if @field.weather==newWeather
+  def pbStartWeather(user, newWeather, fixedDuration=false, showAnim=true)
+    return if @field.weather == newWeather
     @field.weather = newWeather
     duration = (fixedDuration) ? 5 : -1
-    if duration>0 && user && user.itemActive?
-      duration = BattleHandlers.triggerWeatherExtenderItem(user.item,
-         @field.weather,duration,user,self)
+    if duration > 0 && user && user.itemActive?
+      duration = BattleHandlers.triggerWeatherExtenderItem(user.item, 
+         @field.weather, duration, user, self)
     end
     @field.weatherDuration = duration
     weather_data = GameData::BattleWeather.try_get(@field.weather)
@@ -699,17 +699,17 @@ class PokeBattle_Battle
         @field.weather = :None
         pbDisplay("The heavy rain has lifted!")
       end
-    # when :StrongWinds
-    #   if !pbCheckGlobalAbility(:DELTASTREAM)
-    #     @field.weather = :None
-    #     pbDisplay("The mysterious air current has dissipated!")
-    #   end
+    when :StrongWinds
+      if !pbCheckGlobalAbility(:DELTASTREAM)
+        @field.weather = :None
+        pbDisplay("The mysterious air current has dissipated!")
+      end
     end
-    if @field.weather!=oldWeather
+    if @field.weather != oldWeather
       # Check for form changes caused by the weather changing
       eachBattler { |b| b.pbCheckFormOnWeatherChange }
       # Start up the default weather
-      pbStartWeather(nil,@field.defaultWeather) if @field.defaultWeather != :None
+      pbStartWeather(nil, @field.defaultWeather) if @field.defaultWeather != :None
     end
   end
 
@@ -719,13 +719,13 @@ class PokeBattle_Battle
     @field.terrainDuration = -1
   end
 
-  def pbStartTerrain(user,newTerrain,fixedDuration=true)
-    return if @field.terrain==newTerrain
+  def pbStartTerrain(user, newTerrain, fixedDuration=true)
+    return if @field.terrain == newTerrain
     @field.terrain = newTerrain
     duration = (fixedDuration) ? 5 : -1
-    if duration>0 && user && user.itemActive?
-      duration = BattleHandlers.triggerTerrainExtenderItem(user.item,
-         newTerrain,duration,user,self)
+    if duration > 0 && user && user.itemActive?
+      duration = BattleHandlers.triggerTerrainExtenderItem(user.item, 
+         newTerrain, duration, user, self)
     end
     @field.terrainDuration = duration
     terrain_data = GameData::BattleTerrain.try_get(@field.terrain)
@@ -748,40 +748,40 @@ class PokeBattle_Battle
   #=============================================================================
   # Messages and animations
   #=============================================================================
-  def pbDisplay(msg,&block)
-    @scene.pbDisplayMessage(msg,&block)
+  def pbDisplay(msg, &block)
+    @scene.pbDisplayMessage(msg, &block)
   end
 
   def pbDisplayBrief(msg)
-    @scene.pbDisplayMessage(msg,true)
+    @scene.pbDisplayMessage(msg, true)
   end
 
-  def pbDisplayPaused(msg,&block)
-    @scene.pbDisplayPausedMessage(msg,&block)
+  def pbDisplayPaused(msg, &block)
+    @scene.pbDisplayPausedMessage(msg, &block)
   end
 
   def pbDisplayConfirm(msg)
     return @scene.pbDisplayConfirmMessage(msg)
   end
 
-  def pbShowCommands(msg,commands,canCancel=true)
-    @scene.pbShowCommands(msg,commands,canCancel)
+  def pbShowCommands(msg, commands, canCancel=true)
+    @scene.pbShowCommands(msg, commands, canCancel)
   end
 
-  def pbAnimation(move,user,targets,hitNum=0)
-    @scene.pbAnimation(move,user,targets,hitNum) if @showAnims
+  def pbAnimation(move, user, targets, hitNum=0)
+    @scene.pbAnimation(move, user, targets, hitNum) if @showAnims
   end
 
-  def pbCommonAnimation(name,user=nil,targets=nil)
-    @scene.pbCommonAnimation(name,user,targets) if @showAnims
+  def pbCommonAnimation(name, user=nil, targets=nil)
+    @scene.pbCommonAnimation(name, user, targets) if @showAnims
   end
 
 
 
-  def pbShowAbilitySplash(battler,delay=false,logTrigger=true,abilityName=nil)
+  def pbShowAbilitySplash(battler, delay=false, logTrigger=true, abilityName=nil)
     PBDebug.log("[Ability triggered] #{battler.pbThis}'s #{battler.abilityName}") if logTrigger
     return if !PokeBattle_SceneConstants::USE_ABILITY_SPLASH
-    @scene.pbShowAbilitySplash(battler,false ,abilityName)
+    @scene.pbShowAbilitySplash(battler, false ,abilityName)
     if delay
       Graphics.frame_rate.times { @scene.pbUpdate }   # 1 second
     end
