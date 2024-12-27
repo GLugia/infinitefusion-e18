@@ -666,24 +666,87 @@ ItemHandlers::UseOnPokemon.add(:DNAREVERSER, proc { |item, pokemon, scene|
   next false
 })
 
-def reverseFusion(pokemon)
-  body = getBasePokemonID(pokemon.species, true)
-  head = getBasePokemonID(pokemon.species, false)
-  newspecies = (head) * Settings::NB_POKEMON + body
-
-  body_exp = pokemon.exp_when_fused_body
-  head_exp = pokemon.exp_when_fused_head
-
-  pokemon.exp_when_fused_body = head_exp
-  pokemon.exp_when_fused_head = body_exp
-
+def getReverseSpeciesAndSwapData(pokemon)
+  # exp
+  pokemon.head_exp, pokemon.body_exp = pokemon.body_exp, pokemon.head_exp
+  
+  # abilty
+  if pokemon.ability_index == pokemon.head_ability_index
+    pokemon.ability_index = pokemon.body_ability_index
+  else
+    pokemon.ability_index = pokemon.head_ability_index
+  end
+  pokemon.head_ability_index, pokemon.body_ability_index = pokemon.body_ability_index, pokemon.head_ability_index
+  
+  # nature
+  if pokemon.nature_index == pokemon.head_nature_index
+    pokemon.nature_index = pokemon.body_nature_index
+  else
+    pokemon.nature_index = pokemon.head_nature_index
+  end
+  pokemon.head_nature_index, pokemon.body_nature_index = pokemon.body_nature_index, pokemon.head_nature_index
+  
+  # shiny
   pokemon.head_shiny, pokemon.body_shiny = pokemon.body_shiny, pokemon.head_shiny
-  #play animation
+  
+  # gender
+  pokemon.head_gender, pokemon.body_gender = pokemon.body_gender, pokemon.head_gender
+  
+  # met information
+  pokemon.head_obtain_method, pokemon.body_obtain_method = pokemon.body_obtain_method, pokemon.head_obtain_method
+  pokemon.head_obtain_map, pokemon.body_obtain_map = pokemon.body_obtain_map, pokemon.head_obtain_map
+  pokemon.head_obtain_level, pokemon.body_obtain_level = pokemon.body_obtain_level, pokemon.head_obtain_level
+  pokemon.head_hatched_map, pokemon.body_hatched_map = pokemon.body_hatched_map, pokemon.head_hatched_map
+  
+  # ribbons
+  pokemon.head_ribbons, pokemon.body_ribbons = pokemon.body_ribbons, pokemon.head_ribbons
+  
+  # pokerus
+  pokemon.head_pokerus, pokemon.body_pokerus = pokemon.body_pokerus, pokemon.head_pokerus
+  
+  # happiness
+  pokemon.head_happiness, pokemon.body_happiness = pokemon.body_happiness, pokemon.head_happiness
+  
+  # markings
+  pokemon.head_markings, pokemon.body_markings = pokemon.body_markings, pokemon.head_markings
+  
+  # poke ball
+  if pokemon.poke_ball == pokemon.head_poke_ball
+    pokemon.poke_ball = pokemon.body_poke_ball
+  else
+    pokemon.poke_ball = pokemon.head_poke_ball
+  end
+  pokemon.head_poke_ball, pokemon.body_poke_ball = pokemon.body_poke_ball, pokemon.head_poke_ball
+  
+  # IV
+  pokemon.head_iv, pokemon.body_iv = pokemon.body_iv, pokemon.head_iv
+  pokemon.head_iv_maxed, pokemon.body_iv_maxed = pokemon.body_iv_maxed, pokemon.head_iv_maxed
+  
+  # EV
+  pokemon.head_ev, pokemon.body_ev = pokemon.body_ev, pokemon.head_ev
+  
+  # OT
+  pokemon.head_owner, pokemon.body_owner = pokemon.body_owner, pokemon.head_owner
+  pokemon.owner = pokemon.head_owner
+  
+  # hidden power
+  pokemon.head_hidden_power, pokemon.body_hidden_power = pokemon.body_hidden_power, pokemon.head_hidden_power
+  
+  # species
+  head = getBasePokemonID(pokemon.species, false)
+  body = getBasePokemonID(pokemon.species, true)
+  return (head) * Settings::NB_POKEMON + body
+end
+
+def reverseFusion(pokemon)
+  species = getReverseSpeciesAndSwapData(pokemon)
+  # play animation
   pbFadeOutInWithMusic(99999) {
     fus = PokemonEvolutionScene.new
-    fus.pbStartScreen(pokemon, newspecies, true)
+    fus.pbStartScreen(pokemon, species, true)
     fus.pbEvolution(false, true)
     fus.pbEndScreen
+    scene.pbRefresh
   }
 end
 
@@ -693,16 +756,7 @@ ItemHandlers::UseOnPokemon.add(:INFINITEREVERSERS, proc { |item, pokemon, scene|
     next false
   end
   if Kernel.pbConfirmMessageSerious(_INTL("Should {1} be reversed?", pokemon.name))
-    body = getBasePokemonID(pokemon.species, true)
-    head = getBasePokemonID(pokemon.species, false)
-    newspecies = (head) * Settings::NB_POKEMON + body
-
-    body_exp = pokemon.exp_when_fused_body
-    head_exp = pokemon.exp_when_fused_head
-
-    pokemon.exp_when_fused_body = head_exp
-    pokemon.exp_when_fused_head = body_exp
-
+    species = getReverseSpeciesAndSwapData(pokemon)
     #play animation
     pbFadeOutInWithMusic(99999) {
       fus = PokemonEvolutionScene.new
@@ -717,127 +771,6 @@ ItemHandlers::UseOnPokemon.add(:INFINITEREVERSERS, proc { |item, pokemon, scene|
 
   next false
 })
-
-#
-# def pbDNASplicing(pokemon, scene, supersplicers = false, superSplicer = false)
-#   if (pokemon.species <= NB_POKEMON)
-#     if pokemon.fused != nil
-#       if $Trainer.party.length >= 6
-#         scene.pbDisplay(_INTL("Your party is full! You can't unfuse {1}.", pokemon.name))
-#         return false
-#       else
-#         $Trainer.party[$Trainer.party.length] = pokemon.fused
-#         pokemon.fused = nil
-#         pokemon.form = 0
-#         scene.pbHardRefresh
-#         scene.pbDisplay(_INTL("{1} changed Forme!", pokemon.name))
-#         return true
-#       end
-#     else
-#       chosen = scene.pbChoosePokemon(_INTL("Fuse with which Pokémon?"))
-#       if chosen >= 0
-#         poke2 = $Trainer.party[chosen]
-#         if (poke2.species <= NB_POKEMON) && poke2 != pokemon
-#           #check if fainted
-#           if pokemon.hp == 0 || poke2.hp == 0
-#             scene.pbDisplay(_INTL("A fainted Pokémon cannot be fused!"))
-#             return false
-#           end
-#           if pbFuse(pokemon, poke2, supersplicers)
-#             pbRemovePokemonAt(chosen)
-#           end
-#         elsif pokemon == poke2
-#           scene.pbDisplay(_INTL("{1} can't be fused with itself!", pokemon.name))
-#           return false
-#         else
-#           scene.pbDisplay(_INTL("{1} can't be fused with {2}.", poke2.name, pokemon.name))
-#           return false
-#
-#         end
-#
-#       else
-#         return false
-#       end
-#     end
-#   else
-#     return true if pbUnfuse(pokemon, scene, supersplicers)
-#
-#     #unfuse
-#   end
-# end
-#
-# def pbUnfuse(pokemon, scene, supersplicers, pcPosition = nil)
-#   #pcPosition nil   : unfusing from party
-#   #pcPosition [x,x] : unfusing from pc
-#   #
-#
-#   if (pokemon.obtain_method == 2 || pokemon.ot != $Trainer.name) # && !canunfuse
-#     scene.pbDisplay(_INTL("You can't unfuse a Pokémon obtained in a trade!"))
-#     return false
-#   else
-#     if Kernel.pbConfirmMessageSerious(_INTL("Should {1} be unfused?", pokemon.name))
-#       if pokemon.species > (NB_POKEMON * NB_POKEMON) + NB_POKEMON #triple fusion
-#         scene.pbDisplay(_INTL("{1} cannot be unfused.", pokemon.name))
-#         return false
-#       elsif $Trainer.party.length >= 6 && !pcPosition
-#         scene.pbDisplay(_INTL("Your party is full! You can't unfuse {1}.", pokemon.name))
-#         return false
-#       else
-#         scene.pbDisplay(_INTL("Unfusing ... "))
-#         scene.pbDisplay(_INTL(" ... "))
-#         scene.pbDisplay(_INTL(" ... "))
-#
-#         bodyPoke = getBasePokemonID(pokemon.species, true)
-#         headPoke = getBasePokemonID(pokemon.species, false)
-#
-#
-#         if pokemon.exp_when_fused_head == nil || pokemon.exp_when_fused_body == nil
-#           new_level = calculateUnfuseLevelOldMethod(pokemon, supersplicers)
-#           body_level = new_level
-#           head_level = new_level
-#           poke1 = Pokemon.new(bodyPoke, body_level)
-#           poke2 = Pokemon.new(headPoke, head_level)
-#         else
-#           exp_body = pokemon.exp_when_fused_body + pokemon.exp_gained_since_fused
-#           exp_head = pokemon.exp_when_fused_head + pokemon.exp_gained_since_fused
-#
-#           poke1 = Pokemon.new(bodyPoke, pokemon.level)
-#           poke2 = Pokemon.new(headPoke, pokemon.level)
-#           poke1.exp = exp_body
-#           poke2.exp = exp_head
-#         end
-#
-#         #poke1 = PokeBattle_Pokemon.new(bodyPoke, lev, $Trainer)
-#         #poke2 = PokeBattle_Pokemon.new(headPoke, lev, $Trainer)
-#
-#         if pcPosition == nil
-#           box = pcPosition[0]
-#           index = pcPosition[1]
-#           $PokemonStorage.pbStoreToBox(poke2, box, index)
-#         else
-#           Kernel.pbAddPokemonSilent(poke2, poke2.level)
-#         end
-#         #On ajoute l'autre dans le pokedex aussi
-#         $Trainer.seen[poke1.species] = true
-#         $Trainer.owned[poke1.species] = true
-#         $Trainer.seen[poke2.species] = true
-#         $Trainer.owned[poke2.species] = true
-#
-#         pokemon.species = poke1.species
-#         pokemon.level = poke1.level
-#         pokemon.name = poke1.name
-#         pokemon.moves = poke1.moves
-#         pokemon.obtain_method = 0
-#         poke1.obtain_method = 0
-#
-#         #scene.pbDisplay(_INTL(p1.to_s + " " + p2.to_s))
-#         scene.pbHardRefresh
-#         scene.pbDisplay(_INTL("Your Pokémon were successfully unfused! "))
-#         return true
-#       end
-#     end
-#   end
-# end
 
 def calculateUnfuseLevelOldMethod(pokemon, supersplicers)
   if pokemon.level > 1
@@ -888,7 +821,6 @@ ItemHandlers::UseOnPokemon.add(:SUPERSPLICERS, proc { |item, pokemon, scene|
 })
 
 def returnItemsToBag(pokemon, poke2)
-
   it1 = pokemon.item
   it2 = poke2.item
   if it1 != nil
@@ -907,111 +839,11 @@ end
 ItemHandlers::UseOnPokemon.add(:DAMAGEUP, proc { |item, pokemon, scene|
   move = scene.pbChooseMove(pokemon, _INTL("Boost Damage of which move?"))
   if move >= 0
-    #if pokemon.moves[move].damage==0 ||  pokemon.moves[move].accuracy<=5 || pokemon.moves[move].dmgup >=3
-    #  scene.pbDisplay(_INTL("It won't have any effect."))
-    #  next false
-    #else
-    #pokemon.moves[move].dmgup+=1
-    #pokemon.moves[move].damage +=5
-    #pokemon.moves[move].accuracy -=5
-
-    #movename=PBMoves.getName(pokemon.moves[move].id)
-    #scene.pbDisplay(_INTL("{1}'s damage increased.",movename))
-    #next true
     scene.pbDisplay(_INTL("This item has not been implemented into the game yet. It had no effect."))
     next false
     #end
   end
 })
-
-##New "stones"
-# ItemHandlers::UseOnPokemon.add(:UPGRADE, proc { |item, pokemon, scene|
-#   if (pokemon.isShadow? rescue false)
-#     scene.pbDisplay(_INTL("It won't have any effect."))
-#     next false
-#   end
-#   newspecies = pbCheckEvolution(pokemon, item)
-#   if newspecies <= 0
-#     scene.pbDisplay(_INTL("It won't have any effect."))
-#     next false
-#   else
-#     pbFadeOutInWithMusic(99999) {
-#       evo = PokemonEvolutionScene.new
-#       evo.pbStartScreen(pokemon, newspecies)
-#       evo.pbEvolution(false)
-#       evo.pbEndScreen
-#       scene.pbRefreshAnnotations(proc { |p| pbCheckEvolution(p, item) > 0 })
-#       scene.pbRefresh
-#     }
-#     next true
-#   end
-# })
-#
-# ItemHandlers::UseOnPokemon.add(:DUBIOUSDISC, proc { |item, pokemon, scene|
-#   if (pokemon.isShadow? rescue false)
-#     scene.pbDisplay(_INTL("It won't have any effect."))
-#     next false
-#   end
-#   newspecies = pbCheckEvolution(pokemon, item)
-#   if newspecies <= 0
-#     scene.pbDisplay(_INTL("It won't have any effect."))
-#     next false
-#   else
-#     pbFadeOutInWithMusic(99999) {
-#       evo = PokemonEvolutionScene.new
-#       evo.pbStartScreen(pokemon, newspecies)
-#       evo.pbEvolution(false)
-#       evo.pbEndScreen
-#       scene.pbRefreshAnnotations(proc { |p| pbCheckEvolution(p, item) > 0 })
-#       scene.pbRefresh
-#     }
-#     next true
-#   end
-# })
-#
-# ItemHandlers::UseOnPokemon.add(:ICESTONE, proc { |item, pokemon, scene|
-#   if (pokemon.isShadow? rescue false)
-#     scene.pbDisplay(_INTL("It won't have any effect."))
-#     next false
-#   end
-#   newspecies = pbCheckEvolution(pokemon, item)
-#   if newspecies <= 0
-#     scene.pbDisplay(_INTL("It won't have any effect."))
-#     next false
-#   else
-#     pbFadeOutInWithMusic(99999) {
-#       evo = PokemonEvolutionScene.new
-#       evo.pbStartScreen(pokemon, newspecies)
-#       evo.pbEvolution(false)
-#       evo.pbEndScreen
-#       scene.pbRefreshAnnotations(proc { |p| pbCheckEvolution(p, item) > 0 })
-#       scene.pbRefresh
-#     }
-#     next true
-#   end
-# })
-# #
-# ItemHandlers::UseOnPokemon.add(:MAGNETSTONE, proc { |item, pokemon, scene|
-#   if (pokemon.isShadow? rescue false)
-#     scene.pbDisplay(_INTL("It won't have any effect."))
-#     next false
-#   end
-#   newspecies = pbCheckEvolution(pokemon, item)
-#   if newspecies <= 0
-#     scene.pbDisplay(_INTL("It won't have any effect."))
-#     next false
-#   else
-#     pbFadeOutInWithMusic(99999) {
-#       evo = PokemonEvolutionScene.new
-#       evo.pbStartScreen(pokemon, newspecies)
-#       evo.pbEvolution(false)
-#       evo.pbEndScreen
-#       scene.pbRefreshAnnotations(proc { |p| pbCheckEvolution(p, item) > 0 })
-#       scene.pbRefresh
-#     }
-#     next true
-#   end
-# })
 
 #easter egg for evolving shellder into slowbro's tail
 ItemHandlers::UseOnPokemon.add(:SLOWPOKETAIL, proc { |item, pokemon, scene|
@@ -1028,50 +860,6 @@ ItemHandlers::UseOnPokemon.add(:SLOWPOKETAIL, proc { |item, pokemon, scene|
   next true
 
 })
-#
-# ItemHandlers::UseOnPokemon.add(:SHINYSTONE, proc { |item, pokemon, scene|
-#   if (pokemon.isShadow? rescue false)
-#     scene.pbDisplay(_INTL("It won't have any effect."))
-#     next false
-#   end
-#   newspecies = pbCheckEvolution(pokemon, item)
-#   if newspecies <= 0
-#     scene.pbDisplay(_INTL("It won't have any effect."))
-#     next false
-#   else
-#     pbFadeOutInWithMusic(99999) {
-#       evo = PokemonEvolutionScene.new
-#       evo.pbStartScreen(pokemon, newspecies)
-#       evo.pbEvolution(false)
-#       evo.pbEndScreen
-#       scene.pbRefreshAnnotations(proc { |p| pbCheckEvolution(p, item) > 0 })
-#       scene.pbRefresh
-#     }
-#     next true
-#   end
-# })
-#
-# ItemHandlers::UseOnPokemon.add(:DAWNSTONE, proc { |item, pokemon, scene|
-#   if (pokemon.isShadow? rescue false)
-#     scene.pbDisplay(_INTL("It won't have any effect."))
-#     next false
-#   end
-#   newspecies = pbCheckEvolution(pokemon, item)
-#   if newspecies <= 0
-#     scene.pbDisplay(_INTL("It won't have any effect."))
-#     next false
-#   else
-#     pbFadeOutInWithMusic(99999) {
-#       evo = PokemonEvolutionScene.new
-#       evo.pbStartScreen(pokemon, newspecies)
-#       evo.pbEvolution(false)
-#       evo.pbEndScreen
-#       scene.pbRefreshAnnotations(proc { |p| pbCheckEvolution(p, item) > 0 })
-#       scene.pbRefresh
-#     }
-#     next true
-#   end
-# })
 ItemHandlers::UseOnPokemon.add(:POISONMUSHROOM, proc { |item, pkmn, scene|
   if pkmn.status != :POISON
     pkmn.status = :POISON
@@ -1108,54 +896,6 @@ ItemHandlers::BattleUseOnPokemon.add(:BALMMUSHROOM, proc { |item, pokemon, battl
   next pbBattleHPItem(pokemon, battler, 999, scene)
 })
 
-#
-# #TRACKER (for roaming legendaries)
-# ItemHandlers::UseInField.add(:REVEALGLASS, proc { |item|
-#   if Settings::ROAMING_SPECIES.length == 0
-#     Kernel.pbMessage(_INTL("No roaming Pokémon defined."))
-#   else
-#     text = "\\l[8]"
-#     min = $game_switches[350] ? 0 : 1
-#     for i in min...Settings::ROAMING_SPECIES.length
-#       poke = Settings::ROAMING_SPECIES[i]
-#       next if poke == PBSPecies::FEEBAS
-#       if $game_switches[poke[2]]
-#         status = $PokemonGlobal.roamPokemon[i]
-#         if status == true
-#           if $PokemonGlobal.roamPokemonCaught[i]
-#             text += _INTL("{1} has been caught.",
-#                           PBSpecies.getName(getID(PBSpecies, poke[0])))
-#           else
-#             text += _INTL("{1} has been defeated.",
-#                           PBSpecies.getName(getID(PBSpecies, poke[0])))
-#           end
-#         else
-#           curmap = $PokemonGlobal.roamPosition[i]
-#           if curmap
-#             mapinfos = $RPGVX ? load_data("Data/MapInfos.rvdata") : load_data("Data/MapInfos.rxdata")
-#
-#             if curmap == $game_map.map_id
-#               text += _INTL("Beep beep! {1} appears to be nearby!",
-#                             PBSpecies.getName(getID(PBSpecies, poke[0])))
-#             else
-#               text += _INTL("{1} is roaming around {3}",
-#                             PBSpecies.getName(getID(PBSpecies, poke[0])), curmap,
-#                             mapinfos[curmap].name, (curmap == $game_map.map_id) ? _INTL("(this route!)") : "")
-#             end
-#           else
-#             text += _INTL("{1} is roaming in an unknown area.",
-#                           PBSpecies.getName(getID(PBSpecies, poke[0])), poke[1])
-#           end
-#         end
-#       else
-#         #text+=_INTL("{1} does not appear to be roaming.",
-#         #   PBSpecies.getName(getID(PBSpecies,poke[0])),poke[1],poke[2])
-#       end
-#       text += "\n" if i < Settings::ROAMING_SPECIES.length - 1
-#     end
-#     Kernel.pbMessage(text)
-#   end
-# })
 
 ####EXP. ALL
 #Methodes relative a l'exp sont pas encore la et pas compatibles
@@ -1585,169 +1325,189 @@ end
 
 #Todo: refactor this, holy shit this is a mess
 def pbUnfuse(pokemon, scene, supersplicers, pcPosition = nil)
-  if pokemon.species_data.id_number > (NB_POKEMON * NB_POKEMON) + NB_POKEMON #triple fusion
+  # fail unfusing triple fusion
+  if pokemon.species_data.id_number > (NB_POKEMON * NB_POKEMON) + NB_POKEMON
     scene.pbDisplay(_INTL("{1} cannot be unfused.", pokemon.name))
+  end
+  
+  # fail unfusing traded fusion
+  if pokemon.foreign?($Trainer)
+    scene.pbDisplay(_INTL("You can't unfused a Pokémon obtained in a trade!"))
     return false
   end
-
-  pokemon.spriteform_body = nil
-  pokemon.spriteform_head = nil
-
-  bodyPoke = getBasePokemonID(pokemon.species_data.id_number, true)
-  headPoke = getBasePokemonID(pokemon.species_data.id_number, false)
-
-  if (pokemon.foreign?($Trainer)) # && !canunfuse
-    scene.pbDisplay(_INTL("You can't unfuse a Pokémon obtained in a trade!"))
-    return false
+  
+  # retrieve species for both parts
+  head_id = getBasePokemonID(pokemon.species_data.id_number, false)
+  body_id = getBasePokemonID(pokemon.species_data.id_number, true)
+  keepInParty = -1
+  
+  # perform this check early to ensure the user wants to unfuse
+  if $Trainer.party.length >= Settings::MAX_PARTY_SIZE && !pcPosition
+    msg = "Your party is full!"
+    scene.pbDisplay(_INTL(msg))
+    if isOnPinkanIsland()
+      msg = "Select which Pokémon to keep in your party. The other will be released."
+    else
+      msg = "Select which Pokémon to keep in your party."
+    end
+    keepInParty = Kernel.pbMessage(msg, [_INTL("{1}", PBSpecies.getName(head_id)), _INTL("{1}", PBSpecies.getName(body_id)), "Cancel"], 2)
+    
+    # if the user cancels
+    return false if keepInParty == 2
+  end
+  
+  # tell the player
+  scene.pbDisplay(_INTL("Unfusing ... "))
+  scene.pbDisplay(_INTL(" ... "))
+  scene.pbDisplay(_INTL(" ... "))
+  
+  head = nil
+  body = nil
+  
+  # this is where we initialize the pokemon struct for both parts
+  if pokemon.head_exp == nil || pokemon.body_exp == nil
+    new_level = calculateUnfuseLevelOldMethod(pokemon, supersplicers)
+    head = Pokemon.new(head_id, new_level)
+    body = Pokemon.new(body_id, new_level)
   else
-    if Kernel.pbConfirmMessageSerious(_INTL("Should {1} be unfused?", pokemon.name))
-      keepInParty = 0
-      if $Trainer.party.length >= 6 && !pcPosition
-
-        message = "Your party is full! Keep which Pokémon in party?"
-        message = "Your party is full! Keep which Pokémon in party? The other will be released." if isOnPinkanIsland()
-        scene.pbDisplay(_INTL(message))
-        selectPokemonMessage = "Select a Pokémon to keep in your party."
-        selectPokemonMessage = "Select a Pokémon to keep in your party. The other will be released" if isOnPinkanIsland()
-        choice = Kernel.pbMessage(selectPokemonMessage, [_INTL("{1}", PBSpecies.getName(bodyPoke)), _INTL("{1}", PBSpecies.getName(headPoke)), "Cancel"], 2)
-        if choice == 2
-          return false
-        else
-          keepInParty = choice
-        end
-      end
-
-      scene.pbDisplay(_INTL("Unfusing ... "))
-      scene.pbDisplay(_INTL(" ... "))
-      scene.pbDisplay(_INTL(" ... "))
-
-      if pokemon.exp_when_fused_head == nil || pokemon.exp_when_fused_body == nil
-        new_level = calculateUnfuseLevelOldMethod(pokemon, supersplicers)
-        body_level = new_level
-        head_level = new_level
-        poke1 = Pokemon.new(bodyPoke, body_level)
-        poke2 = Pokemon.new(headPoke, head_level)
+    head = Pokemon.new(head_id, pokemon.level)
+    body = Pokemon.new(body_id, pokemon.level)
+    new_exp = pokemon.head_exp + (pokemon.exp_gained_since_fused / 2)
+    head.exp = new_exp
+    new_exp = pokemon.body_exp + (pokemon.exp_gained_since_fused / 2)
+    body.exp = new_exp
+  end
+  
+  # shiny flags
+  if pokemon.shiny?
+    pokemon.shiny = false
+    # we avoid elsif here to skip a check where both parts are shiny
+    if pokemon.headShiny?
+      head.shiny = true
+      head.debug_shiny = pokemon.debug_shiny
+      head.natural_shiny = pokemon.natural_shiny && !pokemon.debug_shiny
+    end
+    if pokemon.bodyShiny?
+      body.shiny = true
+      body.debug_shiny = pokemon.debug_shiny
+      body.natural_shiny = pokemon.natural_shiny && !pokemon.debug_shiny
+    end
+    # if the shiny was obtained while fused, neither flag will be set
+    if !head.shiny && !body.shiny
+      if rand(2) == 0
+        head.shiny = true
+        head.debug_shiny = pokemon.debug_shiny
+        head.natural_shiny = pokemon.natural_shiny && !pokemon.debug_shiny
       else
-        exp_body = pokemon.exp_when_fused_body + pokemon.exp_gained_since_fused
-        exp_head = pokemon.exp_when_fused_head + pokemon.exp_gained_since_fused
-
-        poke1 = Pokemon.new(bodyPoke, pokemon.level)
-        poke2 = Pokemon.new(headPoke, pokemon.level)
-        poke1.exp = exp_body
-        poke2.exp = exp_head
+        body.shiny = true
+        body.debug_shiny = pokemon.debug_shiny
+        body.natural_shiny = pokemon.natural_shiny && !pokemon.debug_shiny
       end
-      body_level = poke1.level
-      head_level = poke2.level
-
-      pokemon.exp_gained_since_fused = 0
-      pokemon.exp_when_fused_head = nil
-      pokemon.exp_when_fused_body = nil
-
-      if pokemon.shiny?
-        pokemon.shiny = false
-        if pokemon.bodyShiny? && pokemon.headShiny?
-          pokemon.shiny = true
-          poke2.shiny = true
-          pokemon.natural_shiny = true if pokemon.natural_shiny && !pokemon.debug_shiny
-          poke2.natural_shiny = true if pokemon.natural_shiny && !pokemon.debug_shiny
-        elsif pokemon.bodyShiny?
-          pokemon.shiny = true
-          poke2.shiny = false
-          pokemon.natural_shiny = true if pokemon.natural_shiny && !pokemon.debug_shiny
-        elsif pokemon.headShiny?
-          poke2.shiny = true
-          pokemon.shiny = false
-          poke2.natural_shiny = true if pokemon.natural_shiny && !pokemon.debug_shiny
-        else
-          #shiny was obtained already fused
-          if rand(2) == 0
-            pokemon.shiny = true
-          else
-            poke2.shiny = true
-          end
-        end
-      end
-
-      pokemon.ability_index = pokemon.body_original_ability_index if pokemon.body_original_ability_index
-      poke2.ability_index = pokemon.head_original_ability_index if pokemon.head_original_ability_index
-
-      pokemon.ability2_index = nil
-      pokemon.ability2 = nil
-      poke2.ability2_index = nil
-      poke2.ability2 = nil
-
-      pokemon.debug_shiny = true if pokemon.debug_shiny && pokemon.body_shiny
-      poke2.debug_shiny = true if pokemon.debug_shiny && poke2.head_shiny
-
-      pokemon.body_shiny = false
-      pokemon.head_shiny = false
-
-      if !pokemon.shiny?
-        pokemon.debug_shiny = false
-      end
-      if !poke2.shiny?
-        poke2.debug_shiny = false
-      end
-
-
-      if $Trainer.party.length >= 6
-        if (keepInParty == 0)
-          if isOnPinkanIsland()
-            scene.pbDisplay(_INTL("{1} was released.", poke2.name))
-          else
-            $PokemonStorage.pbStoreCaught(poke2)
-            scene.pbDisplay(_INTL("{1} was sent to the PC.", poke2.name))
-          end
-        else
-          poke2 = Pokemon.new(bodyPoke, body_level)
-          poke1 = Pokemon.new(headPoke, head_level)
-
-          #Fusing from PC
-          if pcPosition != nil
-            box = pcPosition[0]
-            index = pcPosition[1]
-            #todo: store at next available position from current position
-            $PokemonStorage.pbStoreCaught(poke2)
-          else
-          #Fusing from party
-            if isOnPinkanIsland()
-              scene.pbDisplay(_INTL("{1} was released.", poke2.name))
-            else
-              $PokemonStorage.pbStoreCaught(poke2)
-              scene.pbDisplay(_INTL("{1} was sent to the PC.", poke2.name))
-            end
-          end
-        end
-      else
-        if pcPosition != nil
-          box = pcPosition[0]
-          index = pcPosition[1]
-          #todo: store at next available position from current position
-          $PokemonStorage.pbStoreCaught(poke2)
-        else
-          Kernel.pbAddPokemonSilent(poke2, poke2.level)
-        end
-      end
-
-      #On ajoute les poke au pokedex
-      $Trainer.pokedex.set_seen(poke1.species)
-      $Trainer.pokedex.set_owned(poke1.species)
-      $Trainer.pokedex.set_seen(poke2.species)
-      $Trainer.pokedex.set_owned(poke2.species)
-
-      pokemon.species = poke1.species
-      pokemon.level = poke1.level
-      pokemon.name = poke1.name
-      pokemon.moves = poke1.moves
-      pokemon.obtain_method = 0
-      poke1.obtain_method = 0
-
-      #scene.pbDisplay(_INTL(p1.to_s + " " + p2.to_s))
-      scene.pbHardRefresh
-      scene.pbDisplay(_INTL("Your Pokémon were successfully unfused! "))
-      return true
     end
   end
+  
+  # ability index
+  head.ability_index = pokemon.head_ability_index if pokemon.head_ability_index
+  body.ability_index = pokemon.body_ability_index if pokemon.body_ability_index
+  
+  # nature
+  head.nature_index = pokemon.head_nature_index if pokemon.head_nature_index
+  body.nature_index = pokemon.body_nature_index if pokemon.body_nature_index
+  
+  # gender
+  head.gender = pokemon.head_gender if pokemon.head_gender
+  body.gender = pokemon.body_gender if pokemon.body_gender
+  
+  # met information
+  head.obtain_method = pokemon.head_obtain_method if pokemon.head_obtain_method
+  head.obtain_map = pokemon.head_obtain_map if pokemon.head_obtain_map
+  head.obtain_level = pokemon.head_obtain_level if pokemon.head_obtain_level
+  head.hatched_map = pokemon.head_hatched_map if pokemon.head_hatched_map
+  body.obtain_method = pokemon.body_obtain_method if pokemon.body_obtain_method
+  body.obtain_map = pokemon.body_obtain_map if pokemon.body_obtain_map
+  body.obtain_level = pokemon.body_obtain_level if pokemon.body_obtain_level
+  body.hatched_map = pokemon.body_hatched_map if pokemon.body_hatched_map
+  
+  # ribbons
+  head.ribbons = pokemon.head_ribbons if pokemon.head_ribbons
+  body.ribbons = pokemon.body_ribbons if pokemon.body_ribbons
+  
+  # pokerus
+  head.pokerus = pokemon.head_pokerus if pokemon.head_pokerus
+  body.pokerus = pokemon.body_pokerus if pokemon.body_pokerus
+  
+  # happiness
+  head.happiness = pokemon.head_happiness if pokemon.head_happiness
+  body.happiness = pokemon.body_happiness if pokemon.body_happiness
+  
+  # markings
+  head.markings = pokemon.head_markings if pokemon.head_markings
+  body.markings = pokemon.body_markings if pokemon.body_markings
+  
+  # poke ball
+  head.poke_ball = pokemon.head_poke_ball if pokemon.head_poke_ball
+  body.poke_ball = pokemon.body_poke_ball if pokemon.body_poke_ball
+  
+  # IV
+  head.iv = pokemon.head_iv if pokemon.head_iv
+  head.iv_maxed = pokemon.head_iv_maxed if pokemon.head_iv_maxed
+  body.iv = pokemon.body_iv if pokemon.body_iv
+  body.iv_maxed = pokemon.body_iv_maxed if pokemon.body_iv_maxed
+  
+  # EV
+  head.ev = pokemon.head_ev if pokemon.head_ev
+  body.ev = pokemon.body_ev if pokemon.body_ev
+  
+  # OT
+  head.owner = pokemon.head_owner if pokemon.head_owner
+  body.owner = pokemon.body_owner if pokemon.body_owner
+  
+  # hidden power
+  head.hidden_power = pokemon.head_hidden_power if pokemon.head_hidden_power
+  body.hidden_power = pokemon.body_hidden_power if pokemon.body_hidden_power
+  
+  # if the player unfused from their party but their party is full
+  if $Trainer.party.length >= Settings::MAX_PARTY_SIZE
+    # get which pokemon the player selected previously where they had a choice to cancel
+    # the original pokemon becomes the selected part while the other is handled below
+    notSelected = nil
+    if keepInParty == 0
+      pokemon.copy(head) # copy data directly
+      notSelected = body # copy pointer to data
+    else
+      pokemon.copy(body)
+      notSelected = head
+    end
+    
+    if isOnPinkanIsland()
+      # the player can't store whichever part they didn't select, so we 'release' it
+      scene.pbDisplay(_INTL("{1} was released.", notSelected.name))
+      # we just don't put the data anywhere and i guess the gc takes care of it?
+    else
+      $PokemonStorage.pbStoreCaught(notSelected)
+      scene.pbDisplay(_INTL("{1} was sent to the PC.", notSelected.name))
+    end
+  # if the player unfused in the pc
+  elsif pcPosition
+    $PokemonStorage.pbStoreCaught(body)
+    # the original pokemon should always become the head
+    pokemon.copy(head)
+  # if the player unfused from their party with space for a new pokemon
+  else
+    Kernel.pbAddPokemonSilent(body, body.level)
+    # the original pokemon should always become the head
+    pokemon.copy(head)
+  end
+  
+  # register both in pokedex
+  $Trainer.pokedex.set_seen(head.species)
+  $Trainer.pokedex.set_owned(head.species)
+  $Trainer.pokedex.set_seen(body.species)
+  $Trainer.pokedex.set_owned(body.species)
+  
+  # update the scene and notify the player
+  scene.pbHardRefresh
+  scene.pbDisplay(_INTL("Your Pokémon were successfully unfused! "))
 end
 
 

@@ -8,7 +8,7 @@ class PokeBattle_Battler
   attr_accessor :species
   attr_accessor :type1
   attr_accessor :type2
-  attr_accessor :ability_id
+  attr_accessor :ability_index
   attr_accessor :item_id
   attr_accessor :moves
   attr_accessor :gender
@@ -61,16 +61,16 @@ class PokeBattle_Battler
   end
 
   def ability
-    return GameData::Ability.try_get(@ability_id)
+    return GameData::Ability.try_get(@ability_index)
   end
 
   def hasHiddenAbility?
-    return @pokemon.ability_index >= 2
+    return @pokemon.species_data.hidden_abilities.include?(@pokemon.ability_index)
   end
 
   def ability=(value)
     new_ability = GameData::Ability.try_get(value)
-    @ability_id = (new_ability) ? new_ability.id : nil
+    @ability_index = (new_ability) ? new_ability.id : nil
   end
 
   def item
@@ -118,15 +118,15 @@ class PokeBattle_Battler
     @effects[PBEffects::Toxic] = 0 if value != :POISON
     @status = value
     @pokemon.status = value if @pokemon
-    self.statusCount = 0 if value != :POISON && value != :SLEEP
+    self.status_count = 0 if value != :POISON && value != :SLEEP
     @battle.scene.pbRefreshOne(@index)
   end
 
-  attr_reader :statusCount
+  attr_reader :status_count
 
-  def statusCount=(value)
-    @statusCount = value
-    @pokemon.statusCount = value if @pokemon
+  def status_count=(value)
+    @status_count = value
+    @pokemon.status_count = value if @pokemon
     @battle.scene.pbRefreshOne(@index)
   end
 
@@ -392,7 +392,7 @@ class PokeBattle_Battler
 
   def hasActiveAbility?(check_ability, ignore_fainted = false)
     return false if !abilityActive?(ignore_fainted)
-    return check_ability.include?(@ability_id) if check_ability.is_a?(Array)
+    return check_ability.include?(@ability_index) if check_ability.is_a?(Array)
     return self.ability == check_ability
   end
 
@@ -401,7 +401,7 @@ class PokeBattle_Battler
   # Applies to both losing self's ability (i.e. being replaced by another) and
   # having self's ability be negated.
   def unstoppableAbility?(abil = nil)
-    abil = @ability_id if !abil
+    abil = @ability_index if !abil
     abil = GameData::Ability.try_get(abil)
     return false if !abil
     ability_blacklist = [
@@ -425,7 +425,7 @@ class PokeBattle_Battler
 
   # Applies to gaining the ability.
   def ungainableAbility?(abil = nil)
-    abil = @ability_id if !abil
+    abil = @ability_index if !abil
     abil = GameData::Ability.try_get(abil)
     return false if !abil
     ability_blacklist = [
@@ -519,7 +519,7 @@ class PokeBattle_Battler
   end
 
   def canChangeType?
-    return ![:MULTITYPE, :RKSSYSTEM].include?(@ability_id)
+    return ![:MULTITYPE, :RKSSYSTEM].include?(@ability_index)
   end
 
   def airborne?
@@ -758,7 +758,7 @@ class PokeBattle_Battler
 
   #Changes the form VISUALLY in battles. The species is changed in the equivalent method in Pokemon class
   def checkHPRelatedFormChange(new_hp)
-    if @ability_id == :SHIELDSDOWN
+    if @ability_index == :SHIELDSDOWN
       if @pokemon.isFusionOf(:MINIOR_M)
         if new_hp <= (@totalhp / 2)
           changeBattlerForm(:MINIOR_M, :MINIOR_C,nil, :SHELLSMASH)
