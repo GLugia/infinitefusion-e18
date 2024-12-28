@@ -319,7 +319,7 @@ class Game_Player < Game_Character
     # Update dependent events
     $PokemonTemp.dependentEvents.updateDependentEvents
     # Count down the time between allowed bump sounds
-    @bump_se -= 1 if @bump_se && @bump_se>0
+    @bump_se -= 1 if @bump_se && @bump_se > 0
     # Finish up dismounting from surfing
     if $PokemonTemp.endSurf && !moving?
       pbCancelVehicles
@@ -335,7 +335,7 @@ class Game_Player < Game_Character
            $PokemonTemp.miniupdate || $game_temp.in_menu
       # Move player in the direction the directional button is being pressed
       if @moved_last_frame ||
-         (dir > 0 && dir == @lastdir && Graphics.frame_count - @lastdirframe > Graphics.frame_rate / 20)
+         (dir > 0 && dir == @lastdir && Graphics.frame_count - @lastdirframe > Graphics.frame_rate / 15)
         case dir
         when 2 then move_down
         when 4 then move_left
@@ -349,11 +349,10 @@ class Game_Player < Game_Character
         when 6 then turn_right
         when 8 then turn_up
         end
+        @lastdirframe = Graphics.frame_count if dir != @lastdir
+        @lastdir      = dir
       end
     end
-    # Record last direction input
-    @lastdirframe = Graphics.frame_count if dir != @lastdir
-    @lastdir      = dir
   end
 
   # Center player on-screen
