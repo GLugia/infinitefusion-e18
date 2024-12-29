@@ -1587,7 +1587,7 @@ class PokeBattle_AI
     #---------------------------------------------------------------------------
     when "07D"
       score -= 20 if target.status == :SLEEP &&   # Will cure status
-                     target.statusCount > 1
+                     target.status_count > 1
     #---------------------------------------------------------------------------
     when "07E"
     #---------------------------------------------------------------------------
@@ -2305,8 +2305,8 @@ class PokeBattle_AI
       elsif !target.asleep?
         score -= 90
       else
-        score -= 90 if target.statusCount<=1
-        score += 50 if target.statusCount>3
+        score -= 90 if target.status_count<=1
+        score += 50 if target.status_count>3
       end
     #---------------------------------------------------------------------------
     when "110"

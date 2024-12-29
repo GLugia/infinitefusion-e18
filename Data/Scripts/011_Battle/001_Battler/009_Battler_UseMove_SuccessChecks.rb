@@ -201,8 +201,8 @@ class PokeBattle_Battler
     # Check status problems and continue their effects/cure them
     case @status
     when :SLEEP
-      self.statusCount -= 1
-      if @statusCount<=0
+      self.status_count -= 1
+      if @status_count<=0
         pbCureStatus
       else
         pbContinueStatus

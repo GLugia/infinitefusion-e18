@@ -268,7 +268,7 @@ class PokemonDataBox < SpriteWrapper
     # Draw status icon
     if @battler.status != :NONE
       s = GameData::Status.get(@battler.status).id_number
-      if s == :POISON && @battler.statusCount > 0   # Badly poisoned
+      if s == :POISON && @battler.status_count > 0   # Badly poisoned
         s = GameData::Status::DATA.keys.length / 2
       end
       imagePos.push(["Graphics/Pictures/Battle/icon_statuses",@spriteBaseX+24,56,

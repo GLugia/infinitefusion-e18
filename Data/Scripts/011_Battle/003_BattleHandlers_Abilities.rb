@@ -218,7 +218,7 @@ BattleHandlers::AbilityOnStatusInflicted.add(:SYNCHRONIZE,
         if !PokeBattle_SceneConstants::USE_ABILITY_SPLASH
           msg = _INTL("{1}'s {2} poisoned {3}!",battler.pbThis,battler.abilityName,user.pbThis(true))
         end
-        user.pbPoison(nil,msg,(battler.statusCount>0))
+        user.pbPoison(nil,msg,(battler.status_count>0))
         battler.battle.pbHideAbilitySplash(battler)
       end
     when :BURN

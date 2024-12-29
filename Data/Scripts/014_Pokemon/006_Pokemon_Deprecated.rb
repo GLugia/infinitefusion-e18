@@ -33,7 +33,7 @@ class PokeBattle_Pokemon
     ret.exp              = pkmn.exp
     ret.steps_to_hatch   = pkmn.eggsteps
     ret.status           = pkmn.status
-    ret.statusCount      = pkmn.statusCount
+    ret.status_count     = pkmn.statusCount
     ret.gender           = pkmn.genderflag
     ret.shiny            = pkmn.shinyflag
     ret.ability_index    = pkmn.abilityflag

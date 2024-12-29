@@ -419,7 +419,7 @@ class PokeBattle_Move_019 < PokeBattle_Move
       battler.pbCureStatus(false)
     else
       pkmn.status = :NONE
-      pkmn.statusCount = 0
+      pkmn.status_count = 0
     end
     case oldStatus
     when :SLEEP
@@ -515,7 +515,7 @@ class PokeBattle_Move_01B < PokeBattle_Move
       target.pbSleep
       msg = _INTL("{1} woke up.", user.pbThis)
     when :POISON
-      target.pbPoison(user, nil, user.statusCount != 0)
+      target.pbPoison(user, nil, user.status_count != 0)
       msg = _INTL("{1} was cured of its poisoning.", user.pbThis)
     when :BURN
       target.pbBurn(user)

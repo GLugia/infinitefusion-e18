@@ -106,8 +106,8 @@ PokemonDebugMenuCommands.register("setstatus", {
             cancel = true if count <= 0
           end
           if !cancel
-            pkmn.status      = ids[cmd]
-            pkmn.statusCount = count
+            pkmn.status       = ids[cmd]
+            pkmn.status_count = count
             screen.pbRefreshSingle(pkmnid)
           end
         end
