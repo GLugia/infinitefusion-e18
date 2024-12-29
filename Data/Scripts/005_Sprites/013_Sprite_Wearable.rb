@@ -15,7 +15,6 @@ class Sprite_Wearable < RPG::Sprite
     @frameWidth = 80  #@sprite.width
     @frameHeight = 80 #@sprite.height / 4
     @sprite.z = 0
-    @relative_z=0 #relative to player
     echoln(_INTL("init had at z = {1}, player sprite at {2}",@sprite.z,@player_sprite.z))
 
     #Unused position offset
@@ -24,8 +23,8 @@ class Sprite_Wearable < RPG::Sprite
   end
 
   def apply_sprite_offset(offsets_array, current_frame)
-    @sprite.x  += offsets_array[current_frame][0]
-    @sprite.y  += offsets_array[current_frame][1]
+    @sprite.x += offsets_array[current_frame][0]
+    @sprite.y += offsets_array[current_frame][1]
   end
 
   def adjustPositionForScreenScrolling
@@ -39,17 +38,17 @@ class Sprite_Wearable < RPG::Sprite
     offset_y = 0
     case $game_map.scroll_direction
     when DIRECTION_RIGHT
-      offset_x=-8
+      offset_x = -8
     when DIRECTION_LEFT
-      offset_x=8
+      offset_x = 8
     when DIRECTION_UP
-      offset_y=8
-      @sprite.z+=50 #weird layering glitch for some reason otherwise. It's reset to the correct value in the next animation frame
+      offset_y = 8
+      #@sprite.z+=50 #weird layering glitch for some reason otherwise. It's reset to the correct value in the next animation frame
     when DIRECTION_DOWN
-      offset_y=-8
+      offset_y = -8
     end
-    @sprite.x+=offset_x
-    @sprite.y+=offset_y
+    @sprite.x += offset_x
+    @sprite.y += offset_y
   end
 
 
@@ -144,8 +143,8 @@ class Sprite_Wearable < RPG::Sprite
   end
 
   def adjust_layer()
-    if @sprite.z != @player_sprite.z+@relative_z
-      @sprite.z = @player_sprite.z+@relative_z
+    if @sprite.z != @player_sprite.z
+      @sprite.z = @player_sprite.z
     end
   end
 
@@ -163,7 +162,7 @@ class Sprite_Wearable < RPG::Sprite
   end
 
   def disposed?
-    @disposed
+    return @disposed
   end
 
   # def getCurrentSpriteOffset()

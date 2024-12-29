@@ -1,10 +1,7 @@
 class Sprite_Hat < Sprite_Wearable
-  def initialize(player_sprite, filename, action, viewport)
-    super
-    @relative_z = 2
-    #@sprite.z = @player_sprite.z + 2
-
-  end
+  # def initialize(player_sprite, filename, action, viewport)
+    # super
+  # end
 
   # def set_sprite_position(action, direction, current_frame)
   #   @sprite.x = @player_sprite.x - @player_sprite.ox
