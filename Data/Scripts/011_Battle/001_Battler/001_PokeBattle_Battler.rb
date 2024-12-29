@@ -60,17 +60,17 @@ class PokeBattle_Battler
     @pokemon.form = value if @pokemon
   end
 
-  def ability
-    return GameData::Ability.try_get(@ability_index)
+  def ability_index
+    return @ability_index
   end
 
   def hasHiddenAbility?
-    return @pokemon.species_data.hidden_abilities.include?(@pokemon.ability_index)
+    return @pokemon.hasHiddenAbility?
   end
 
   def ability=(value)
-    new_ability = GameData::Ability.try_get(value)
-    @ability_index = (new_ability) ? new_ability.id : nil
+    return if value && !GameData::Ability.exists?(value)
+    @ability_index = (value) ? GameData::Ability.get(value).id : value
   end
 
   def item
@@ -229,8 +229,8 @@ class PokeBattle_Battler
   alias owned owned?
 
   def abilityName
-    abil = self.ability
-    return (abil) ? abil.name : ""
+    return "nil" if !@ability_index
+    return self.ability.name
   end
 
   def itemName
@@ -277,7 +277,7 @@ class PokeBattle_Battler
     speedMult = 1.0
     # Ability effects that alter calculated Speed
     if abilityActive?
-      speedMult = BattleHandlers.triggerSpeedCalcAbility(self.ability, self, speedMult)
+      speedMult = BattleHandlers.triggerSpeedCalcAbility(@ability_index, self, speedMult)
     end
     # Item effects that alter calculated Speed
     if itemActive?
@@ -304,7 +304,7 @@ class PokeBattle_Battler
     ret += @effects[PBEffects::WeightChange]
     ret = 1 if ret < 1
     if abilityActive? && !@battle.moldBreaker
-      ret = BattleHandlers.triggerWeightCalcAbility(self.ability, self, ret)
+      ret = BattleHandlers.triggerWeightCalcAbility(@ability_index, self, ret)
     end
     if itemActive?
       ret = BattleHandlers.triggerWeightCalcItem(self.item, self, ret)

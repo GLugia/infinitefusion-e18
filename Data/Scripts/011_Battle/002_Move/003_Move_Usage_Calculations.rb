@@ -5,7 +5,7 @@ class PokeBattle_Move
   def pbBaseType(user)
     ret = @type
     if ret && user.abilityActive?
-      ret = BattleHandlers.triggerMoveBaseTypeModifierAbility(user.ability,user,self,ret)
+      ret = BattleHandlers.triggerMoveBaseTypeModifierAbility(user.ability.id,user,self,ret)
     end
     return ret
   end
@@ -122,16 +122,16 @@ class PokeBattle_Move
   def pbCalcAccuracyModifiers(user,target,modifiers)
     # Ability effects that alter accuracy calculation
     if user.abilityActive?
-      BattleHandlers.triggerAccuracyCalcUserAbility(user.ability,
+      BattleHandlers.triggerAccuracyCalcUserAbility(user.ability.id,
          modifiers,user,target,self,@calcType)
     end
     user.eachAlly do |b|
       next if !b.abilityActive?
-      BattleHandlers.triggerAccuracyCalcUserAllyAbility(b.ability,
+      BattleHandlers.triggerAccuracyCalcUserAllyAbility(b.ability.id,
          modifiers,user,target,self,@calcType)
     end
     if target.abilityActive? && !@battle.moldBreaker
-      BattleHandlers.triggerAccuracyCalcTargetAbility(target.ability,
+      BattleHandlers.triggerAccuracyCalcTargetAbility(target.ability.id,
          modifiers,user,target,self,@calcType)
     end
     # Item effects that alter accuracy calculation
@@ -173,10 +173,10 @@ class PokeBattle_Move
     c = 0
     # Ability effects that alter critical hit rate
     if c>=0 && user.abilityActive?
-      c = BattleHandlers.triggerCriticalCalcUserAbility(user.ability,user,target,c)
+      c = BattleHandlers.triggerCriticalCalcUserAbility(user.ability.id,user,target,c)
     end
     if c>=0 && target.abilityActive? && !@battle.moldBreaker
-      c = BattleHandlers.triggerCriticalCalcTargetAbility(target.ability,user,target,c)
+      c = BattleHandlers.triggerCriticalCalcTargetAbility(target.ability.id,user,target,c)
     end
     # Item effects that alter critical hit rate
     if c>=0 && user.itemActive?
@@ -279,7 +279,7 @@ class PokeBattle_Move
     end
     # Ability effects that alter damage
     if user.abilityActive?
-      BattleHandlers.triggerDamageCalcUserAbility(user.ability,
+      BattleHandlers.triggerDamageCalcUserAbility(user.ability.id,
          user,target,self,multipliers,baseDmg,type)
     end
     if !@battle.moldBreaker
@@ -288,18 +288,18 @@ class PokeBattle_Move
       #       how it works.
       user.eachAlly do |b|
         next if !b.abilityActive?
-        BattleHandlers.triggerDamageCalcUserAllyAbility(b.ability,
+        BattleHandlers.triggerDamageCalcUserAllyAbility(b.ability.id,
            user,target,self,multipliers,baseDmg,type)
       end
       if target.abilityActive?
-        BattleHandlers.triggerDamageCalcTargetAbility(target.ability,
+        BattleHandlers.triggerDamageCalcTargetAbility(target.ability.id,
            user,target,self,multipliers,baseDmg,type) if !@battle.moldBreaker
         BattleHandlers.triggerDamageCalcTargetAbilityNonIgnorable(target.ability,
            user,target,self,multipliers,baseDmg,type)
       end
       target.eachAlly do |b|
         next if !b.abilityActive?
-        BattleHandlers.triggerDamageCalcTargetAllyAbility(b.ability,
+        BattleHandlers.triggerDamageCalcTargetAllyAbility(b.ability.id,
            user,target,self,multipliers,baseDmg,type)
       end
     end

@@ -114,6 +114,7 @@ class PokemonSummary_Scene
     @party = party
     @partyindex = partyindex
     @pokemon = @party[@partyindex]
+    @pokemon.validate_ability
     @inbattle = inbattle
     @page = 1
     @typebitmap = AnimatedBitmap.new(_INTL("Graphics/Pictures/types"))
@@ -186,6 +187,7 @@ class PokemonSummary_Scene
     @party = party
     @partyindex = partyindex
     @pokemon = @party[@partyindex]
+    @pokemon.validate_ability
     @page = 4
     @typebitmap = AnimatedBitmap.new(_INTL("Graphics/Pictures/types"))
     @sprites = {}
@@ -990,6 +992,7 @@ class PokemonSummary_Scene
 
   def pbChangePokemon
     @pokemon = @party[@partyindex]
+    @pokemon.validate_ability
     @sprites["pokemon"].setPokemonBitmap(@pokemon)
     if @pokemon.egg?
       @sprites["pokemon"].zoom_x = Settings::EGGSPRITE_SCALE

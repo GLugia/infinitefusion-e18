@@ -1552,33 +1552,7 @@ class PokemonStorageScene
       imagepos.push(["Graphics/Pictures/Storage/overlay_lv", 6, 246])
       textstrings.push([pokemon.level.to_s, 28, 228, false, base, shadow])
       
-      #if !pokemon.ability || (!pokemon.species_data.abilities.include?(pokemon.ability_index) && !pokemon.species_data.hidden_abilities.include?(pokemon.ability_index))
-      #  if pokemon.fused
-      #    head = GameData::Species.get(getHeadID(pokemon.species))
-      #    body = GameData::Species.get(getBodyID(pokemon.species))
-      #    abilities = {}
-      #    if pokemon.poke_ball == :ABILITYBALL
-      #      for i in 0...head.hidden_abilities.length
-      #        abilities << head.hidden_abilities[i]
-      #      end
-      #      for i in 0...body.hidden_abilities.length
-      #        abilities << body.hidden_abilities[i]
-      #      end
-      #    else
-      #      for i in 0...head.abilities.length
-      #        abilities << head.abilities[i]
-      #      end
-      #      for i in 0...body.abilities.length
-      #        abilities << body.abilities[i]
-      #      end
-      #    end
-      #    if (!pokemon.ability || !abilities.include?(pokemon.ability_index))
-      #      pokemon.ability_index = abilities[rand(abilities.length)]
-      #    end
-      #  else
-      #    pokemon.ability_index = pokemon.species_data.abilities[rand(pokemon.species_data.abilities.length)]
-      #  end
-      #end
+      pokemon.validate_ability
       
       if pokemon.ability
         textstrings.push([pokemon.ability.name, 86, 300, 2, base, shadow])

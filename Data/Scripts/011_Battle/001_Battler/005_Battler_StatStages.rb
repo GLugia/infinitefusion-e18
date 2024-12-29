@@ -58,7 +58,7 @@ class PokeBattle_Battler
     @battle.pbDisplay(arrStatTexts[[increment-1,2].min])
     # Trigger abilities upon stat gain
     if abilityActive?
-      BattleHandlers.triggerAbilityOnStatGain(self.ability,self,stat,user)
+      BattleHandlers.triggerAbilityOnStatGain(@ability_index,self,stat,user)
     end
     return true
   end
@@ -87,7 +87,7 @@ class PokeBattle_Battler
     @battle.pbDisplay(arrStatTexts[[increment-1,2].min])
     # Trigger abilities upon stat gain
     if abilityActive?
-      BattleHandlers.triggerAbilityOnStatGain(self.ability,self,stat,user)
+      BattleHandlers.triggerAbilityOnStatGain(@ability_index,self,stat,user)
     end
     return true
   end
@@ -132,15 +132,15 @@ class PokeBattle_Battler
       end
       if abilityActive?
         return false if BattleHandlers.triggerStatLossImmunityAbility(
-           self.ability,self,stat,@battle,showFailMsg) if !@battle.moldBreaker
+           @ability_index,self,stat,@battle,showFailMsg) if !@battle.moldBreaker
         return false if BattleHandlers.triggerStatLossImmunityAbilityNonIgnorable(
-           self.ability,self,stat,@battle,showFailMsg)
+           @ability_index,self,stat,@battle,showFailMsg)
       end
       if !@battle.moldBreaker
         eachAlly do |b|
           next if !b.abilityActive?
           return false if BattleHandlers.triggerStatLossImmunityAllyAbility(
-             b.ability,b,self,stat,@battle,showFailMsg)
+             b.ability.id,b,self,stat,@battle,showFailMsg)
         end
       end
     end
@@ -190,7 +190,7 @@ class PokeBattle_Battler
     @battle.pbDisplay(arrStatTexts[[increment-1,2].min])
     # Trigger abilities upon stat loss
     if abilityActive?
-      BattleHandlers.triggerAbilityOnStatLoss(self.ability,self,stat,user)
+      BattleHandlers.triggerAbilityOnStatLoss(@ability_index,self,stat,user)
     end
     return true
   end
@@ -219,7 +219,7 @@ class PokeBattle_Battler
     @battle.pbDisplay(arrStatTexts[[increment-1,2].min])
     # Trigger abilities upon stat loss
     if abilityActive?
-      BattleHandlers.triggerAbilityOnStatLoss(self.ability,self,stat,user)
+      BattleHandlers.triggerAbilityOnStatLoss(@ability_index,self,stat,user)
     end
     return true
   end
@@ -264,8 +264,8 @@ class PokeBattle_Battler
         return false
       end
       if abilityActive?
-        if BattleHandlers.triggerStatLossImmunityAbility(self.ability,self,:ATTACK,@battle,false) ||
-           BattleHandlers.triggerStatLossImmunityAbilityNonIgnorable(self.ability,self,:ATTACK,@battle,false)
+        if BattleHandlers.triggerStatLossImmunityAbility(@ability_index,self,:ATTACK,@battle,false) ||
+           BattleHandlers.triggerStatLossImmunityAbilityNonIgnorable(@ability_index,self,:ATTACK,@battle,false)
           @battle.pbDisplay(_INTL("{1}'s {2} prevented {3}'s {4} from working!",
              pbThis,abilityName,user.pbThis(true),user.abilityName))
           return false
@@ -273,7 +273,7 @@ class PokeBattle_Battler
       end
       eachAlly do |b|
         next if !b.abilityActive?
-        if BattleHandlers.triggerStatLossImmunityAllyAbility(b.ability,b,self,:ATTACK,@battle,false)
+        if BattleHandlers.triggerStatLossImmunityAllyAbility(b.ability.id,b,self,:ATTACK,@battle,false)
           @battle.pbDisplay(_INTL("{1} is protected from {2}'s {3} by {4}'s {5}!",
              pbThis,user.pbThis(true),user.abilityName,b.pbThis(true),b.abilityName))
           return false

@@ -82,7 +82,7 @@ class PokeBattle_Move
     return false if @battle.moldBreaker
     ret = false
     if target.abilityActive?
-      ret = BattleHandlers.triggerMoveImmunityTargetAbility(target.ability,
+      ret = BattleHandlers.triggerMoveImmunityTargetAbility(target.ability.id,
          user,target,self,@calcType,@battle)
     end
     return ret

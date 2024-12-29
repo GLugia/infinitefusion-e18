@@ -71,7 +71,7 @@ class PokeBattle_Battle
     priority.each do |b|
       # Weather-related abilities
       if b.abilityActive?
-        BattleHandlers.triggerEORWeatherAbility(b.ability,curWeather,b,self)
+        BattleHandlers.triggerEORWeatherAbility(b.ability.id,curWeather,b,self)
         b.pbFaint if b.fainted?
       end
       # Weather damage
@@ -285,7 +285,7 @@ class PokeBattle_Battle
         pbDisplay(_INTL("{1}'s HP was restored.",b.pbThis))
       end
       # Healer, Hydration, Shed Skin
-      BattleHandlers.triggerEORHealingAbility(b.ability,b,self) if b.abilityActive?
+      BattleHandlers.triggerEORHealingAbility(b.ability.id,b,self) if b.abilityActive?
       # Black Sludge, Leftovers
       BattleHandlers.triggerEORHealingItem(b.item,b,self) if b.itemActive?
     end
@@ -338,7 +338,7 @@ class PokeBattle_Battle
     priority.each do |b|
       next if b.fainted?
       next if b.status != :POISON
-      if b.statusCount>0
+      if b.status_count>0
         b.effects[PBEffects::Toxic] += 1
         b.effects[PBEffects::Toxic] = 15 if b.effects[PBEffects::Toxic]>15
       end
@@ -357,7 +357,7 @@ class PokeBattle_Battle
         end
       elsif b.takesIndirectDamage?
         oldHP = b.hp
-        dmg = (b.statusCount==0) ? b.totalhp/8 : b.totalhp*b.effects[PBEffects::Toxic]/16
+        dmg = (b.status_count==0) ? b.totalhp/8 : b.totalhp*b.effects[PBEffects::Toxic]/16
         b.pbContinueStatus { b.pbReduceHP(dmg,false) }
         b.pbItemHPHealCheck
         b.pbAbilitiesOnDamageTaken(oldHP)
@@ -583,11 +583,11 @@ class PokeBattle_Battle
         end
       end
       # Bad Dreams, Moody, Speed Boost
-      BattleHandlers.triggerEOREffectAbility(b.ability,b,self) if b.abilityActive?
+      BattleHandlers.triggerEOREffectAbility(b.ability.id,b,self) if b.abilityActive?
       # Flame Orb, Sticky Barb, Toxic Orb
       BattleHandlers.triggerEOREffectItem(b.item,b,self) if b.itemActive?
       # Harvest, Pickup
-      BattleHandlers.triggerEORGainItemAbility(b.ability,b,self) if b.abilityActive?
+      BattleHandlers.triggerEORGainItemAbility(b.ability.id,b,self) if b.abilityActive?
     end
     pbGainExp
     return if @decision>0

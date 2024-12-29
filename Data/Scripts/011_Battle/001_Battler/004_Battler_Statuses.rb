@@ -9,14 +9,14 @@ class PokeBattle_Battler
   #       "counts as having that status", which includes Comatose which can't be
   #       cured.
   def pbHasStatus?(checkStatus)
-    if BattleHandlers.triggerStatusCheckAbilityNonIgnorable(self.ability,self,checkStatus)
+    if BattleHandlers.triggerStatusCheckAbilityNonIgnorable(@ability_index,self,checkStatus)
       return true
     end
     return @status==checkStatus
   end
 
   def pbHasAnyStatus?
-    if BattleHandlers.triggerStatusCheckAbilityNonIgnorable(self.ability,self,nil)
+    if BattleHandlers.triggerStatusCheckAbilityNonIgnorable(@ability_index,self,nil)
       return true
     end
     return @status != :NONE
@@ -101,15 +101,15 @@ class PokeBattle_Battler
     end
     # Ability immunity
     immuneByAbility = false; immAlly = nil
-    if BattleHandlers.triggerStatusImmunityAbilityNonIgnorable(self.ability,self,newStatus)
+    if BattleHandlers.triggerStatusImmunityAbilityNonIgnorable(@ability_index,self,newStatus)
       immuneByAbility = true
     elsif selfInflicted || !@battle.moldBreaker
-      if abilityActive? && BattleHandlers.triggerStatusImmunityAbility(self.ability,self,newStatus)
+      if abilityActive? && BattleHandlers.triggerStatusImmunityAbility(@ability_index,self,newStatus)
         immuneByAbility = true
       else
         eachAlly do |b|
           next if !b.abilityActive?
-          next if !BattleHandlers.triggerStatusImmunityAllyAbility(b.ability,self,newStatus)
+          next if !BattleHandlers.triggerStatusImmunityAllyAbility(b.ability.id,self,newStatus)
           immuneByAbility = true
           immAlly = b
           break
@@ -191,15 +191,15 @@ class PokeBattle_Battler
     end
     return false if hasImmuneType
     # Ability immunity
-    if BattleHandlers.triggerStatusImmunityAbilityNonIgnorable(self.ability,self,newStatus)
+    if BattleHandlers.triggerStatusImmunityAbilityNonIgnorable(@ability_index,self,newStatus)
       return false
     end
-    if abilityActive? && BattleHandlers.triggerStatusImmunityAbility(self.ability,self,newStatus)
+    if abilityActive? && BattleHandlers.triggerStatusImmunityAbility(@ability_index,self,newStatus)
       return false
     end
     eachAlly do |b|
       next if !b.abilityActive?
-      next if !BattleHandlers.triggerStatusImmunityAllyAbility(b.ability,self,newStatus)
+      next if !BattleHandlers.triggerStatusImmunityAllyAbility(@ability_index,self,newStatus)
       return false
     end
     # Safeguard immunity
@@ -216,7 +216,7 @@ class PokeBattle_Battler
   def pbInflictStatus(newStatus,newStatusCount=0,msg=nil,user=nil)
     # Inflict the new status
     self.status      = newStatus
-    self.statusCount = newStatusCount
+    self.status_count = newStatusCount
     @effects[PBEffects::Toxic] = 0
     # Show animation
     if newStatus == :POISON && newStatusCount > 0
@@ -251,7 +251,7 @@ class PokeBattle_Battler
     pbCheckFormOnStatusChange
     # Synchronize
     if abilityActive?
-      BattleHandlers.triggerAbilityOnStatusInflicted(self.ability,self,user,newStatus)
+      BattleHandlers.triggerAbilityOnStatusInflicted(@ability_index,self,user,newStatus)
     end
     # Status cures
     pbItemStatusCureCheck
@@ -288,18 +288,18 @@ class PokeBattle_Battler
         return false if b.effects[PBEffects::Uproar]>0
       end
     end
-    if BattleHandlers.triggerStatusImmunityAbilityNonIgnorable(self.ability, self, :SLEEP)
+    if BattleHandlers.triggerStatusImmunityAbilityNonIgnorable(@ability_index, self, :SLEEP)
       return false
     end
     # NOTE: Bulbapedia claims that Flower Veil shouldn't prevent sleep due to
     #       drowsiness, but I disagree because that makes no sense. Also, the
     #       comparable Sweet Veil does prevent sleep due to drowsiness.
-    if abilityActive? && BattleHandlers.triggerStatusImmunityAbility(self.ability, self, :SLEEP)
+    if abilityActive? && BattleHandlers.triggerStatusImmunityAbility(@ability_index, self, :SLEEP)
       return false
     end
     eachAlly do |b|
       next if !b.abilityActive?
-      next if !BattleHandlers.triggerStatusImmunityAllyAbility(b.ability, self, :SLEEP)
+      next if !BattleHandlers.triggerStatusImmunityAllyAbility(b.ability.id, self, :SLEEP)
       return false
     end
     # NOTE: Bulbapedia claims that Safeguard shouldn't prevent sleep due to
@@ -399,7 +399,7 @@ class PokeBattle_Battler
   # Generalised status displays
   #=============================================================================
   def pbContinueStatus
-    if self.status == :POISON && @statusCount > 0
+    if self.status == :POISON && @status_count > 0
       @battle.pbCommonAnimation("Toxic", self)
     else
       anim_name = GameData::Status.get(self.status).animation
@@ -418,7 +418,7 @@ class PokeBattle_Battler
     when :FROZEN
       @battle.pbDisplay(_INTL("{1} is frozen solid!", pbThis))
     end
-    PBDebug.log("[Status continues] #{pbThis}'s sleep count is #{@statusCount}") if self.status == :SLEEP
+    PBDebug.log("[Status continues] #{pbThis}'s sleep count is #{@status_count}") if self.status == :SLEEP
   end
 
   def pbCureStatus(showMessages=true)

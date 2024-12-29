@@ -11,7 +11,7 @@ class PokeBattle_Battler
     pbContinualAbilityChecks(true)
     # Abilities that trigger upon switching in
     if (!fainted? && unstoppableAbility?) || abilityActive?
-      BattleHandlers.triggerAbilityOnSwitchIn(self.ability,self,@battle)
+      BattleHandlers.triggerAbilityOnSwitchIn(@ability_index,self,@battle)
     end
     # Check for end of primordial weather
     @battle.pbEndPrimordialWeather
@@ -29,7 +29,7 @@ class PokeBattle_Battler
   #=============================================================================
   def pbAbilitiesOnSwitchOut
     if abilityActive?
-      BattleHandlers.triggerAbilityOnSwitchOut(self.ability,self,false)
+      BattleHandlers.triggerAbilityOnSwitchOut(@ability_index,self,false)
     end
     # Reset form
     @battle.peer.pbOnLeavingBattle(@battle,@pokemon,@battle.usedInBattle[idxOwnSide][@index/2])
@@ -44,11 +44,11 @@ class PokeBattle_Battler
     # Self fainted; check all other battlers to see if their abilities trigger
     @battle.pbPriority(true).each do |b|
       next if !b || !b.abilityActive?
-      BattleHandlers.triggerAbilityChangeOnBattlerFainting(b.ability,b,self,@battle)
+      BattleHandlers.triggerAbilityChangeOnBattlerFainting(b.ability.id,b,self,@battle)
     end
     @battle.pbPriority(true).each do |b|
       next if !b || !b.abilityActive?
-      BattleHandlers.triggerAbilityOnBattlerFainting(b.ability,b,self,@battle)
+      BattleHandlers.triggerAbilityOnBattlerFainting(b.ability.id,b,self,@battle)
     end
   end
 
@@ -57,7 +57,7 @@ class PokeBattle_Battler
     return false if !abilityActive?
     newHP = @hp if newHP<0
     return false if oldHP<@totalhp/2 || newHP>=@totalhp/2   # Didn't drop below half
-    ret = BattleHandlers.triggerAbilityOnHPDroppedBelowHalf(self.ability,self,@battle)
+    ret = BattleHandlers.triggerAbilityOnHPDroppedBelowHalf(@ability_index,self,@battle)
     return ret   # Whether self has switched out
   end
 
@@ -85,7 +85,7 @@ class PokeBattle_Battler
         @battle.pbDisplay(_INTL("{1} traced {2}'s {3}!",pbThis,choice.pbThis(true),choice.abilityName))
         @battle.pbHideAbilitySplash(self)
         if !onSwitchIn && (unstoppableAbility? || abilityActive?)
-          BattleHandlers.triggerAbilityOnSwitchIn(self.ability,self,@battle)
+          BattleHandlers.triggerAbilityOnSwitchIn(@ability_index,self,@battle)
         end
       end
     end
@@ -97,7 +97,7 @@ class PokeBattle_Battler
   # Cures status conditions, confusion and infatuation.
   def pbAbilityStatusCureCheck
     if abilityActive?
-      BattleHandlers.triggerStatusCureAbility(self.ability,self)
+      BattleHandlers.triggerStatusCureAbility(@ability_index,self)
     end
   end
 

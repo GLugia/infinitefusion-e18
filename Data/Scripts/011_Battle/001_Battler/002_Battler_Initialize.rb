@@ -81,6 +81,7 @@ class PokeBattle_Battler
     @totalhp        = pkmn.totalhp
     @type1          = pkmn.type1
     @type2          = pkmn.type2
+    pkmn.validate_ability
     @ability_index  = pkmn.ability_index
     @ability2_index = pkmn.ability2_index
     @item_id        = pkmn.item_id
@@ -288,6 +289,7 @@ class PokeBattle_Battler
   #=============================================================================
   def pbUpdate(fullChange=false)
     return if !@pokemon
+    @pokemon.validate_ability
     @pokemon.calc_stats
     @level             = @pokemon.level
     @hp                = @pokemon.hp

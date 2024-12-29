@@ -283,7 +283,7 @@ class PokeBattle_Battler
     # Dazzling/Queenly Majesty make the move fail here
     @battle.pbPriority(true).each do |b|
       next if !b || !b.abilityActive?
-      if BattleHandlers.triggerMoveBlockingAbility(b.ability, b, user, targets, move, @battle)
+      if BattleHandlers.triggerMoveBlockingAbility(b.ability.id, b, user, targets, move, @battle)
         @battle.pbDisplayBrief(_INTL("{1} used {2}!", user.pbThis, move.name))
         @battle.pbShowAbilitySplash(b)
         @battle.pbDisplay(_INTL("{1} cannot use {2}!", user.pbThis, move.name))

@@ -125,6 +125,9 @@ class Pokemon
 
   attr_accessor :force_disobey
   attr_accessor :body_force_disobey, :head_force_disobey
+  
+  # TODO: this is here so internal scripts don't crash
+  attr_accessor :personalID
 
   # Max total IVs
   IV_STAT_LIMIT = 31
@@ -417,7 +420,7 @@ class Pokemon
   end
 
   def changeSpecies(pokemon, speciesToReplace, newSpecies)
-    if pokemon.isFusion?()
+    if pokemon.isFusion?
       replaceFusionSpecies(pokemon, speciesToReplace, newSpecies)
     else
       changeSpeciesSpecific(pokemon, newSpecies)
@@ -727,7 +730,8 @@ class Pokemon
 
   # @return [GameData::Ability, nil] an Ability object corresponding to this Pokémon's ability
   def ability
-    return GameData::Ability.try_get(self.ability_index)
+    return nil if !@ability_index
+    return GameData::Ability.get(@ability_index)
   end
 
   def ability_index=(value)
@@ -747,8 +751,23 @@ class Pokemon
   end
 
   # @return [Boolean] whether this Pokémon has a hidden ability
+  #
+  # @todo [bug] there are cases where a fusion pokemon may have the same regular
+  #             ability as their hidden ability. always returns true in this case.
   def hasHiddenAbility?
-    return @ability_index >= 2
+    if self.isFusion?
+      # head
+      part = GameData::Species.get(getHeadID(@species))
+      return true if part.hidden_abilities.include?(self.ability_index)
+      # body
+      part = GameData::Species.get(getBodyID(@species))
+      return true if part.hidden_abilities.include?(self.ability_index)
+      # not in list of hidden abilities
+      return false
+    else
+      return true if self.species_data.hidden_abilities.include?(self.ability_index) && !self.species_data.abilities.include?(self.ability_index)
+      return false
+    end
   end
 
   # @return [Array<Array<Symbol,Integer>>] the abilities this Pokémon can have,
@@ -1067,7 +1086,7 @@ class Pokemon
   # @return [Boolean] whether the Pokémon is compatible with the given move
   def compatible_with_move?(move_id)
     move_data = GameData::Move.try_get(move_id)
-    if isFusion?()
+    if self.isFusion?
       head_species_id = getBasePokemonID(species, false)
       body_species_id = getBasePokemonID(species)
       head_species = GameData::Species.get(head_species_id)
@@ -1567,6 +1586,10 @@ class Pokemon
     @spdef = stats[:SPECIAL_DEFENSE]
     @speed = stats[:SPEED]
   end
+  
+  def personalID
+    return @personalID
+  end
 
   #=============================================================================
   # Pokémon creation
@@ -1698,6 +1721,7 @@ class Pokemon
     self.body_force_disobey = other.body_force_disobey if other.body_force_disobey
     
     self.name = other.name
+    self.validate_ability
     self.calc_stats
   end
 
@@ -1735,10 +1759,56 @@ class Pokemon
       return :SUPER
     end
   end
+  
+  # this is called in cases where a pokemon may have an invalid ability due to the recent
+  # overhaul to how fusion data is stored; including changing how abilities are stored in general
+  # calling this will ensure the ability is legit
+  def validate_ability
+    if !self.ability || (!self.species_data.abilities.include?(self.ability_index) && !self.species_data.hidden_abilities.include?(self.ability_index))
+      # we handle this differently if the pokemon is a fusion
+      if self.isFusion?
+        # parts had abilities already, just pick between them
+        if @head_ability_index && @body_ability_index
+          @ability_index = rand(2) == 0 ? @head_ability_index : @body_ability_index
+        # parts weren't set so we generate a list and randomly choose one
+        else
+          head = GameData::Species.get(getHeadID(@species))
+          body = GameData::Species.get(getBodyID(@species))
+          abilities = {}
+          # the head's pokeball was an ability ball
+          if @head_poke_ball == :ABILITYBALL
+            head.hidden_abilities.each { |a| abilities << a }
+          # the body's pokeball was an ability ball
+          elsif @body_poke_ball == :ABILITYBALL
+            body.hidden_abilities.each { |a| abilities << a }
+          # neither part has stored data but the fusion pokemon is in an ability ball
+          elsif @poke_ball == :ABILITYBALL
+            self.species_data.hidden_abilities.each { |a| abilities << a }
+          # no ability ball to be found, take from both parts regular abilities
+          else
+            head.abilities.each { |a| abilities << a }
+            body.abilities.each { |a| abilities << a }
+          end
+          # randomly select one of the abilities from the list
+          @ability_index = abilities[rand(abilities.length)]
+        end
+      # not a fusion
+      else
+        # set hidden ability
+        if @poke_ball == :ABILITYBALL
+          @ability_index = self.species_data.hidden_abilities[rand(self.species_data.hidden_abilities.length)]
+        # set regular ability
+        else
+          @ability_index = self.species_data.abilities[rand(self.species_data.abilities.length)]
+        end
+      end
+    end
+  end
 
   def initialize(species, level, owner = $Trainer, withMoves = true, recheck_form = true)
     @species_data = GameData::Species.get(species)
     @species = @species_data.species
+    @personalID = 0
     @form = @species_data.form
     @forced_form = nil
     @time_form_set = nil

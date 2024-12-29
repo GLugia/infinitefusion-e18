@@ -1,37 +1,39 @@
 class PokeBattle_Battler
-  attr_accessor :ability_id
-  attr_accessor :ability2_id
+  attr_accessor :ability_index
+  attr_accessor :ability2_index
 
   #Primary ability utility methods for battlers class
   def ability
-    return GameData::Ability.try_get(@ability_id)
+    return nil if !@ability_index
+    return GameData::Ability.get(@ability_index)
   end
 
   def ability=(value)
     new_ability = GameData::Ability.try_get(value)
-    @ability_id = (new_ability) ? new_ability.id : nil
+    @ability_index = (new_ability) ? new_ability.id : nil
   end
 
   def abilityName
-    abil = self.ability
-    return (abil) ? abil.name : ""
+    return "nil" if !@ability_index
+    return GameData::Ability.get(@ability_index).name
   end
 
   #Secondary ability utility methods for battlers class
   def ability2
     return nil if !$game_switches[SWITCH_DOUBLE_ABILITIES]
-    return GameData::Ability.try_get(@ability2_id)
+    return nil if !@ability2_index
+    return GameData::Ability.get(@ability2_index)
   end
 
   def ability2=(value)
     return if !$game_switches[SWITCH_DOUBLE_ABILITIES]
     new_ability = GameData::Ability.try_get(value)
-    @ability2_id = (new_ability) ? new_ability.id : nil
+    @ability2_index = (new_ability) ? new_ability.id : nil
   end
 
   def ability2Name
-    abil = self.ability2
-    return (abil) ? abil.name : ""
+    return "nil" if !@ability_index
+    return GameData::Ability.get(@ability_index).name
   end
 
   #Ability logic overrides
@@ -39,7 +41,7 @@ class PokeBattle_Battler
   def hasActiveAbility?(check_ability, ignore_fainted = false)
     return hasActiveAbilityDouble?(check_ability, ignore_fainted) if $game_switches[SWITCH_DOUBLE_ABILITIES]
     return false if !abilityActive?(ignore_fainted)
-    return check_ability.include?(@ability_id) if check_ability.is_a?(Array)
+    return check_ability.include?(@ability_index) if check_ability.is_a?(Array)
     return self.ability == check_ability
   end
 
@@ -47,7 +49,7 @@ class PokeBattle_Battler
     return false if !$game_switches[SWITCH_DOUBLE_ABILITIES]
     return false if !abilityActive?(ignore_fainted)
     if check_ability.is_a?(Array)
-      return check_ability.include?(@ability_id) || check_ability.include?(@ability2_id)
+      return check_ability.include?(@ability_index) || check_ability.include?(@ability2_index)
     end
     return self.ability == check_ability || self.ability2 == check_ability
   end
@@ -56,14 +58,14 @@ class PokeBattle_Battler
     # Target's ability
     if target.abilityActive?(true)
       oldHP = user.hp
-      BattleHandlers.triggerTargetAbilityOnHit(target.ability, user, target, move, @battle)
-      BattleHandlers.triggerTargetAbilityOnHit(target.ability2, user, target, move, @battle) if $game_switches[SWITCH_DOUBLE_ABILITIES] && target.ability2
+      BattleHandlers.triggerTargetAbilityOnHit(target.ability.id, user, target, move, @battle)
+      BattleHandlers.triggerTargetAbilityOnHit(target.ability2.id, user, target, move, @battle) if $game_switches[SWITCH_DOUBLE_ABILITIES] && target.ability2
       user.pbItemHPHealCheck if user.hp < oldHP
     end
     # User's ability
     if user.abilityActive?(true)
-      BattleHandlers.triggerUserAbilityOnHit(user.ability, user, target, move, @battle)
-      BattleHandlers.triggerUserAbilityOnHit(user.ability2, user, target, move, @battle) if $game_switches[SWITCH_DOUBLE_ABILITIES] && user.ability2
+      BattleHandlers.triggerUserAbilityOnHit(user.ability.id, user, target, move, @battle)
+      BattleHandlers.triggerUserAbilityOnHit(user.ability2.id, user, target, move, @battle) if $game_switches[SWITCH_DOUBLE_ABILITIES] && user.ability2
       user.pbItemHPHealCheck
     end
   end
@@ -110,7 +112,7 @@ class PokeBattle_Battler
           @battle.pbDisplay(_INTL("{1} traced {2}'s {3}!", pbThis, choice.pbThis(true), choice.abilityName))
           @battle.pbHideAbilitySplash(self)
           if !onSwitchIn && (unstoppableAbility? || abilityActive?)
-            BattleHandlers.triggerAbilityOnSwitchIn(self.ability, self, @battle)
+            BattleHandlers.triggerAbilityOnSwitchIn(@ability_index, self, @battle)
           end
         end
       end

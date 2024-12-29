@@ -54,7 +54,7 @@ class PokeBattle_Battle
     return true if battler.fainted?
     # Ability/item effects that allow switching no matter what
     if battler.abilityActive?
-      if BattleHandlers.triggerCertainSwitchingUserAbility(battler.ability, battler, self)
+      if BattleHandlers.triggerCertainSwitchingUserAbility(battler.ability.id, battler, self)
         return true
       end
     end
@@ -76,7 +76,7 @@ class PokeBattle_Battle
     # Trapping abilities/items
     eachOtherSideBattler(idxBattler) do |b|
       next if !b.abilityActive?
-      if BattleHandlers.triggerTrappingTargetAbility(b.ability, battler, b, self)
+      if BattleHandlers.triggerTrappingTargetAbility(b.ability.id, battler, b, self)
         partyScene.pbDisplay(_INTL("{1}'s {2} prevents switching!",
                                    b.pbThis, b.abilityName)) if partyScene
         return false
