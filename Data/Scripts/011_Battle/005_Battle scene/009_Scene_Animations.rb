@@ -43,7 +43,7 @@ class PokeBattle_Scene
       for i in 0...@battle.sideSizes[1]
         idxBattler = 2*i+1
 
-          #hidden ability animation
+        # hidden ability animation
         if @battle.battlers[idxBattler].hasHiddenAbility?
           pbCommonAnimation("StatUp",@battle.battlers[idxBattler])
           if @battle.is_a?(PokeBattle_Battle)
