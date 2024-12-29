@@ -895,16 +895,9 @@ class PokemonFusionScene
                                 _INTL("{1}'s data was added to the Pokédex", newspeciesname))
         @scene.pbShowPokedex(@newspecies)
       end
-      overlay.dispose
       
       # species
       @pokemon1.species = newSpecies
-      
-      # allow player to choose the ability and nature
-      pbChooseAbility(@pokemon1.ability_index, @pokemon2.ability_index)
-      
-      # allow player to select moves
-      setFusionMoves(@pokemon1, @pokemon2, firstOptionSelected) if !noMoves
       
       # forced shiny if either part is shiny
       if @pokemon1.head_shiny || @pokemon1.body_shiny
@@ -919,7 +912,6 @@ class PokemonFusionScene
       @pokemon1.body_gender = @pokemon1.gender
       if (@pokemon2.male? && @pokemon1.female?) || (@pokemon2.female? && @pokemon1.male?)
         @pokemon1.gender = 2 # force genderless
-        Kernel.pbMessageDisplay(@sprites["msgwindow"], _INTL("{1}'s gender was made genderless.", newspeciesname))
       end
 
       # met information
@@ -979,12 +971,22 @@ class PokemonFusionScene
       # OT
       @pokemon1.head_owner = @pokemon2.owner
       @pokemon1.body_owner = @pokemon1.owner
-      @pokemon1.owner = @pokemon1.head_owner
+      if @pokemon1.owner.name.eql?($Trainer.name)
+        @pokemon1.owner = @pokemon2.owner
+      end
       
       # hidden power
       @pokemon1.head_hidden_power = @pokemon2.hidden_power
       @pokemon1.body_hidden_power = @pokemon1.hidden_power
       @pokemon1.hidden_power = ((@pokemon2.hidden_power + @pokemon1.hidden_power) / 2).floor
+      
+      overlay.dispose
+      
+      # allow player to choose the ability and nature
+      pbChooseAbility(@pokemon1.ability_index, @pokemon2.ability_index)
+      
+      # allow player to select moves
+      setFusionMoves(@pokemon1, @pokemon2, firstOptionSelected) if !noMoves
 
       pbSEPlay("Voltorb Flip Point")
 

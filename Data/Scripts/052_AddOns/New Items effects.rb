@@ -726,8 +726,8 @@ def getReverseSpeciesAndSwapData(pokemon)
   pokemon.head_ev, pokemon.body_ev = pokemon.body_ev, pokemon.head_ev
   
   # OT
+  # we don't set pokemon.owner here to avoid an exploit which bypasses the problems traded pokemon
   pokemon.head_owner, pokemon.body_owner = pokemon.body_owner, pokemon.head_owner
-  pokemon.owner = pokemon.head_owner
   
   # hidden power
   pokemon.head_hidden_power, pokemon.body_hidden_power = pokemon.body_hidden_power, pokemon.head_hidden_power
