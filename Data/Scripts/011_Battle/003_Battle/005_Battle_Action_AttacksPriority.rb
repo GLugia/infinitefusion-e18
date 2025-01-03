@@ -152,7 +152,7 @@ class PokeBattle_Battle
             move = @choices[b.index][2]
             pri = move.priority
             if b.abilityActive?
-              pri = BattleHandlers.triggerPriorityChangeAbility(b.ability.id,b,move,pri)
+              pri = BattleHandlers.triggerPriorityChangeAbility(b.ability,b,move,pri)
             end
             bArray[3] = pri
             @choices[b.index][4] = pri
@@ -164,7 +164,7 @@ class PokeBattle_Battle
           subPri = 0
           # Abilities (Stall)
           if b.abilityActive?
-            newSubPri = BattleHandlers.triggerPriorityBracketChangeAbility(b.ability.id,
+            newSubPri = BattleHandlers.triggerPriorityBracketChangeAbility(b.ability,
              b,subPri,self)
             if subPri!=newSubPri
               subPri = newSubPri

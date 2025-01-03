@@ -610,7 +610,7 @@ module Compiler
           f.write("    Shadow = yes\r\n") if pkmn[:shadowness]
           f.write(sprintf("    Moves = %s\r\n", pkmn[:moves].join(","))) if pkmn[:moves] && pkmn[:moves].length > 0
           f.write(sprintf("    Ability = %s\r\n", pkmn[:ability])) if pkmn[:ability]
-          f.write(sprintf("    AbilityIndex = %d\r\n", pkmn[:ability_index])) if pkmn[:ability_index]
+          f.write(sprintf("    AbilityIndex = %d\r\n", pkmn[:ability])) if pkmn[:ability]
           f.write(sprintf("    Item = %s\r\n", pkmn[:item])) if pkmn[:item]
           f.write(sprintf("    Nature = %s\r\n", pkmn[:nature])) if pkmn[:nature]
           ivs_array = []

@@ -71,7 +71,7 @@ class PokeBattle_Battle
     priority.each do |b|
       # Weather-related abilities
       if b.abilityActive?
-        BattleHandlers.triggerEORWeatherAbility(b.ability.id,curWeather,b,self)
+        BattleHandlers.triggerEORWeatherAbility(b.ability,curWeather,b,self)
         b.pbFaint if b.fainted?
       end
       # Weather damage
@@ -285,7 +285,7 @@ class PokeBattle_Battle
         pbDisplay(_INTL("{1}'s HP was restored.",b.pbThis))
       end
       # Healer, Hydration, Shed Skin
-      BattleHandlers.triggerEORHealingAbility(b.ability.id,b,self) if b.abilityActive?
+      BattleHandlers.triggerEORHealingAbility(b.ability,b,self) if b.abilityActive?
       # Black Sludge, Leftovers
       BattleHandlers.triggerEORHealingItem(b.item,b,self) if b.itemActive?
     end
@@ -583,11 +583,11 @@ class PokeBattle_Battle
         end
       end
       # Bad Dreams, Moody, Speed Boost
-      BattleHandlers.triggerEOREffectAbility(b.ability.id,b,self) if b.abilityActive?
+      BattleHandlers.triggerEOREffectAbility(b.ability,b,self) if b.abilityActive?
       # Flame Orb, Sticky Barb, Toxic Orb
       BattleHandlers.triggerEOREffectItem(b.item,b,self) if b.itemActive?
       # Harvest, Pickup
-      BattleHandlers.triggerEORGainItemAbility(b.ability.id,b,self) if b.abilityActive?
+      BattleHandlers.triggerEORGainItemAbility(b.ability,b,self) if b.abilityActive?
     end
     pbGainExp
     return if @decision>0

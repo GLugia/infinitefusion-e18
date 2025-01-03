@@ -1219,7 +1219,7 @@ module Compiler
           case property_name
           when "Ability"
             if property_value[/^\d+$/]
-              current_pkmn[:ability_index] = property_value.to_i
+              current_pkmn[:ability] = property_value.to_i
             elsif !GameData::Ability.exists?(property_value.to_sym)
               raise _INTL("Value {1} isn't a defined Ability.\r\n{2}", property_value, FileLineData.linereport)
             else
@@ -1332,7 +1332,7 @@ module Compiler
           current_pkmn[:level]         = line_data[1]
           current_pkmn[:item]          = line_data[2] if line_data[2]
           current_pkmn[:moves]         = moves if moves.length > 0
-          current_pkmn[:ability_index] = line_data[7] if line_data[7]
+          current_pkmn[:ability] = line_data[7] if line_data[7]
           current_pkmn[:gender]        = line_data[8] if line_data[8]
           current_pkmn[:form]          = line_data[9] if line_data[9]
           current_pkmn[:shininess]     = line_data[10] if line_data[10]

@@ -26,9 +26,8 @@ end
 Events.onWildPokemonCreate+=proc {|sender,e|
   if player_on_hidden_ability_map || isAlwaysHiddenAbilityMap($game_map.map_id)
     pokemon=e[0]
-    chosenAbility = pokemon.getAbilityList.sample #format: [[:ABILITY, index],...]
-    ability = GameData::Ability.try_get(chosenAbility[0])
-    pokemon.ability_index = (ability) ? ability.id : pokemon.species_data.hidden_abilities[chosenAbility[1]]
+    chosenAbility = pokemon.getAbilityList.sample
+    pokemon.ability = GameData::Ability.get(chosenAbility)
     pokemon.validate_ability
   end
 }

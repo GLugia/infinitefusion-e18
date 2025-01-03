@@ -670,34 +670,38 @@ PokemonDebugMenuCommands.register("setability", {
     ]
     loop do
       if pkmn.ability
-        msg = _INTL("Ability is {1} (index {2}).", pkmn.ability.name, pkmn.ability_index)
+        msg = _INTL("Ability is {1} (id {2}).", GameData::Ability.get(pkmn.ability).name, pkmn.ability)
       else
-        msg = _INTL("No ability (index {1}).", pkmn.ability_index)
+        msg = _INTL("No ability (id {1}).", pkmn.ability)
       end
       cmd = screen.pbShowCommands(msg, commands, cmd)
       break if cmd < 0
       case cmd
       when 0   # Set possible ability
-        abils = pkmn.getAbilityList
         ability_commands = []
         abil_cmd = 0
-        for i in abils
-          ability_commands.push(((i[1] < 2) ? "" : "(H) ") + GameData::Ability.get(i[0]).name)
-          abil_cmd = ability_commands.length - 1 if pkmn.ability_id == i[0]
+        # regular abilities
+        for ability in pkmn.species_data.abilities
+          ability_commands.push(GameData::Ability.get(ability).name)
+          abil_cmd = ability_commands.length - 1 if pkmn.ability == ability
+        end
+        # hidden abilities
+        for ability in pkmn.species_data.hidden_abilities
+          ability_commands.push("(H) " + GameData::Ability.get(ability).name)
+          abil_cmd = ability_commands.length - 1 if pkmn.ability == ability
         end
         abil_cmd = screen.pbShowCommands(_INTL("Choose an ability."), ability_commands, abil_cmd)
         next if abil_cmd < 0
-        pkmn.ability_index = abils[abil_cmd][1]
-        pkmn.ability = nil
+        pkmn.ability = GameData::Ability.get(ability_commands[abil_cmd]).id
         screen.pbRefreshSingle(pkmnid)
+      # TODO: this no longer works since abilities are forced to be always legal
       when 1   # Set any ability
-        new_ability = pbChooseAbilityList(pkmn.ability_id)
-        if new_ability && new_ability != pkmn.ability_id
+        new_ability = pbChooseAbilityList(pkmn.ability)
+        if new_ability && new_ability != pkmn.ability
           pkmn.ability = new_ability
           screen.pbRefreshSingle(pkmnid)
         end
       when 2   # Reset
-        pkmn.ability_index = nil
         pkmn.ability = nil
         screen.pbRefreshSingle(pkmnid)
       end
@@ -719,35 +723,38 @@ PokemonDebugMenuCommands.register("setability2", {
       _INTL("Reset")
     ]
     loop do
-      if pkmn.ability
-        msg = _INTL("Ability 2 is {1} (index {2}).", pkmn.ability2.name, pkmn.ability2_index)
+      if pkmn.ability2
+        msg = _INTL("Ability 2 is {1} (id {2}).", GameData::Ability.get(pkmn.ability2).name, pkmn.ability2)
       else
-        msg = _INTL("No ability (index {1}).", pkmn.ability2_index)
+        msg = _INTL("No ability (id {1}).", pkmn.ability2)
       end
       cmd = screen.pbShowCommands(msg, commands, cmd)
       break if cmd < 0
       case cmd
       when 0   # Set possible ability
-        abils = pkmn.getAbilityList
         ability_commands = []
         abil_cmd = 0
-        for i in abils
-          ability_commands.push(((i[1] < 2) ? "" : "(H) ") + GameData::Ability.get(i[0]).name)
-          abil_cmd = ability_commands.length - 1 if pkmn.ability2_id == i[0]
+        # regular abilities
+        for ability in pkmn.species_data.abilities
+          ability_commands.push(GameData::Ability.get(ability).name)
+          abil_cmd = ability_commands.length - 1 if pkmn.ability2 == ability
+        end
+        # hidden abilities
+        for ability in pkmn.species_data.hidden_abilities
+          ability_commands.push("(H) " + GameData::Ability.get(ability).name)
+          abil_cmd = ability_commands.length - 1 if pkmn.ability2 == ability
         end
         abil_cmd = screen.pbShowCommands(_INTL("Choose an ability."), ability_commands, abil_cmd)
         next if abil_cmd < 0
-        pkmn.ability2_index = abils[abil_cmd][1]
-        pkmn.ability2 = nil
+        pkmn.ability2 = ability_commands[abil_cmd]
         screen.pbRefreshSingle(pkmnid)
       when 1   # Set any ability
-        new_ability = pbChooseAbilityList(pkmn.ability2_id)
-        if new_ability && new_ability != pkmn.ability2_id
+        new_ability = pbChooseAbilityList(pkmn.ability2)
+        if new_ability && new_ability != pkmn.ability2
           pkmn.ability2 = new_ability
           screen.pbRefreshSingle(pkmnid)
         end
       when 2   # Reset
-        pkmn.ability2_index = nil
         pkmn.ability2 = nil
         screen.pbRefreshSingle(pkmnid)
       end

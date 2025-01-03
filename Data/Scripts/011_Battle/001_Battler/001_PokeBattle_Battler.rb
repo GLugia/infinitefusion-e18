@@ -8,7 +8,7 @@ class PokeBattle_Battler
   attr_accessor :species
   attr_accessor :type1
   attr_accessor :type2
-  attr_accessor :ability_index
+  attr_accessor :ability
   attr_accessor :item_id
   attr_accessor :moves
   attr_accessor :gender
@@ -60,17 +60,17 @@ class PokeBattle_Battler
     @pokemon.form = value if @pokemon
   end
 
-  def ability_index
-    return @ability_index
+  def ability
+    return @ability
+  end
+  
+  def ability=(value)
+    return if value && !GameData::Ability.exists?(value)
+    @ability = (value) ? GameData::Ability.get(value).id : value
   end
 
   def hasHiddenAbility?
     return @pokemon.hasHiddenAbility?
-  end
-
-  def ability=(value)
-    return if value && !GameData::Ability.exists?(value)
-    @ability_index = (value) ? GameData::Ability.get(value).id : value
   end
 
   def item
@@ -229,8 +229,8 @@ class PokeBattle_Battler
   alias owned owned?
 
   def abilityName
-    return "nil" if !@ability_index
-    return self.ability.name
+    return "nil" if !@ability
+    return GameData::Ability.get(@ability).name
   end
 
   def itemName
@@ -277,7 +277,7 @@ class PokeBattle_Battler
     speedMult = 1.0
     # Ability effects that alter calculated Speed
     if abilityActive?
-      speedMult = BattleHandlers.triggerSpeedCalcAbility(@ability_index, self, speedMult)
+      speedMult = BattleHandlers.triggerSpeedCalcAbility(@ability, self, speedMult)
     end
     # Item effects that alter calculated Speed
     if itemActive?
@@ -304,7 +304,7 @@ class PokeBattle_Battler
     ret += @effects[PBEffects::WeightChange]
     ret = 1 if ret < 1
     if abilityActive? && !@battle.moldBreaker
-      ret = BattleHandlers.triggerWeightCalcAbility(@ability_index, self, ret)
+      ret = BattleHandlers.triggerWeightCalcAbility(@ability, self, ret)
     end
     if itemActive?
       ret = BattleHandlers.triggerWeightCalcItem(self.item, self, ret)
@@ -392,8 +392,8 @@ class PokeBattle_Battler
 
   def hasActiveAbility?(check_ability, ignore_fainted = false)
     return false if !abilityActive?(ignore_fainted)
-    return check_ability.include?(@ability_index) if check_ability.is_a?(Array)
-    return self.ability == check_ability
+    return check_ability.include?(@ability) if check_ability.is_a?(Array)
+    return @ability == check_ability
   end
 
   alias hasWorkingAbility hasActiveAbility?
@@ -401,7 +401,7 @@ class PokeBattle_Battler
   # Applies to both losing self's ability (i.e. being replaced by another) and
   # having self's ability be negated.
   def unstoppableAbility?(abil = nil)
-    abil = @ability_index if !abil
+    abil = @ability if !abil
     abil = GameData::Ability.try_get(abil)
     return false if !abil
     ability_blacklist = [
@@ -425,7 +425,7 @@ class PokeBattle_Battler
 
   # Applies to gaining the ability.
   def ungainableAbility?(abil = nil)
-    abil = @ability_index if !abil
+    abil = @ability if !abil
     abil = GameData::Ability.try_get(abil)
     return false if !abil
     ability_blacklist = [
@@ -519,7 +519,7 @@ class PokeBattle_Battler
   end
 
   def canChangeType?
-    return ![:MULTITYPE, :RKSSYSTEM].include?(@ability_index)
+    return ![:MULTITYPE, :RKSSYSTEM].include?(@ability)
   end
 
   def airborne?
@@ -758,7 +758,7 @@ class PokeBattle_Battler
 
   #Changes the form VISUALLY in battles. The species is changed in the equivalent method in Pokemon class
   def checkHPRelatedFormChange(new_hp)
-    if @ability_index == :SHIELDSDOWN
+    if @ability == :SHIELDSDOWN
       if @pokemon.isFusionOf(:MINIOR_M)
         if new_hp <= (@totalhp / 2)
           changeBattlerForm(:MINIOR_M, :MINIOR_C,nil, :SHELLSMASH)

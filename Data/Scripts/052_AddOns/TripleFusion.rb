@@ -20,7 +20,7 @@ class TripleFusion <  Pokemon
 
 
   def types
-    return [@species1_data.type1, @species2_data.type1,@species3_data.type1]
+    return [@species1_data.type1, @species2_data.type1, @species3_data.type1]
   end
 
   def baseStats
@@ -29,8 +29,15 @@ class TripleFusion <  Pokemon
       stat1 = @species1_data.base_stats[s.id]
       stat2 = @species2_data.base_stats[s.id]
       stat3 = @species3_data.base_stats[s.id]
-
-      ret[s.id] = (stat1 + stat2 + stat3) / 3
+      
+      case s
+      when :ATTACK, :DEFENSE then
+        ret[s.id] = (((2 * stat1) / 3) + ((stat2 + stat3) / 6)).floor
+      when :SPECIAL_ATTACK, :SPECIAL_DEFENSE then
+        ret[s.id] = (((2 * stat2) / 3) + ((stat1 + stat3) / 6)).floor
+      when :HP, :SPEED then
+        ret[s.id] = (((2 * stat3) / 3) + ((stat1 + stat2) / 6)).floor
+      end
     end
     return ret
   end
@@ -67,19 +74,16 @@ class TripleFusion <  Pokemon
 
   end
 
-  def ability_id
+  def ability
     if !@ability
-      abil_index = ability_index
-      if !@ability # Natural ability or no hidden ability defined
-        chosen_poke_for_ability= rand(1..3)
-        if chosen_poke_for_ability == 1
-          @ability = @species1_data.abilities[abil_index] || @species1_data.abilities[0]
-        elsif chosen_poke_for_ability == 2
-          @ability = @species2_data.abilities[abil_index] || @species2_data.abilities[0]
-        else
-          @ability = @species3_data.abilities[abil_index] || @species3_data.abilities[0]
-        end
-
+      chosen_poke_for_ability = rand(65536) % 3
+      case chosen_poke_for_ability
+      when 0 then
+        @ability = @species1_data.abilities[rand(@species1_data.abilities.length)]
+      when 1 then
+        @ability = @species2_data.abilities[rand(@species2_data.abilities.length)]
+      when 2 then
+        @ability = @species3_data.abilities[rand(@species3_data.abilities.length)]
       end
     end
     return @ability

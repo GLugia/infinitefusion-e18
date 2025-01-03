@@ -278,11 +278,11 @@ class PokeBattle_Battler
       @battle.pbDisplay(_INTL("But it failed..."))
       return
     end
-    oldAbil = @ability_index
+    oldAbil = @ability
     @effects[PBEffects::Transform]        = true
     @effects[PBEffects::TransformSpecies] = target.species
     pbChangeTypes(target)
-    self.ability = target.ability
+    self.ability  = target.ability
     self.ability2 = target.ability2 if target.ability2
     @attack  = target.attack
     @defense = target.defense

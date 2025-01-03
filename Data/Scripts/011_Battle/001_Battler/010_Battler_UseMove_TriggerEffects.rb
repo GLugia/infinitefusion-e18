@@ -8,12 +8,12 @@ class PokeBattle_Battler
     # Target's ability
     if target.abilityActive?(true)
       oldHP = user.hp
-      BattleHandlers.triggerTargetAbilityOnHit(target.ability.id,user,target,move,@battle)
+      BattleHandlers.triggerTargetAbilityOnHit(target.ability,user,target,move,@battle)
       user.pbItemHPHealCheck if user.hp<oldHP
     end
     # User's ability
     if user.abilityActive?(true)
-      BattleHandlers.triggerUserAbilityOnHit(user.ability.id,user,target,move,@battle)
+      BattleHandlers.triggerUserAbilityOnHit(user.ability,user,target,move,@battle)
       user.pbItemHPHealCheck
     end
   end
@@ -97,8 +97,8 @@ class PokeBattle_Battler
     end
     # User's ability
     if user.abilityActive?
-      BattleHandlers.triggerUserAbilityEndOfMove(user.ability.id,user,targets,move,@battle)
-      BattleHandlers.triggerUserAbilityEndOfMove(user.ability2.id,user,targets,move,@battle) if user.ability2
+      BattleHandlers.triggerUserAbilityEndOfMove(user.ability,user,targets,move,@battle)
+      BattleHandlers.triggerUserAbilityEndOfMove(user.ability2,user,targets,move,@battle) if user.ability2
     end
     # Greninja - Battle Bond
     if !user.fainted? && !user.effects[PBEffects::Transform] &&
@@ -167,8 +167,8 @@ class PokeBattle_Battler
       next if !targets.any? { |targetB| targetB.index==b.index }
       next if b.damageState.unaffected || switchedBattlers.include?(b.index)
       next if !b.abilityActive?
-      BattleHandlers.triggerTargetAbilityAfterMoveUse(b.ability.id,b,user,move,switchedBattlers,@battle)
-      BattleHandlers.triggerTargetAbilityAfterMoveUse(b.ability2.id,b,user,move,switchedBattlers,@battle) if b.ability2
+      BattleHandlers.triggerTargetAbilityAfterMoveUse(b.ability,b,user,move,switchedBattlers,@battle)
+      BattleHandlers.triggerTargetAbilityAfterMoveUse(b.ability2,b,user,move,switchedBattlers,@battle) if b.ability2
       if !switchedBattlers.include?(b.index) && move.damagingMove?
         if b.pbAbilitiesOnDamageTaken(b.damageState.initialHP)   # Emergency Exit, Wimp Out
           switchWimpOut.push(b.index)

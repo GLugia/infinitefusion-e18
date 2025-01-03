@@ -121,16 +121,6 @@ def getSpecies(dexnum)
   return getPokemon(dexnum)
 end
 
-def getAbilityIndexFromID(abilityID, fusedPokemon)
-  abilityList = fusedPokemon.getAbilityList
-  for abilityArray in abilityList #ex: [:CHLOROPHYLL, 0]
-    ability = abilityArray[0]
-    index = abilityArray[1]
-    return index if ability == abilityID
-  end
-  return 0
-end
-
 
 # dir_path = Settings::CUSTOM_BATTLERS_FOLDER_INDEXED
 # indexFolders = Dir.entries(dir_path).select do |entry|

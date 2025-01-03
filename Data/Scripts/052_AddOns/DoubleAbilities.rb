@@ -1,39 +1,35 @@
 class PokeBattle_Battler
-  attr_accessor :ability_index
-  attr_accessor :ability2_index
+  attr_accessor :ability
+  attr_accessor :ability2
 
   #Primary ability utility methods for battlers class
   def ability
-    return nil if !@ability_index
-    return GameData::Ability.get(@ability_index)
+    return @ability
   end
-
+  
   def ability=(value)
-    new_ability = GameData::Ability.try_get(value)
-    @ability_index = (new_ability) ? new_ability.id : nil
+    return if value && !GameData::Ability.exists?(value)
+    @ability = (value) ? GameData::Ability.get(value).id : value
   end
 
   def abilityName
-    return "nil" if !@ability_index
-    return GameData::Ability.get(@ability_index).name
+    return "nil" if !@ability
+    return GameData::Ability.get(@ability).name
   end
 
   #Secondary ability utility methods for battlers class
   def ability2
-    return nil if !$game_switches[SWITCH_DOUBLE_ABILITIES]
-    return nil if !@ability2_index
-    return GameData::Ability.get(@ability2_index)
+    return @ability2
   end
 
   def ability2=(value)
-    return if !$game_switches[SWITCH_DOUBLE_ABILITIES]
-    new_ability = GameData::Ability.try_get(value)
-    @ability2_index = (new_ability) ? new_ability.id : nil
+    return if value && !GameData::Ability.exists?(value)
+    @ability2 = (value) ? GameData::Ability.get(value).id : value
   end
 
   def ability2Name
-    return "nil" if !@ability_index
-    return GameData::Ability.get(@ability_index).name
+    return "nil" if !@ability
+    return GameData::Ability.get(@ability).name
   end
 
   #Ability logic overrides
@@ -41,31 +37,31 @@ class PokeBattle_Battler
   def hasActiveAbility?(check_ability, ignore_fainted = false)
     return hasActiveAbilityDouble?(check_ability, ignore_fainted) if $game_switches[SWITCH_DOUBLE_ABILITIES]
     return false if !abilityActive?(ignore_fainted)
-    return check_ability.include?(@ability_index) if check_ability.is_a?(Array)
-    return self.ability == check_ability
+    return check_ability.include?(@ability) if check_ability.is_a?(Array)
+    return @ability == check_ability
   end
 
   def hasActiveAbilityDouble?(check_ability, ignore_fainted = false)
     return false if !$game_switches[SWITCH_DOUBLE_ABILITIES]
     return false if !abilityActive?(ignore_fainted)
     if check_ability.is_a?(Array)
-      return check_ability.include?(@ability_index) || check_ability.include?(@ability2_index)
+      return check_ability.include?(@ability) || check_ability.include?(@ability2)
     end
-    return self.ability == check_ability || self.ability2 == check_ability
+    return @ability == check_ability || @ability2 == check_ability
   end
 
   def triggerAbilityEffectsOnHit(move, user, target)
     # Target's ability
     if target.abilityActive?(true)
       oldHP = user.hp
-      BattleHandlers.triggerTargetAbilityOnHit(target.ability.id, user, target, move, @battle)
-      BattleHandlers.triggerTargetAbilityOnHit(target.ability2.id, user, target, move, @battle) if $game_switches[SWITCH_DOUBLE_ABILITIES] && target.ability2
+      BattleHandlers.triggerTargetAbilityOnHit(target.ability, user, target, move, @battle)
+      BattleHandlers.triggerTargetAbilityOnHit(target.ability2, user, target, move, @battle) if $game_switches[SWITCH_DOUBLE_ABILITIES] && target.ability2
       user.pbItemHPHealCheck if user.hp < oldHP
     end
     # User's ability
     if user.abilityActive?(true)
-      BattleHandlers.triggerUserAbilityOnHit(user.ability.id, user, target, move, @battle)
-      BattleHandlers.triggerUserAbilityOnHit(user.ability2.id, user, target, move, @battle) if $game_switches[SWITCH_DOUBLE_ABILITIES] && user.ability2
+      BattleHandlers.triggerUserAbilityOnHit(user.ability, user, target, move, @battle)
+      BattleHandlers.triggerUserAbilityOnHit(user.ability2, user, target, move, @battle) if $game_switches[SWITCH_DOUBLE_ABILITIES] && user.ability2
       user.pbItemHPHealCheck
     end
   end
@@ -102,17 +98,17 @@ class PokeBattle_Battler
         choices = []
         @battle.eachOtherSideBattler(@index) do |b|
           next if b.ungainableAbility? ||
-            [:POWEROFALCHEMY, :RECEIVER, :TRACE].include?(b.ability_id)
+            [:POWEROFALCHEMY, :RECEIVER, :TRACE].include?(b.ability)
           choices.push(b)
         end
         if choices.length > 0
           choice = choices[@battle.pbRandom(choices.length)]
           @battle.pbShowAbilitySplash(self)
-          self.ability = choice.ability
+          @ability = choice.ability
           @battle.pbDisplay(_INTL("{1} traced {2}'s {3}!", pbThis, choice.pbThis(true), choice.abilityName))
           @battle.pbHideAbilitySplash(self)
           if !onSwitchIn && (unstoppableAbility? || abilityActive?)
-            BattleHandlers.triggerAbilityOnSwitchIn(@ability_index, self, @battle)
+            BattleHandlers.triggerAbilityOnSwitchIn(@ability, self, @battle)
           end
         end
       end
@@ -133,88 +129,44 @@ end
 
 
 class Pokemon
-  attr_writer :ability_index
-  attr_writer :ability2_index
+  attr_writer :ability
+  attr_writer :ability2
 
   #Primary ability utility methods for pokemon class
-  def ability_index
-    @ability_index = species_data.abilities[rand(species_data.abilities.length)] if !@ability_index
-    return @ability_index
+  def ability
+    @ability = species_data.abilities[rand(species_data.abilities.length)] if !@ability
+    return @ability
   end
 
   def ability
-    return GameData::Ability.try_get(self.ability_index)
+    return GameData::Ability.try_get(@ability)
   end
 
-  def ability_index=(value)
+  def ability=(value)
     return if value && !GameData::Ability.exists?(value)
-    @ability_index = (value) ? GameData::Ability.get(value).id : value
+    @ability = (value) ? GameData::Ability.get(value).id : value
   end
 
   #Secondary ability utility methods for pokemon class
-  def ability2_index
+  def ability2
     return nil if !$game_switches[SWITCH_DOUBLE_ABILITIES]
-    @ability2_index = species_data.abilities[rand(species_data.abilities.length)] if !@ability2_index
-    return @ability2_index
+    @ability2 = species_data.abilities[rand(species_data.abilities.length)] if !@ability2
+    return @ability2
   end
 
   def ability2
     return nil if !$game_switches[SWITCH_DOUBLE_ABILITIES]
-    return GameData::Ability.try_get(self.ability2_index)
+    return GameData::Ability.try_get(@ability2)
   end
 
-  def ability2_index=(value)
+  def ability2=(value)
     return if !$game_switches[SWITCH_DOUBLE_ABILITIES]
     return if value && !GameData::Ability.exists?(value)
-    @ability2_index = (value) ? GameData::Ability.get(value).id : value
+    @ability2 = (value) ? GameData::Ability.get(value).id : value
   end
 
   def adjustHPForWonderGuard(stats)
-    return self.ability_index == :WONDERGUARD ? 1 : stats[:HP] || ($game_switches[SWITCH_DOUBLE_ABILITIES] && self.ability2_index == :WONDERGUARD)
-  end
-
-end
-
-
-
-class PokemonFusionScene
-
-  def pbChooseAbility(ability1Id, ability2Id)
-    ability1 = GameData::Ability.get(ability1Id)
-    ability2 = GameData::Ability.get(ability2Id)
-    availableNatures = []
-    availableNatures << @pokemon1.nature_index
-    availableNatures << @pokemon2.nature_index
-
-    setAbilityAndNatureAndNickname([ability1,ability2], availableNatures)
-  end
-
-
-  def setAbilityAndNatureAndNickname(abilitiesList, naturesList)
-    clearUIForMoves
-    if $game_switches[SWITCH_DOUBLE_ABILITIES]
-      scene = FusionSelectOptionsScene.new(nil, naturesList, @pokemon1, @pokemon2)
-      screen = PokemonOptionScreen.new(scene)
-      screen.pbStartScreen
-
-      @pokemon1.ability_index = abilitiesList[0]
-      @pokemon1.ability2_index = abilitiesList[1]
-    else
-      scene = FusionSelectOptionsScene.new(abilitiesList, naturesList, @pokemon1, @pokemon2)
-      screen = PokemonOptionScreen.new(scene)
-      screen.pbStartScreen
-
-      @pokemon1.head_ability_index = @pokemon2.ability_index
-      @pokemon1.body_ability_index = @pokemon1.ability_index
-      @pokemon1.ability_index = scene.selectedAbility
-    end
-    
-    @pokemon1.head_nature_index = @pokemon2.nature_index
-    @pokemon1.body_nature_index = @pokemon1.nature_index
-    @pokemon1.nature_index = scene.selectedNature
-    if scene.hasNickname
-      @pokemon1.name = scene.nickname
-    end
+    return @ability == :WONDERGUARD ? 1 : stats[:HP] || ($game_switches[SWITCH_DOUBLE_ABILITIES] && @ability2 == :WONDERGUARD)
   end
 
 end

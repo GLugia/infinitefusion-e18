@@ -1893,7 +1893,7 @@ class PokeBattle_Move_064 < PokeBattle_Move
   end
 
   def pbFailsAgainstTarget?(user, target)
-    if target.unstoppableAbility? || [:TRUANT, :INSOMNIA].include?(target.ability_id)
+    if target.unstoppableAbility? || [:TRUANT, :INSOMNIA].include?(target.ability)
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
@@ -1933,7 +1933,7 @@ class PokeBattle_Move_065 < PokeBattle_Move
       return true
     end
     if target.ungainableAbility? ||
-      [:POWEROFALCHEMY, :RECEIVER, :TRACE, :WONDERGUARD].include?(target.ability_id)
+      [:POWEROFALCHEMY, :RECEIVER, :TRACE, :WONDERGUARD].include?(target.ability)
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
@@ -1963,7 +1963,7 @@ class PokeBattle_Move_066 < PokeBattle_Move
       return true
     end
     if user.ungainableAbility? ||
-      [:POWEROFALCHEMY, :RECEIVER, :TRACE].include?(user.ability_id)
+      [:POWEROFALCHEMY, :RECEIVER, :TRACE].include?(user.ability)
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end

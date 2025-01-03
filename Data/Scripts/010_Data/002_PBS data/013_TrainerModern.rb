@@ -19,6 +19,7 @@ module GameData
       "Form" => [:form, "u"],
       "Name" => [:name, "s"],
       "Moves" => [:moves, "*e", :Move],
+      # leave this here for compatibility with file Trainers.dat
       "Ability" => [:ability, "s"],
       "AbilityIndex" => [:ability_index, "u"],
       "Item" => [:item, "e", :Item],
@@ -320,8 +321,8 @@ module GameData
         else
           pkmn.reset_moves
         end
-        pkmn.ability_index = pkmn_data[:ability_index]
-        pkmn.ability = pkmn_data[:ability]
+        pkmn.ability = GameData::Ability.get(pkmn_data[:ability]).id
+        
         pkmn.gender = pkmn_data[:gender] || ((trainer.male?) ? 0 : 1)
         pkmn.shiny = (pkmn_data[:shininess]) ? true : false
         if pkmn_data[:nature]

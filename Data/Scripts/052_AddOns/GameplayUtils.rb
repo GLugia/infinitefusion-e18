@@ -1041,7 +1041,7 @@ def exportFusedPokemonForShowdown(pokemon)
     nameLine = _INTL("{1} ({2})", pokemon.name, species_name)
   end
 
-  abilityLine = _INTL("Ability: {1}", pokemon.ability.name)
+  abilityLine = _INTL("Ability: {1}", GameData::Ability.get(pokemon.ability).name)
   levelLine = _INTL("Level: {1}", pokemon.level)
 
   fusionLine = ""

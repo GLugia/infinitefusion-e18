@@ -8,7 +8,7 @@ class PokeBattle_Battle
     return false if !@canRun && !battler.opposes?
     return true if battler.pbHasType?(:GHOST) && Settings::MORE_TYPE_EFFECTS
     return true if battler.abilityActive? &&
-                   BattleHandlers.triggerRunFromBattleAbility(battler.ability.id,battler)
+                   BattleHandlers.triggerRunFromBattleAbility(battler.ability,battler)
     return true if battler.itemActive? &&
                    BattleHandlers.triggerRunFromBattleItem(battler.item,battler)
     return false if battler.effects[PBEffects::Trapping]>0 ||
@@ -17,7 +17,7 @@ class PokeBattle_Battle
                     @field.effects[PBEffects::FairyLock]>0
     eachOtherSideBattler(idxBattler) do |b|
       return false if b.abilityActive? &&
-                      BattleHandlers.triggerTrappingTargetAbility(b.ability.id,battler,b,self)
+                      BattleHandlers.triggerTrappingTargetAbility(b.ability,battler,b,self)
       return false if b.itemActive? &&
                       BattleHandlers.triggerTrappingTargetItem(b.item,battler,b,self)
     end
@@ -84,7 +84,7 @@ class PokeBattle_Battle
       end
       # Abilities that guarantee escape
       if battler.abilityActive?
-        if BattleHandlers.triggerRunFromBattleAbility(battler.ability.id,battler)
+        if BattleHandlers.triggerRunFromBattleAbility(battler.ability,battler)
           pbShowAbilitySplash(battler,true)
           pbHideAbilitySplash(battler)
           pbSEPlay("Battle flee")
@@ -114,7 +114,7 @@ class PokeBattle_Battle
       # Trapping abilities/items
       eachOtherSideBattler(idxBattler) do |b|
         next if !b.abilityActive?
-        if BattleHandlers.triggerTrappingTargetAbility(b.ability.id,battler,b,self)
+        if BattleHandlers.triggerTrappingTargetAbility(b.ability,battler,b,self)
           pbDisplayPaused(_INTL("{1} prevents escape with {2}!",b.pbThis,b.abilityName))
           return 0
         end

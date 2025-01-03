@@ -5,11 +5,11 @@ class FusionSelectOptionsScene < PokemonOption_Scene
   attr_accessor :nickname
 
 
-  def initialize(abilityList,natureList, pokemon1, pokemon2)
+  def initialize(abilityList, natureList, pokemon1, pokemon2)
     @abilityList = abilityList
     @natureList = natureList
-    @selectedAbility=nil
-    @selectedNature=nil
+    @selectedAbility = abilityList[0]
+    @selectedNature = natureList[0]
     @selBaseColor = Color.new(48,96,216)
     @selShadowColor = Color.new(32,32,32)
     @show_frame=false
@@ -37,7 +37,7 @@ class FusionSelectOptionsScene < PokemonOption_Scene
 
 
   def getAbilityName(ability)
-    return GameData::Ability.get(ability).real_name
+    return GameData::Ability.get(ability).name
   end
 
   def getAbilityDescription(ability)
@@ -90,17 +90,17 @@ class FusionSelectOptionsScene < PokemonOption_Scene
                                 }, "Select the Pokémon's nickname")
     end
 
-    options << EnumOption.new(_INTL("Ability"), [_INTL(getAbilityName(@abilityList[0])), _INTL(getAbilityName(@abilityList[1]))],
+    options << EnumOption.new(_INTL("Ability"), [_INTL(getAbilityName(@abilityList[0])), _INTL(getAbilityName(@abilityList[0]))],
                      proc { 0 },
                      proc { |value|
-                       @selectedAbility=@abilityList[value]
+                       @selectedAbility = @abilityList[value]
                      }, [getAbilityDescription(@abilityList[0]), getAbilityDescription(@abilityList[1])]
       )
 
-    options << EnumOption.new(_INTL("Nature"), [_INTL(getNatureName(@natureList[0])), _INTL(getNatureName(@natureList[1]))],
+    options << EnumOption.new(_INTL("Nature"), [_INTL(getNatureName(@natureList[0])), _INTL(getNatureName(@natureList[0]))],
                      proc { 0 },
                      proc { |value|
-                       @selectedNature=@natureList[value]
+                       @selectedNature = @natureList[value]
                      }, [getNatureDescription(@natureList[0]), getNatureDescription(@natureList[1])]
       )
     return options

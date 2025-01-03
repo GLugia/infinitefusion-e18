@@ -46,15 +46,15 @@ class Pokemon
   attr_accessor :gender
   attr_accessor :body_gender, :head_gender
 
-  # The index of this Pokémon's ability (0, 1 are natural abilities, 2+ are
-  # hidden abilities)as defined for its species/form. An ability may not be
-  # defined at this index. Is recalculated (as 0 or 1) if made nil.
-  # @param value [Integer, nil] forced ability index (nil if none is set)
-  attr_writer :ability_index
-  attr_accessor :body_ability_index, :head_ability_index
+  # This Pokemon's ability. It can be anything but whether or not it is legal is validated
+  # in many places. This includes checking the summary, hovering it in the PC, or sending
+  # it out to battle. Said ability must be declared in species_data.abilities or
+  # species_data.hidden_abilities
+  attr_writer :ability
+  attr_accessor :body_ability, :head_ability
   
-  attr_accessor :nature_index
-  attr_accessor :body_nature_index, :head_nature_index
+  attr_accessor :nature
+  attr_accessor :body_nature, :head_nature
 
   # @return [Array<Pokemon::Move>] the moves known by this Pokémon
   attr_accessor :moves
@@ -170,15 +170,15 @@ class Pokemon
     echoln("Body Gender: #{@body_gender}")
 
     echoln("Calculated ability: #{@ability}")
-    echoln("Abilities hash: #{getAbilityList()}")
+    echoln("Abilities hash: #{getAbilityList}")
 
-    echoln("Ability Index: #{@ability_index}")
-    echoln("Head Ability Index: #{@head_ability_index}")
-    echoln("Body Ability Index: #{@body_ability_index}")
+    echoln("Ability Index: #{@ability}")
+    echoln("Head Ability Index: #{@head_ability}")
+    echoln("Body Ability Index: #{@body_ability}")
     
-    echoln("Nature Index: #{@nature_index}")
-    echoln("Head Nature Index: #{@head_nature_index}")
-    echoln("Body Nature Index: #{@body_nature_index}")
+    echoln("Nature Index: #{@nature}")
+    echoln("Head Nature Index: #{@head_nature}")
+    echoln("Body Nature Index: #{@body_nature}")
 
     move1, move2, move3, move4 = "", "", "", ""
 
@@ -719,24 +719,14 @@ class Pokemon
   #=============================================================================
 
   # @return [Integer] the index of this Pokémon's ability
-  def ability_index
-    @ability_index = species_data.abilities[rand(species_data.abilities.length)] if !@ability_index
-    return @ability_index
-  end
-
-  def forced_ability
-    return @ability_index
-  end
-
-  # @return [GameData::Ability, nil] an Ability object corresponding to this Pokémon's ability
   def ability
-    return nil if !@ability_index
-    return GameData::Ability.get(@ability_index)
+    @ability = species_data.abilities[rand(species_data.abilities.length)] if !@ability
+    return @ability
   end
 
-  def ability_index=(value)
+  def ability=(value)
     return if value && !GameData::Ability.exists?(value)
-    @ability_index = (value) ? GameData::Ability.get(value).id : value
+    @ability = (value) ? GameData::Ability.get(value).id : value
   end
 
   # Returns whether this Pokémon has a particular ability. If no value
@@ -745,9 +735,8 @@ class Pokemon
   # @return [Boolean] whether this Pokémon has a particular ability or
   #   an ability at all
   def hasAbility?(check_ability = nil)
-    current_ability = self.ability
-    return !current_ability.nil? if check_ability.nil?
-    return current_ability == check_ability
+    return !@ability.nil? if check_ability.nil?
+    return @ability == check_ability
   end
 
   # @return [Boolean] whether this Pokémon has a hidden ability
@@ -758,51 +747,47 @@ class Pokemon
     if self.isFusion?
       # head
       part = GameData::Species.get(getHeadID(@species))
-      return true if part.hidden_abilities.include?(self.ability_index)
+      return true if part.hidden_abilities.include?(@ability)
       # body
       part = GameData::Species.get(getBodyID(@species))
-      return true if part.hidden_abilities.include?(self.ability_index)
+      return true if part.hidden_abilities.include?(@ability)
       # not in list of hidden abilities
       return false
     else
-      return true if self.species_data.hidden_abilities.include?(self.ability_index) && !self.species_data.abilities.include?(self.ability_index)
+      return true if self.species_data.hidden_abilities.include?(@ability) && !self.species_data.abilities.include?(@ability)
       return false
     end
   end
 
-  # @return [Array<Array<Symbol,Integer>>] the abilities this Pokémon can have,
-  #   where every element is [ability ID, ability index]
+  # return all possible abilities for this species
   def getAbilityList
-    ret = []
-    species_data.abilities.each_with_index { |a, i| ret.push([a, i]) if a }
-    species_data.hidden_abilities.each_with_index { |a, i| ret.push([a, i + 2]) if a }
-    return ret
+    return @species_data.abilities + @species_data.hidden_abilities
   end
 
   #=============================================================================
   # Nature
   #=============================================================================
 
-  def nature_index
-    @nature_index = GameData::Nature.get(rand(GameData::Nature::DATA.keys.length / 2)).id if !@nature_index
-    return @nature_index
+  def nature
+    @nature = GameData::Nature.get(rand(GameData::Nature::DATA.keys.length / 2)).id if !@nature
+    return @nature
   end
 
   # @return [GameData::Nature, nil] a Nature object corresponding to this Pokémon's nature
   def nature
-    @nature_index = GameData::Nature.get(rand(GameData::Nature::DATA.keys.length / 2)).id if !@nature_index
-    return GameData::Nature.try_get(@nature_index)
+    @nature = GameData::Nature.get(rand(GameData::Nature::DATA.keys.length / 2)).id if !@nature
+    return GameData::Nature.try_get(@nature)
   end
 
   def nature_id
-    return @nature_index
+    return @nature
   end
 
   # Sets this Pokémon's nature to a particular nature.
   # @param value [Symbol, String, Integer, nil] nature to change to
-  def nature_index=(value)
+  def nature=(value)
     return if value && !GameData::Nature.exists?(value)
-    @nature_index = (value) ? GameData::Nature.get(value).id : value
+    @nature = (value) ? GameData::Nature.get(value).id : value
     self.calc_stats
   end
 
@@ -812,7 +797,7 @@ class Pokemon
   # @return [Boolean] whether this Pokémon has a particular nature or a nature
   #   at all
   def hasNature?(check_nature = nil)
-    return !@nature_index.nil? if check_nature.nil?
+    return !@nature.nil? if check_nature.nil?
     return self.nature == check_nature
   end
   
@@ -1530,7 +1515,7 @@ class Pokemon
   end
 
   def adjustHPForWonderGuard(stats)
-    return self.ability == :WONDERGUARD ? 1 : stats[:HP]
+    return @ability == :WONDERGUARD ? 1 : stats[:HP]
   end
 
   def checkHPRelatedFormChange()
@@ -1562,7 +1547,7 @@ class Pokemon
     # Format stat multipliers due to nature
     nature_mod = {}
     GameData::Stat.each_main { |s| nature_mod[s.id] = 100 }
-    this_nature = GameData::Nature.get(self.nature_index)
+    this_nature = GameData::Nature.get(self.nature)
     if this_nature
       this_nature.stat_changes.each { |change| nature_mod[change[0]] += change[1] }
     end
@@ -1640,14 +1625,14 @@ class Pokemon
     self.head_gender = other.head_gender if other.head_gender
     self.body_gender = other.body_gender if other.body_gender
     
-    self.ability_index = other.ability_index
-    self.ability2_index = other.ability2_index
-    self.head_ability_index = other.head_ability_index if other.head_ability_index
-    self.body_ability_index = other.body_ability_index if other.body_ability_index
+    self.ability = other.ability
+    self.ability2 = other.ability2
+    self.head_ability = other.head_ability if other.head_ability
+    self.body_ability = other.body_ability if other.body_ability
     
-    self.nature_index = other.nature_index
-    self.head_nature_index = other.head_nature_index if other.head_nature_index
-    self.body_nature_index = other.body_nature_index if other.body_nature_index
+    self.nature = other.nature
+    self.head_nature = other.head_nature if other.head_nature
+    self.body_nature = other.body_nature if other.body_nature
     
     self.moves = other.moves
     self.first_moves = other.first_moves
@@ -1764,42 +1749,42 @@ class Pokemon
   # overhaul to how fusion data is stored; including changing how abilities are stored in general
   # calling this will ensure the ability is legit
   def validate_ability
-    if !self.ability || (!self.species_data.abilities.include?(self.ability_index) && !self.species_data.hidden_abilities.include?(self.ability_index))
+    if !@ability || (!self.species_data.abilities.include?(@ability) && !self.species_data.hidden_abilities.include?(@ability))
       # we handle this differently if the pokemon is a fusion
       if self.isFusion?
         # parts had abilities already, just pick between them
-        if @head_ability_index && @body_ability_index
-          @ability_index = rand(2) == 0 ? @head_ability_index : @body_ability_index
+        if @head_ability && @body_ability
+          @ability = rand(2) == 0 ? @head_ability : @body_ability
         # parts weren't set so we generate a list and randomly choose one
         else
           head = GameData::Species.get(getHeadID(@species))
           body = GameData::Species.get(getBodyID(@species))
-          abilities = {}
+          abilities = []
           # the head's pokeball was an ability ball
           if @head_poke_ball == :ABILITYBALL
-            head.hidden_abilities.each { |a| abilities << a }
+            abilities.push(*head.hidden_abilities)
           # the body's pokeball was an ability ball
           elsif @body_poke_ball == :ABILITYBALL
-            body.hidden_abilities.each { |a| abilities << a }
+            abilities.push(*body.hidden_abilities)
           # neither part has stored data but the fusion pokemon is in an ability ball
           elsif @poke_ball == :ABILITYBALL
-            self.species_data.hidden_abilities.each { |a| abilities << a }
+            abilities.push(*self.species_data.hidden_abilities)
           # no ability ball to be found, take from both parts regular abilities
           else
-            head.abilities.each { |a| abilities << a }
-            body.abilities.each { |a| abilities << a }
+            abilities.push(*head.abilities)
+            abilities.push(*body.abilities)
           end
           # randomly select one of the abilities from the list
-          @ability_index = abilities[rand(abilities.length)]
+          @ability = abilities[rand(abilities.length)]
         end
       # not a fusion
       else
         # set hidden ability
         if @poke_ball == :ABILITYBALL
-          @ability_index = self.species_data.hidden_abilities[rand(self.species_data.hidden_abilities.length)]
+          @ability = self.species_data.hidden_abilities[rand(self.species_data.hidden_abilities.length)]
         # set regular ability
         else
-          @ability_index = self.species_data.abilities[rand(self.species_data.abilities.length)]
+          @ability = self.species_data.abilities[rand(self.species_data.abilities.length)]
         end
       end
     end
@@ -1817,9 +1802,9 @@ class Pokemon
     heal_status
     @gender = nil
     self.shiny?
-    self.ability_index
-    @ability2_index = nil
-    self.nature_index
+    self.ability
+    @ability2 = nil
+    self.nature
     @item = nil
     @mail = nil
     @moves = []

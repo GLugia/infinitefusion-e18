@@ -150,7 +150,7 @@ class PokemonEncounters
         encounter_chance *= 2.0 / 3
         min_steps_needed *= 4 / 3.0
       else   # Ignore ability effects if an item effect applies
-        case first_pkmn.ability_index
+        case first_pkmn.ability
         when :STENCH, :WHITESMOKE, :QUICKFEET
           encounter_chance /= 2
           min_steps_needed *= 2
@@ -205,7 +205,7 @@ class PokemonEncounters
     # sufficiently weaker than the Pokémon with the ability
     first_pkmn = $Trainer.first_pokemon
     if first_pkmn
-      case first_pkmn.ability_index
+      case first_pkmn.ability
       when :INTIMIDATE, :KEENEYE
         return false if enc_data[1] <= first_pkmn.level - 5 && rand(100) < 50
       end
@@ -292,7 +292,7 @@ class PokemonEncounters
     first_pkmn = $Trainer.first_pokemon
     if first_pkmn
       favored_type = nil
-      case first_pkmn.ability_index
+      case first_pkmn.ability
       when :STATIC
         favored_type = :ELECTRIC if GameData::Type.exists?(:ELECTRIC) && rand(100) < 50
       when :MAGNETPULL
@@ -330,7 +330,7 @@ class PokemonEncounters
     level = rand(encounter[2]..encounter[3])
     # Some abilities alter the level of the wild Pokémon
     if first_pkmn
-      case first_pkmn.ability_index
+      case first_pkmn.ability
       when :HUSTLE, :PRESSURE, :VITALSPIRIT
         level = encounter[3] if rand(100) < 50   # Highest possible level
       end

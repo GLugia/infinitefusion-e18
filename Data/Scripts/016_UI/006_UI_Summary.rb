@@ -711,10 +711,10 @@ class PokemonSummary_Scene
       [_INTL("Ability"), 224, 278, 0, base, shadow]
     ]
     # Draw ability name and description
-    ability = @pokemon.ability
+    ability = GameData::Ability.get(@pokemon.ability)
     if ability
-      textpos.push([@pokemon.ability.name, 362, 278, 0, Color.new(64, 64, 64), Color.new(176, 176, 176)])
-      drawTextEx(overlay, 224, 320, 282, 2, @pokemon.ability.description, Color.new(64, 64, 64), Color.new(176, 176, 176))
+      textpos.push([ability.name, 362, 278, 0, Color.new(64, 64, 64), Color.new(176, 176, 176)])
+      drawTextEx(overlay, 224, 320, 282, 2, ability.description, Color.new(64, 64, 64), Color.new(176, 176, 176))
     end
 
     #fixme temp double abilities
@@ -1424,16 +1424,22 @@ class PokemonSummary_Scene
           pbPlayDecisionSE
           dorefresh = pbOptions
         end
-      elsif Input.trigger?(Input::UP) && @partyindex > 0
+      elsif Input.trigger?(Input::UP)
         oldindex = @partyindex
+        if @partyindex == 0
+          @partyindex = @party.length
+        end
         pbGoToPrevious
         if @partyindex != oldindex
           pbChangePokemon
           @ribbonOffset = 0
           dorefresh = true
         end
-      elsif Input.trigger?(Input::DOWN) && @partyindex < @party.length - 1
+      elsif Input.trigger?(Input::DOWN)
         oldindex = @partyindex
+        if @partyindex == @party.length - 1
+          @partyindex = -1
+        end
         pbGoToNext
         if @partyindex != oldindex
           pbChangePokemon

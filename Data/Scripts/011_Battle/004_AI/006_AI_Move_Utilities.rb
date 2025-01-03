@@ -302,14 +302,14 @@ class PokeBattle_AI
         break
       end
       if canCheck
-        BattleHandlers.triggerDamageCalcUserAbility(user.ability.id,
+        BattleHandlers.triggerDamageCalcUserAbility(user.ability,
            user,target,move,multipliers,baseDmg,type)
       end
     end
     if skill>=PBTrainerAI.mediumSkill && !moldBreaker
       user.eachAlly do |b|
         next if !b.abilityActive?
-        BattleHandlers.triggerDamageCalcUserAllyAbility(b.ability.id,
+        BattleHandlers.triggerDamageCalcUserAllyAbility(b.ability,
            user,target,move,multipliers,baseDmg,type)
       end
     end
@@ -324,14 +324,14 @@ class PokeBattle_AI
         break
       end
       if canCheck
-        BattleHandlers.triggerDamageCalcTargetAbility(target.ability.id,
+        BattleHandlers.triggerDamageCalcTargetAbility(target.ability,
            user,target,move,multipliers,baseDmg,type)
       end
     end
     if skill>=PBTrainerAI.bestSkill && !moldBreaker
       target.eachAlly do |b|
         next if !b.abilityActive?
-        BattleHandlers.triggerDamageCalcTargetAllyAbility(b.ability.id,
+        BattleHandlers.triggerDamageCalcTargetAllyAbility(b.ability,
            user,target,move,multipliers,baseDmg,type)
       end
     end
@@ -527,11 +527,11 @@ class PokeBattle_AI
       c = 0
       # Ability effects that alter critical hit rate
       if c>=0 && user.abilityActive?
-        c = BattleHandlers.triggerCriticalCalcUserAbility(user.ability.id,user,target,c)
+        c = BattleHandlers.triggerCriticalCalcUserAbility(user.ability,user,target,c)
       end
       if skill>=PBTrainerAI.bestSkill
         if c>=0 && !moldBreaker && target.abilityActive?
-          c = BattleHandlers.triggerCriticalCalcTargetAbility(target.ability.id,user,target,c)
+          c = BattleHandlers.triggerCriticalCalcTargetAbility(target.ability,user,target,c)
         end
       end
       # Item effects that alter critical hit rate
@@ -605,18 +605,18 @@ class PokeBattle_AI
     # Ability effects that alter accuracy calculation
     if skill>=PBTrainerAI.mediumSkill
       if user.abilityActive?
-        BattleHandlers.triggerAccuracyCalcUserAbility(user.ability.id,
+        BattleHandlers.triggerAccuracyCalcUserAbility(user.ability,
            modifiers,user,target,move,type)
       end
       user.eachAlly do |b|
         next if !b.abilityActive?
-        BattleHandlers.triggerAccuracyCalcUserAllyAbility(b.ability.id,
+        BattleHandlers.triggerAccuracyCalcUserAllyAbility(b.ability,
            modifiers,user,target,move,type)
       end
     end
     if skill>=PBTrainerAI.bestSkill
       if target.abilityActive? && !moldBreaker
-        BattleHandlers.triggerAccuracyCalcTargetAbility(target.ability.id,
+        BattleHandlers.triggerAccuracyCalcTargetAbility(target.ability,
            modifiers,user,target,move,type)
       end
     end

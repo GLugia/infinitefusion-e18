@@ -1060,26 +1060,19 @@ ItemHandlers::UseOnPokemon.add(:NLUNARIZER, proc { |item, pkmn, scene|
 })
 
 ItemHandlers::UseOnPokemon.add(:ABILITYCAPSULE, proc { |item, pkmn, scene|
-  abils = pkmn.getAbilityList
-  abil1 = nil; abil2 = nil
-  for i in abils
-    abil1 = i[0] if i[1] == 0
-    abil2 = i[0] if i[1] == 1
-  end
-  if abil1.nil? || abil2.nil? || pkmn.hasHiddenAbility? || pkmn.isSpecies?(:ZYGARDE)
+  abilities = pkmn.species_data.abilities - pkmn.ability
+  if abilities.length == 0 || pkmn.hasHiddenAbility? || pkmn.isSpecies?(:ZYGARDE)
     scene.pbDisplay(_INTL("It won't have any effect."))
     next false
   end
-  newabil = (pkmn.ability_index + 1) % 2
-  newabilname = GameData::Ability.get((newabil == 0) ? abil1 : abil2).name
+  new_ability = abilities[rand(abilities.length)]
+  new_ability_name = GameData::Ability.get(new_ability).name
   if scene.pbConfirm(_INTL("Would you like to change {1}'s Ability to {2}?",
-                           pkmn.name, newabilname))
-    pkmn.ability_index = newabil
-    pkmn.ability = GameData::Ability.get((newabil == 0) ? abil1 : abil2).id
+                           pkmn.name, new_ability_name))
+    pkmn.ability = new_ability
 
-    #pkmn.ability = GameData::Ability.get((newabil == 0) ? abil1 : abil2).id
 	  scene.pbHardRefresh
-    scene.pbDisplay(_INTL("{1}'s Ability changed to {2}!", pkmn.name, newabilname))
+    scene.pbDisplay(_INTL("{1}'s Ability changed to {2}!", pkmn.name, new_ability_name))
     next true
   end
   next false

@@ -609,13 +609,42 @@ class PokemonEvolutionScene
     pbEvolutionMethodAfterEvolution if !reversing
 
 
-    #oldAbility = @pokemon.ability.id if @pokemon.ability
+    #oldAbility = @pokemon.ability if @pokemon.ability
     newSpecies = GameData::Species.get(@newspecies)
+    
+    if @pokemon.ability == nil
+      raise Exception.new("Pokemon's ability was nil")
+    end
+    
+    # find the index of the previous ability
+    hidden_ability = @pokemon.hasHiddenAbility?
+    ability_index = nil
+    
+    if hidden_ability
+      ability_index = (@pokemon.species_data.hidden_abilities.each_with_index.map { |a, i| GameData::Ability.get(a).id == @pokemon.ability ? i : nil }.compact)[0]
+      if ability_index == nil
+        raise Exception.new("Hidden failed to set the ability_index")
+      end
+    else
+      ability_index = (@pokemon.species_data.abilities.each_with_index.map { |a, i| GameData::Ability.get(a) == @pokemon.ability ? i : nil }.compact)[0]
+      if ability_index == nil
+        raise Exception.new("Regular failed to set the ability_index")
+      end
+    end
 
     #allNewPossibleAbilities = newSpecies.abilities + newSpecies.hidden_abilities
 
     # Modify Pokémon to make it evolved
     @pokemon.species = @newspecies
+    
+    # change the ability to one at the same index of the previous
+    # bug fix for evolutions not changing abilities properly
+    if hidden_ability
+      @pokemon.ability = GameData::Ability.get(@pokemon.species_data.hidden_abilities[ability_index]).id
+    else
+      @pokemon.ability = GameData::Ability.get(@pokemon.species_data.abilities[ability_index]).id
+    end
+    
     @pokemon.form    = 0 if @pokemon.isSpecies?(:MOTHIM)
     @pokemon.calc_stats
     # See and own evolved species
@@ -628,12 +657,6 @@ class PokemonEvolutionScene
                                _INTL("{1}'s data was added to the Pokédex", newspeciesname))
       @scene.pbShowPokedex(@newspecies)
     end
-
-
-
-    # if allNewPossibleAbilities.include?(oldAbility)
-    #   @pokemon.ability=oldAbility
-    # end
 
     # Learn moves upon evolution for evolved species
     movelist = @pokemon.getMoveList

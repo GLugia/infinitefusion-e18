@@ -19,6 +19,7 @@ module GameData
       "Form" => [:form, "u"],
       "Name" => [:name, "s"],
       "Moves" => [:moves, "*e", :Move],
+      # leave this here for compatibility with file Trainers.dat
       "Ability" => [:ability, "s"],
       "AbilityIndex" => [:ability_index, "u"],
       "Item" => [:item, "e", :Item],
@@ -330,20 +331,37 @@ module GameData
         else
           pkmn.reset_moves
         end
-        pkmn.ability_index = pkmn_data[:ability_index]
+        
+        if pkmn_data[:ability] != nil
+          if pkmn_data[:ability].is_of?(Integer)
+            pkmn.ability = pkmn_data[:ability]
+          else
+            pkmn.ability = pkmn_data[:ability].id
+          end
+        elsif pkmn_data[:ability_index] != nil
+          if pkmn_data[:ability_index].is_of?(Integer)
+            abilities = pkmn.getAbilityList
+            pkmn.ability = abilities[pkmn_data[:ability_index]]
+          else
+            pkmn.ability = pkmn_data[:ability_index]
+          end
+        else
+          abilities = pkmn.getAbilityList
+          pkmn.ability = abilities[rand(abilities.length)]
+        end
 
         if $game_switches[SWITCH_DOUBLE_ABILITIES] && pkmn.isFusion?
-          secondary_ability_index = pkmn.ability_index == 0 ? 1 : 0
-          pkmn.ability2_index = secondary_ability_index
+          secondary_ability = pkmn.ability == 0 ? 1 : 0
+          pkmn.ability2 = secondary_ability
         end
 
         pkmn.gender = pkmn_data[:gender] || ((trainer.male?) ? 0 : 1)
         pkmn.shiny = (pkmn_data[:shininess]) ? true : false
         if pkmn_data[:nature]
-          pkmn.nature_index = pkmn_data[:nature].id
+          pkmn.nature = pkmn_data[:nature].id
         else
           nature = pkmn.species_data.id_number + GameData::TrainerType.get(trainer.trainer_type).id_number
-          pkmn.nature_index = nature % (GameData::Nature::DATA.length / 2)
+          pkmn.nature = nature % (GameData::Nature::DATA.length / 2)
         end
         GameData::Stat.each_main do |s|
           if pkmn_data[:iv]

@@ -1553,12 +1553,7 @@ class PokemonStorageScene
       textstrings.push([pokemon.level.to_s, 28, 228, false, base, shadow])
       
       pokemon.validate_ability
-      
-      if pokemon.ability
-        textstrings.push([pokemon.ability.name, 86, 300, 2, base, shadow])
-      else
-        textstrings.push([_INTL("No ability"), 86, 300, 2, nonbase, nonshadow])
-      end
+      textstrings.push([GameData::Ability.get(pokemon.ability).name, 86, 300, 2, base, shadow])
       
       if pokemon.item
         textstrings.push([pokemon.item.name, 86, 336, 2, base, shadow])
@@ -2328,22 +2323,22 @@ class PokemonStorageScreen
         isSuperSplicer = isSuperSplicer?(@fusionItem)
 
 
-        selectedHead =selectFusion(pokemon, heldpoke, isSuperSplicer)
-        if selectedHead == nil
+        head = selectFusion(pokemon, heldpoke, isSuperSplicer)
+        if head == nil
           pbDisplay(_INTL("It won't have any effect."))
           return false
         end
-        if selectedHead == -1 #cancelled out
+        if head == -1 #cancelled out
           return false
         end
 
-        selectedBase = selectedHead == pokemon ? heldpoke : pokemon
-        firstOptionSelected= selectedBase == pokemon
+        body = head == pokemon ? heldpoke : pokemon
+        firstOptionSelected = body == pokemon
 
 
         if (Kernel.pbConfirmMessage(_INTL("Fuse the two Pokémon?")))
           playingBGM = $game_system.getPlayingBGM
-          pbFuse(selectedHead, selectedBase, @fusionItem)
+          pbFuse(body, head, @fusionItem)
           if canDeleteItem(@fusionItem)
             $PokemonBag.pbDeleteItem(@fusionItem)
           end

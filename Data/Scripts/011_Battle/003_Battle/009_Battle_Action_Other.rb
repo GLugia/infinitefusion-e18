@@ -130,7 +130,7 @@ class PokeBattle_Battle
     trainerName = pbGetOwnerName(idxBattler)
     # Break Illusion
     if battler.hasActiveAbility?(:ILLUSION)
-      BattleHandlers.triggerTargetAbilityOnHit(battler.ability.id,nil,battler,nil,self)
+      BattleHandlers.triggerTargetAbilityOnHit(battler.ability,nil,battler,nil,self)
     end
     # Mega Evolve
     case battler.pokemon.megaMessage

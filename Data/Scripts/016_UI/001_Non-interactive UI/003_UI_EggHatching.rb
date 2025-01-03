@@ -209,9 +209,8 @@ def pbHatch(pokemon)
   pokemon.obtain_method  = 1   # hatched from egg
   pokemon.hatched_map    = $game_map.map_id
   if player_on_hidden_ability_map
-    chosenAbility = pokemon.getAbilityList.sample #format: [[:ABILITY, index],...]
-    #pokemon.ability = chosenAbility[0]
-    pokemon.ability_index = chosenAbility[1]
+    chosenAbility = pokemon.getAbilityList.sample
+    pokemon.ability = chosenAbility
   end
 
 

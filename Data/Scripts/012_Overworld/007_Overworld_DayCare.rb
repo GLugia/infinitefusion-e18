@@ -326,12 +326,12 @@ def pbDayCareGenerateEgg
   if !ditto0 || !ditto1
     parent = (ditto0) ? father : mother   # The non-Ditto
     if parent.hasHiddenAbility?
-      egg.ability_index = parent.ability_index if rand(100) < 60
+      egg.ability = parent.ability if rand(100) < 60
     elsif !ditto0 && !ditto1
       if rand(100) < 80
-        egg.ability_index = mother.ability_index
+        egg.ability = mother.ability
       else
-        egg.ability_index = (mother.ability_index + 1) % 2
+        egg.ability = (mother.ability + 1) % 2
       end
     end
   end
