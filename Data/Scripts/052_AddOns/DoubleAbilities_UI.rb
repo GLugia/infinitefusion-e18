@@ -63,43 +63,4 @@ class PokeBattle_Battle
       Graphics.frame_rate.times { @scene.pbUpdate }   # 1 second
     end
   end
-
 end
-
-
-
-class FusionSelectOptionsScene < PokemonOption_Scene
-  def pbGetOptions(inloadscreen = false)
-
-    options = []
-    if shouldSelectNickname
-      options << EnumOption.new(_INTL("Nickname"), [_INTL(@pokemon1.name), _INTL(@pokemon2.name)],
-                                proc { 0 },
-                                proc { |value|
-                                  if value ==0
-                                    @nickname = @pokemon1.name
-                                  else
-                                    @nickname = @pokemon2.name
-                                  end
-                                }, "Select the Pokémon's nickname")
-    end
-
-    if @abilityList != nil
-      options << EnumOption.new(_INTL("Ability"), [_INTL(getAbilityName(@abilityList[0])), _INTL(getAbilityName(@abilityList[0]))],
-                                proc { 0 },
-                                proc { |value|
-                                  @selectedAbility = @abilityList[value]
-                                }, [getAbilityDescription(@abilityList[0]), getAbilityDescription(@abilityList[1])]
-      )
-    end
-
-    options << EnumOption.new(_INTL("Nature"), [_INTL(getNatureName(@natureList[0])), _INTL(getNatureName(@natureList[0]))],
-                              proc { 0 },
-                              proc { |value|
-                                @selectedNature = @natureList[value]
-                              }, [getNatureDescription(@natureList[0]), getNatureDescription(@natureList[1])]
-    )
-    return options
-  end
-end
-

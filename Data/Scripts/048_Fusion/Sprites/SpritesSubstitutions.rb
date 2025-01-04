@@ -28,9 +28,9 @@ end
 def get_sprite_substitution_id_from_dex_number(species_symbol)
   species = GameData::Species.get(species_symbol)
   if species.is_fusion
-    substitution_id = [species.get_head_species,species.get_body_species]
+    substitution_id = [species.get_head_species, species.get_body_species]
   else
-    substitution_id= species.id_number
+    substitution_id = species.id_number
   end
   return substitution_id
 end

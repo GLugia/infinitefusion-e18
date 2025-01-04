@@ -62,7 +62,7 @@ class BattleSpriteLoader
     end
   end
 
-  def obtain_fusion_pif_sprite(head_id,body_id)
+  def obtain_fusion_pif_sprite(head_id, body_id)
     substitution_id = get_sprite_substitution_id_for_fusion(head_id, body_id)
     pif_sprite = $PokemonGlobal.alt_sprite_substitutions[substitution_id] if $PokemonGlobal
     if !pif_sprite
@@ -74,7 +74,7 @@ class BattleSpriteLoader
   end
 
   def load_fusion_sprite(head_id, body_id)
-    pif_sprite = obtain_fusion_pif_sprite(head_id,body_id)
+    pif_sprite = obtain_fusion_pif_sprite(head_id, body_id)
     local_path = check_for_local_sprite(pif_sprite)
     if local_path
       return AnimatedBitmap.new(local_path)

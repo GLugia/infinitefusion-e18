@@ -2285,10 +2285,10 @@ class PokemonStorageScreen
   end
 
   def pbFusionCommands(selected)
-    heldpoke = pbHeldPokemon
-    pokemon = @storage[selected[0], selected[1]]
+    held_pokemon = pbHeldPokemon
+    selected_pokemon = @storage[selected[0], selected[1]]
 
-    if !pokemon
+    if !selected_pokemon
       command = pbShowCommands("Select an action", ["Cancel", "Stop fusing"])
       case command
       when 1 #stop
@@ -2302,50 +2302,54 @@ class PokemonStorageScreen
       commands.push(_INTL("Stop fusing"))
       commands.push(_INTL("Cancel"))
 
-      if !heldpoke
+      if !held_pokemon
         pbPlace(selected)
         @fusionMode = false
         @scene.setFusing(false)
         return
       end
+      
       command = pbShowCommands("Select an action", commands)
       case command
       when 0 #Fuse
-        if !pokemon
+        if !selected_pokemon
           pbDisplay(_INTL("No Pokémon selected!"))
           return
         else
-          if dexNum(pokemon.species) > NB_POKEMON
+          if dexNum(selected_pokemon.species) > NB_POKEMON
             pbDisplay(_INTL("This Pokémon is already fused!"))
             return
           end
         end
-        isSuperSplicer = isSuperSplicer?(@fusionItem)
-
-
-        head = selectFusion(pokemon, heldpoke, isSuperSplicer)
+        
+        is_supersplicer = isSuperSplicer?(@fusionItem)
+        
+        # for some reason this selects the body but in
+        # PokemonFusion.rb:1231, it selects the head
+        head = selectFusion(held_pokemon, selected_pokemon, is_supersplicer)
         if head == nil
           pbDisplay(_INTL("It won't have any effect."))
           return false
         end
-        if head == -1 #cancelled out
+        if head == -1 # cancelled out
           return false
         end
 
-        body = head == pokemon ? heldpoke : pokemon
-        firstOptionSelected = body == pokemon
-
+        body = head == held_pokemon ? selected_pokemon : held_pokemon
 
         if (Kernel.pbConfirmMessage(_INTL("Fuse the two Pokémon?")))
           playingBGM = $game_system.getPlayingBGM
-          pbFuse(body, head, @fusionItem)
+          
+          pbFuse(head, body, @fusionItem)
+          
           if canDeleteItem(@fusionItem)
             $PokemonBag.pbDeleteItem(@fusionItem)
           end
-          if firstOptionSelected
-            deleteSelectedPokemon(heldpoke, selected)
+          
+          if head == selected_pokemon
+            deleteSelectedPokemon(held_pokemon, selected)
           else
-            deleteHeldPokemon(heldpoke, selected)
+            deleteHeldPokemon(held_pokemon, selected)
           end
 
           @scene.setFusing(false)
@@ -2358,8 +2362,8 @@ class PokemonStorageScreen
           # @fusionMode = false
         end
       when 1 #swap
-        if pokemon
-          if dexNum(pokemon.species) <= NB_POKEMON
+        if selected_pokemon
+          if dexNum(selected_pokemon.species) <= NB_POKEMON
             pbSwap(selected)
           else
             pbDisplay(_INTL("This Pokémon is already fused!"))

@@ -671,20 +671,20 @@ def getReverseSpeciesAndSwapData(pokemon)
   pokemon.head_exp, pokemon.body_exp = pokemon.body_exp, pokemon.head_exp
   
   # abilty
-  if pokemon.ability_index == pokemon.head_ability_index
-    pokemon.ability_index = pokemon.body_ability_index
+  if pokemon.ability == pokemon.head_ability
+    pokemon.ability = pokemon.body_ability
   else
-    pokemon.ability_index = pokemon.head_ability_index
+    pokemon.ability = pokemon.head_ability
   end
-  pokemon.head_ability_index, pokemon.body_ability_index = pokemon.body_ability_index, pokemon.head_ability_index
+  pokemon.head_ability, pokemon.body_ability = pokemon.body_ability, pokemon.head_ability
   
   # nature
-  if pokemon.nature_index == pokemon.head_nature_index
-    pokemon.nature_index = pokemon.body_nature_index
+  if pokemon.nature == pokemon.head_nature
+    pokemon.nature = pokemon.body_nature
   else
-    pokemon.nature_index = pokemon.head_nature_index
+    pokemon.nature = pokemon.head_nature
   end
-  pokemon.head_nature_index, pokemon.body_nature_index = pokemon.body_nature_index, pokemon.head_nature_index
+  pokemon.head_nature, pokemon.body_nature = pokemon.body_nature, pokemon.head_nature
   
   # shiny
   pokemon.head_shiny, pokemon.body_shiny = pokemon.body_shiny, pokemon.head_shiny
@@ -735,7 +735,7 @@ def getReverseSpeciesAndSwapData(pokemon)
   # species
   head = getBasePokemonID(pokemon.species, false)
   body = getBasePokemonID(pokemon.species, true)
-  return (head) * Settings::NB_POKEMON + body
+  return head * Settings::NB_POKEMON + body
 end
 
 def reverseFusion(pokemon)
@@ -1194,7 +1194,6 @@ def getPokemonPositionInParty(pokemon)
   return -1
 end
 
-#don't remember why there's two Supersplicers arguments.... probably a mistake
 def pbDNASplicing(pokemon, scene, item = :DNASPLICERS)
   is_supersplicer = isSuperSplicersMechanics(item)
 
@@ -1229,33 +1228,32 @@ def pbDNASplicing(pokemon, scene, item = :DNASPLICERS)
             return false
           end
 
-          selectedHead = selectFusion(pokemon, poke2, is_supersplicer)
-          if selectedHead == -1 #cancelled
-            return false
-          end
-          if selectedHead == nil #can't fuse (egg, etc.)
+          head = selectFusion(pokemon, poke2, is_supersplicer)
+          if head == nil
             scene.pbDisplay(_INTL("It won't have any effect."))
             return false
           end
-          selectedBase = selectedHead == pokemon ? poke2 : pokemon
-
-          firstOptionSelected = selectedHead == pokemon
-          if !firstOptionSelected
+          if head == -1 # cancelled
+            return false
+          end
+          body = head == pokemon ? poke2 : pokemon
+          
+          if head != pokemon
             chosen = getPokemonPositionInParty(pokemon)
             if chosen == -1
               scene.pbDisplay(_INTL("There was an error..."))
               return false
             end
           end
-
-          if (Kernel.pbConfirmMessage(_INTL("Fuse {1} and {2}?", selectedHead.name, selectedBase.name)))
-            pbFuse(selectedHead, selectedBase, item)
+          
+          if (Kernel.pbConfirmMessage(_INTL("Fuse {1} and {2}?", head.name, body.name)))
+            pbFuse(head, body, item)
             pbRemovePokemonAt(chosen)
             scene.pbHardRefresh
             pbBGMPlay(playingBGM)
             return true
           end
-
+          
         elsif pokemon == poke2
           scene.pbDisplay(_INTL("{1} can't be fused with itself!", pokemon.name))
           return false
@@ -1273,48 +1271,23 @@ def pbDNASplicing(pokemon, scene, item = :DNASPLICERS)
   end
 end
 
-def selectFusion(pokemon, poke2, supersplicers = false)
-  return nil if !pokemon.is_a?(Pokemon) || !poke2.is_a?(Pokemon)
-  return nil if pokemon.egg? || poke2.egg?
-
-  selectorWindow = FusionPreviewScreen.new(poke2, pokemon, supersplicers) #PictureWindow.new(picturePath)
-  selectedHead = selectorWindow.getSelection
+def selectFusion(pokemon1, pokemon2, supersplicers = false)
+  return nil if !pokemon1.is_a?(Pokemon) || !pokemon2.is_a?(Pokemon)
+  return nil if pokemon1.egg? || pokemon2.egg?
+  
+  selectorWindow = FusionPreviewScreen.new(pokemon1, pokemon2, supersplicers)
+  result = selectorWindow.getSelection
   selectorWindow.dispose
-  return selectedHead
+  return result
 end
 
-# firstOptionSelected= selectedHead == pokemon
-# selectedBody = selectedHead == pokemon ? poke2 : pokemon
-# newid = (selectedBody.species_data.id_number) * NB_POKEMON + selectedHead.species_data.id_number
-
-# def pbFuse(pokemon, poke2, supersplicers = false)
-#   newid = (pokemon.species_data.id_number) * NB_POKEMON + poke2.species_data.id_number
-#   previewwindow = FusionPreviewScreen.new(pokemon, poke2)#PictureWindow.new(picturePath)
-#
-#   if (Kernel.pbConfirmMessage(_INTL("Fuse the two Pokémon?", newid)))
-#     previewwindow.dispose
-#     fus = PokemonFusionScene.new
-#     if (fus.pbStartScreen(pokemon, poke2, newid))
-#       returnItemsToBag(pokemon, poke2)
-#       fus.pbFusionScreen(false, supersplicers)
-#       $game_variables[126] += 1 #fuse counter
-#       fus.pbEndScreen
-#       return true
-#     end
-#   else
-#     previewwindow.dispose
-#     return false
-#   end
-# end
-
-def pbFuse(pokemon_body, pokemon_head, splicer_item)
+# this function appears to require the body then the head but really uses the head then the body
+def pbFuse(pokemon_head, pokemon_body, splicer_item)
   use_supersplicers_mechanics = isSuperSplicersMechanics(splicer_item)
-
-  newid = (pokemon_body.species_data.id_number) * NB_POKEMON + pokemon_head.species_data.id_number
   fus = PokemonFusionScene.new
 
-  if (fus.pbStartScreen(pokemon_body, pokemon_head, newid, splicer_item))
-    returnItemsToBag(pokemon_body, pokemon_head)
+  if (fus.pbStartScreen(pokemon_head, pokemon_body, splicer_item))
+    returnItemsToBag(pokemon_head, pokemon_body)
     fus.pbFusionScreen(false, use_supersplicers_mechanics)
     $game_variables[VAR_FUSE_COUNTER] += 1 #fuse counter
     fus.pbEndScreen
@@ -1407,12 +1380,12 @@ def pbUnfuse(pokemon, scene, supersplicers, pcPosition = nil)
   end
   
   # ability index
-  head.ability_index = pokemon.head_ability_index if pokemon.head_ability_index
-  body.ability_index = pokemon.body_ability_index if pokemon.body_ability_index
+  head.ability = pokemon.head_ability if pokemon.head_ability
+  body.ability = pokemon.body_ability if pokemon.body_ability
   
   # nature
-  head.nature_index = pokemon.head_nature_index if pokemon.head_nature_index
-  body.nature_index = pokemon.body_nature_index if pokemon.body_nature_index
+  head.nature = pokemon.head_nature if pokemon.head_nature
+  body.nature = pokemon.body_nature if pokemon.body_nature
   
   # gender
   head.gender = pokemon.head_gender if pokemon.head_gender

@@ -13,9 +13,9 @@ class DoublePreviewScreen
   CANCEL_BUTTON_X= 140
   CANCEL_BUTTON_Y= 260
 
-  def initialize(species_left, species_right)
-    @species_left = species_left
-    @species_right = species_right
+  def initialize(pokemon1, pokemon2)
+    @species_left = pokemon1
+    @species_right = pokemon2
 
     @typewindows = []
     @picture1 = nil
@@ -24,7 +24,7 @@ class DoublePreviewScreen
     @draw_level = nil
     @draw_sprite_info = nil
     @selected = 0
-    @last_post=0
+    @last_post = 0
     @sprites      = {}
 
     initializeBackground
@@ -41,8 +41,8 @@ class DoublePreviewScreen
     selected = startSelection
     @sprites["cancel"].visible=false
     #@sprites["arrow"].visible=false
-
-    #todo: il y a un fuck en quelque part.... en attendant ca marche inversé ici
+    
+    return nil if !@species_left || !@species_right
     return @species_left if selected == 0
     return @species_right if selected == 1
     return -1
@@ -72,18 +72,16 @@ class DoublePreviewScreen
 
   def updateSelectionIndex
     if Input.trigger?(Input::LEFT)
-      @selected = 0
-    elsif Input.trigger?(Input::RIGHT)
-      @selected = 1
-    end
-    if @selected == -1
-      if Input.trigger?(Input::UP)
-        @selected = @last_post
+      if @selected == 1
+        @selected = 0
+      else
+        @selected = 1
       end
-    else
-      if Input.trigger?(Input::DOWN)
-        @last_post = @selected
-        @selected = -1
+    elsif Input.trigger?(Input::RIGHT)
+      if @selected == 1
+        @selected = 0
+      else
+        @selected = 1
       end
     end
   end
@@ -109,7 +107,7 @@ class DoublePreviewScreen
     # picturePath = getPicturePath(head_pokemon, body_pokemon)
     # bitmap = AnimatedBitmap.new(picturePath)
     spriteLoader = BattleSpriteLoader.new
-    bitmap = spriteLoader.load_fusion_sprite(head_pokemon,body_pokemon)
+    bitmap = spriteLoader.load_fusion_sprite(head_pokemon, body_pokemon)
     bitmap.scale_bitmap(Settings::FRONTSPRITE_SCALE)
 
     #hasCustom = picturePath.include?("CustomBattlers")
