@@ -5,8 +5,8 @@
 #==============================================================================#
 module Settings
   # The version of your game. It has to adhere to the MAJOR.MINOR.PATCH format.
-  GAME_VERSION = '6.4.0'
-  GAME_VERSION_NUMBER = "6.4.0"
+  GAME_VERSION = '6.4.4'
+  GAME_VERSION_NUMBER = "6.4.4"
   LATEST_GAME_RELEASE = "6.4"
 
   POKERADAR_LIGHT_ANIMATION_RED_ID = 17
@@ -35,6 +35,8 @@ module Settings
   BASE_SPRITES_FILE_PATH = "Data/sprites/BASE_SPRITES"
   CUSTOM_DEX_ENTRIES_PATH = "Data/pokedex/dex.json"
   AI_DEX_ENTRIES_PATH = "Data/pokedex/generated_entries.json"
+  POKEDEX_ENTRIES_PATH = "Data/pokedex/all_entries.json"
+
   UPDATED_SPRITESHEETS_CACHE = "Data/sprites/updated_spritesheets_cache"
 
   BACK_ITEM_ICON_PATH = "Graphics/Items/back.png"
@@ -57,8 +59,8 @@ module Settings
   HTTP_CONFIGS_FILE_URL = "https://raw.githubusercontent.com/infinitefusion/pif-downloadables/refs/heads/master/Settings.rb"
   HTTP_CONFIGS_FILE_PATH = "Data/Scripts/DownloadedSettings.rb"
 
-  SPRITES_FILE_URL = "https://raw.githubusercontent.com/infinitefusion/infinitefusion-e18/main/Data/CUSTOM_SPRITES"
-  BASE_SPRITES_FILE_URL = "https://raw.githubusercontent.com/infinitefusion/infinitefusion-e18/main/Data/BASE_SPRITES"
+  SPRITES_FILE_URL = "https://raw.githubusercontent.com/infinitefusion/infinitefusion-e18/main/Data/sprites/CUSTOM_SPRITES"
+  BASE_SPRITES_FILE_URL = "https://raw.githubusercontent.com/infinitefusion/infinitefusion-e18/main/Data/sprites/BASE_SPRITES"
 
 
   STARTUP_MESSAGES = ""
@@ -481,7 +483,8 @@ module Settings
     [561, 50, :FLETCHINDER,32,45],      #Mt. Ember
     [562, 50, :NINJASK,45,50],          #Boon Island
     [603, 50, :KECLEON,45,50],          #Chrono Island
-    [654, 50, :WHIMSICOTT,32,45]        #Brine Road
+    [654, 50, :WHIMSICOTT,32,45],        #Brine Road
+    [654, 50, :SCRAGGY,32,45]        #Kindle Road
   ]
 
   #=============================================================================

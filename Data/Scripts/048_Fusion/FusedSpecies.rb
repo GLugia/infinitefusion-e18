@@ -104,6 +104,14 @@ module GameData
       return @head_pokemon.id_number
     end
 
+    def get_body_species_symbol
+      return @body_pokemon.id
+    end
+
+    def get_head_species_symbol
+      return @head_pokemon.id
+    end
+
     def adjust_stats_with_evs
       GameData::Stat.each_main do |s|
         @base_stats[s.id] = 1 if !@base_stats[s.id] || @base_stats[s.id] <= 0
@@ -289,6 +297,31 @@ module GameData
       return split_and_combine_text(body_entry, head_entry, ".")
     end
 
+    def get_random_dex_entry()
+      begin
+        file_path = Settings::POKEDEX_ENTRIES_PATH
+        json_data = File.read(file_path)
+        all_body_entries  = HTTPLite::JSON.parse(json_data)
+
+
+        body_entry = all_body_entries[@body_pokemon.id_number.to_s].sample
+        body_entry = body_entry.gsub(/#{@body_pokemon.real_name}/i, @real_name)
+        body_entry = clean_json_string(body_entry).gsub(@body_pokemon.real_name, @real_name)
+
+        head_entry = all_body_entries[@head_pokemon.id_number.to_s].sample
+        head_entry = head_entry.gsub(/#{@head_pokemon.real_name}/i, @real_name)
+        head_entry = clean_json_string(head_entry).gsub(@head_pokemon.real_name, @real_name)
+      rescue
+        body_entry = @body_pokemon.real_pokedex_entry.gsub(@body_pokemon.real_name, @real_name)
+        head_entry = @head_pokemon.real_pokedex_entry.gsub(@head_pokemon.real_name, @real_name)
+      end
+      echoln body_entry
+      echoln head_entry
+      combined_entry = split_and_combine_text(body_entry, head_entry, ".")
+      combined_entry += "." unless combined_entry.end_with?(".")
+      return combined_entry
+    end
+
     def calculate_egg_groups
       body_egg_groups = @body_pokemon.egg_groups
       head_egg_groups = @head_pokemon.egg_groups
@@ -335,7 +368,7 @@ module GameData
 
       beginningText = beginingText_split[0]
       endText = endText_split[1] && endText_split[1] != "" ? endText_split[1] : endText_split[0]
-      return beginningText + separator + endText
+      return beginningText + separator + " " + endText
     end
 
     def calculate_fused_stats(dominantStat, otherStat)

@@ -842,10 +842,15 @@ def apply_concert_lighting(light, duration = 1)
 end
 
 def replaceFusionSpecies(pokemon, speciesToChange, newSpecies)
-  currentBody = pokemon.species_data.get_body_species()
-  currentHead = pokemon.species_data.get_head_species()
+  currentBody = pokemon.species_data.get_body_species_symbol()
+  currentHead = pokemon.species_data.get_head_species_symbol()
   should_update_body = currentBody == speciesToChange
   should_update_head = currentHead == speciesToChange
+
+  echoln speciesToChange
+  echoln currentBody
+  echoln currentHead
+
 
   return if !should_update_body && !should_update_head
 
@@ -853,6 +858,7 @@ def replaceFusionSpecies(pokemon, speciesToChange, newSpecies)
   newSpeciesHead = should_update_head ? newSpecies : currentHead
 
   newSpecies = getFusionSpecies(newSpeciesBody, newSpeciesHead)
+  echoln newSpecies.id_number
   pokemon.species = newSpecies
 end
 
@@ -916,7 +922,7 @@ end
 def promptCaughtPokemonAction(pokemon)
   pickedOption = false
   return pbStorePokemon(pokemon) if !$Trainer.party_full?
-  return promptKeepOrRelease(pokemon) if isOnPinkanIsland()
+  return promptKeepOrRelease(pokemon) if isOnPinkanIsland() && !$game_switches[SWITCH_PINKAN_FINISHED]
   while !pickedOption
     command = pbMessage(_INTL("\\ts[]Your team is full!"),
                         [_INTL("Add to your party"), _INTL("Store to PC"),], 2)
@@ -982,7 +988,7 @@ def swapReleaseCaughtPokemon(caughtPokemon)
   index = pbGet(1)
   return false if index == -1
   releasedPokemon = $Trainer.party[index]
-  pbDisplay("#{releasedPokemon.name} was released.")
+  pbMessage("#{releasedPokemon.name} was released.")
   pbRemovePokemonAt(index)
   pbStorePokemon(caughtPokemon)
 
@@ -1360,6 +1366,8 @@ def get_mart_exclusive_items(city)
     items_list = [:PSYCHICGEM, :FIGHTINGGEM, :FRIENDBALL]
   when :CINNABAR;
     items_list = [:FIREGEM, :ICEGEM, :HEAVYBALL]
+  when :CRIMSON;
+    items_list = [:DRAGONGEM, :LEVELBALL]
   when :GOLDENROD;
     items_list = [:EVERSTONE, :MOONSTONE, :SUNSTONE, :DUSKSTONE, :DAWNSTONE, :SHINYSTONE]
   when :AZALEA;
@@ -1483,7 +1491,10 @@ def isPlayerFemale()
   return pbGet(VAR_TRAINER_GENDER) == GENDER_FEMALE
 end
 
-def optionsMenu(options = [], cmdIfCancel = nil, startingOption = 0)
+
+
+def optionsMenu(options = [], cmdIfCancel = -1, startingOption = 0)
+  cmdIfCancel = -1 if !cmdIfCancel
   result = pbShowCommands(nil, options, cmdIfCancel, startingOption)
   echoln "menuResult :#{result}"
   return result
@@ -1503,7 +1514,7 @@ end
 #Returns if the current map is an outdoor map
 def isOutdoor()
   current_map = $game_map.map_id
-  map_metadata = GameData::MapMetadata.try_get(map_id)
+  map_metadata = GameData::MapMetadata.try_get(current_map)
   return map_metadata && map_metadata.outdoor_map
 end
 
@@ -1550,44 +1561,6 @@ def turnPlayerTowardsEvent(event)
   end
 end
 
-def getQuestReward(eventId)
-  $PokemonGlobal.questRewardsObtained = [] if !$PokemonGlobal.questRewardsObtained
-  echoln $PokemonGlobal.questRewardsObtained
-  nb_quests_completed = pbGet(VAR_STAT_QUESTS_COMPLETED)
-  rewards_to_give = []
-  for reward in QUEST_REWARDS
-    rewards_to_give << reward if nb_quests_completed >= reward.nb_quests && !$PokemonGlobal.questRewardsObtained.include?(reward.item)
-  end
-
-  #Give rewards
-  for reward in rewards_to_give
-    if !reward.can_have_multiple
-      next if $PokemonBag.pbQuantity(reward.item) >= 1
-    end
-    pbCallBub(2, eventId)
-    pbMessage("Also, there's one more thing...")
-    pbCallBub(2, eventId)
-    pbMessage("As a gift for having helped so many people, I want to give you this.")
-    pbReceiveItem(reward.item, reward.quantity)
-    $PokemonGlobal.questRewardsObtained << reward.item
-  end
-
-  #Calculate how many until next reward
-  for reward in QUEST_REWARDS
-    nextReward = reward
-    break if !$PokemonGlobal.questRewardsObtained.include?(reward.item)
-  end
-  pbCallBub(2, eventId)
-  nb_to_next_reward = nextReward.nb_quests - nb_quests_completed
-  pbCallBub(2, eventId)
-  if nb_to_next_reward == 0
-    pbMessage("I have no more rewards to give you! Thanks for helping all these people!")
-  elsif nb_to_next_reward == 1
-    pbMessage("Help #{nb_to_next_reward} more person and I'll give you something good!")
-  else
-    pbMessage("Help #{nb_to_next_reward} more people and I'll give you something good!")
-  end
-end
 
 def displaySpriteWindowWithMessage(pif_sprite, message = "", x = 0, y = 0,z=0)
   spriteLoader = BattleSpriteLoader.new
@@ -1611,3 +1584,57 @@ def select_any_pokemon()
   return pbChooseList(commands, 0, nil, 1)
 end
 
+
+SWITCH_SS_ANNE_DEPARTED=88
+SWITCH_SNORLAX_GONE_ROUTE_12=110
+SWITCH_TELEPORT_NPC = 122
+SWITCH_GOT_DIVE=317
+SWITCH_GOT_ROCK_CLIMB=661
+SWITCH_GOT_WATERFALL=388
+
+def fixMissedHMs()
+  #Flash
+  if $PokemonBag.pbQuantity(:HM08) < 1 && $PokemonGlobal.questRewardsObtained.include?(:HM08)
+    pbReceiveItem(:HM08)
+  end
+
+  #Cut
+  if $PokemonBag.pbQuantity(:HM01) < 1 && $game_switches[SWITCH_SS_ANNE_DEPARTED]
+    pbReceiveItem(:HM01)
+  end
+
+  #Strength
+  if $PokemonBag.pbQuantity(:HM04) < 1 && $game_switches[SWITCH_SNORLAX_GONE_ROUTE_12]
+    pbReceiveItem(:HM04)
+  end
+
+  #Surf
+  if $PokemonBag.pbQuantity(:HM03) < 1 &&  $game_self_switches[[107, 1, "A"]]
+    pbReceiveItem(:HM03)
+  end
+
+  #Teleport
+  if $PokemonBag.pbQuantity(:HM07) < 1 && $game_switches[SWITCH_TELEPORT_NPC]
+    pbReceiveItem(:HM07)
+  end
+
+  #Fly
+  if $PokemonBag.pbQuantity(:HM02) < 1 &&  $game_self_switches[[439, 1, "B"]]
+    pbReceiveItem(:HM02)
+  end
+
+  #Waterfall
+  if $PokemonBag.pbQuantity(:HM05) < 1 &&  $game_switches[SWITCH_GOT_WATERFALL]
+    pbReceiveItem(:HM05)
+  end
+
+  #Dive
+  if $PokemonBag.pbQuantity(:HM06) < 1 &&  $game_switches[SWITCH_GOT_DIVE]
+    pbReceiveItem(:HM06)
+  end
+
+  #Rock Climb
+  if $PokemonBag.pbQuantity(:HM10) < 1 &&  $game_switches[SWITCH_GOT_ROCK_CLIMB]
+    pbReceiveItem(:HM10)
+  end
+end

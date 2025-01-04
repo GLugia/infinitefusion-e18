@@ -110,6 +110,19 @@ class PokemonGameOption_Scene < PokemonOption_Scene
                      },
                      "Automatically download missing custom sprites and Pokédex entries from the internet"
       )
+    #
+    generated_entries_option_selected=$PokemonSystem.use_generated_dex_entries ? 1 : 0
+    options << EnumOption.new(_INTL("Autogen dex entries"), [_INTL("Off"), _INTL("On")],
+                              proc { generated_entries_option_selected },
+                              proc { |value|
+                                $PokemonSystem.use_generated_dex_entries = value == 1
+                              },
+                              [
+                                "Fusions without a custom Pokédex entry display nothing.",
+                                "Fusions without a custom Pokédex entry display an auto-generated placeholder."
+
+                              ]
+    )
 
     if $game_switches && ($game_switches[SWITCH_NEW_GAME_PLUS] || $game_switches[SWITCH_BEAT_THE_LEAGUE]) #beat the league
       options <<
@@ -177,6 +190,8 @@ class PokemonGameOption_Scene < PokemonOption_Scene
                                 "Display the enemy Pokémon type in battles."
       )
 
+
+
     end
     options << EnumOption.new(_INTL("Screen Size"), [_INTL("S"), _INTL("M"), _INTL("L"), _INTL("XL"), _INTL("Full")],
                               proc { [$PokemonSystem.screensize, 4].min },
@@ -200,8 +215,9 @@ class PokemonGameOption_Scene < PokemonOption_Scene
                               "Prevents leveling above the next gym leader's highest leveled Pokemon"
     )
 
+    device_option_selected=$PokemonSystem.on_mobile ? 1 : 0
     options << EnumOption.new(_INTL("Device"), [_INTL("PC"), _INTL("Mobile")],
-                              proc { $PokemonSystem.on_mobile },
+                              proc { device_option_selected },
                               proc { |value| $PokemonSystem.on_mobile = value == 1 },
                               ["The intended device on which to play the game.",
                                "Disables some options that aren't supported when playing on mobile."]
