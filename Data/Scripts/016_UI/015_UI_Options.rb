@@ -87,13 +87,15 @@ class EnumOption < Option
 
   def next(current)
     index = current + 1
-    index = @values.length - 1 if index > @values.length - 1
+    index = 0 if index >= @values.length
+    self.set(index)
     return index
   end
 
   def prev(current)
     index = current - 1
-    index = 0 if index < 0
+    index = @values.length - 1 if index < 0
+    self.set(index)
     return index
   end
 end
@@ -115,13 +117,15 @@ class EnumOption2
 
   def next(current)
     index = current + 1
-    index = @values.length - 1 if index > @values.length - 1
+    index = 0 if index >= @values.length
+    self.set(index)
     return index
   end
 
   def prev(current)
     index = current - 1
-    index = 0 if index < 0
+    index = @values.length - 1 if index < 0
+    self.set(index)
     return index
   end
 end
@@ -147,6 +151,7 @@ class NumberOption
     index = current + @optstart
     index += 1
     index = @optstart if index > @optend
+    self.set(index)
     return index - @optstart
   end
 
@@ -154,6 +159,7 @@ class NumberOption
     index = current + @optstart
     index -= 1
     index = @optend if index < @optstart
+    self.set(index)
     return index - @optstart
   end
 end
@@ -181,6 +187,7 @@ class SliderOption < Option
     index = current + @optstart
     index += @optinterval
     index = @optend if index > @optend
+    self.set(index)
     return index - @optstart
   end
 
@@ -188,6 +195,7 @@ class SliderOption < Option
     index = current + @optstart
     index -= @optinterval
     index = @optstart if index < @optstart
+    self.set(index)
     return index - @optstart
   end
 end
@@ -209,7 +217,7 @@ class Window_PokemonOption < Window_DrawableCommand
     @selShadowColor = Color.new(31 * 8, 17 * 8, 16 * 8)
     @optvalues = []
     @mustUpdateOptions = false
-    @mustUpdateDescription = false
+    @mustUpdateDescription = true
     @selected_position = 0
     @allow_arrows_jump = false
     for i in 0...@options.length
@@ -316,10 +324,12 @@ class Window_PokemonOption < Window_DrawableCommand
   end
 
   def update
-    oldindex = self.index
     @mustUpdateOptions = false
+    
+    oldindex = self.index
     super
     dorefresh = (self.index != oldindex)
+    
     if self.active && self.index < @options.length
       if Input.repeat?(Input::LEFT)
         self[self.index] = @options[self.index].prev(self[self.index])
@@ -397,27 +407,20 @@ class PokemonOption_Scene
     optionsWindow.visible = true
     return optionsWindow
   end
-
+  
   def updateDescription(index)
     index = 0 if !index
-    begin
-      horizontal_position = @sprites["option"].selected_position
-      optionDescription = @PokemonOptions[index].description
-      if optionDescription.is_a?(Array)
-        if horizontal_position < optionDescription.size
-          new_description = optionDescription[horizontal_position]
-        else
-          new_description = getDefaultDescription
-        end
+    horizontal_position = @PokemonOptions[index].get
+    horizontal_position = @sprites["option"].selected_position if horizontal_position == nil
+    description = @PokemonOptions[index].description
+    if description.is_a?(Array)
+      if horizontal_position < description.size
+        description = description[horizontal_position]
       else
-        new_description = optionDescription
+        description = getDefaultDescription
       end
-
-      new_description = getDefaultDescription if new_description == ""
-      @sprites["textbox"].text = _INTL(new_description)
-    rescue
-      @sprites["textbox"].text = getDefaultDescription
     end
+    @sprites["textbox"].text = description
   end
 
   #IMPLEMENT IN INHERITED CLASSES
