@@ -8,18 +8,18 @@ module Settings
   GAME_VERSION = '6.4.4'
   GAME_VERSION_NUMBER = "6.4.4"
   LATEST_GAME_RELEASE = "6.4"
-
+  
   POKERADAR_LIGHT_ANIMATION_RED_ID = 17
   POKERADAR_LIGHT_ANIMATION_GREEN_ID = 18
   POKERADAR_HIDDEN_ABILITY_POKE_CHANCE = 32
   POKERADAR_BATTERY_STEPS = 0
-
+  
   LEADER_VICTORY_MUSIC="Battle victory leader"
   TRAINER_VICTORY_MUSIC="trainer-victory"
   WILD_VICTORY_MUSIC="wild-victory"
   #getRandomCustomFusionForIntro
   FUSION_ICON_SPRITE_OFFSET = 10
-
+  
   #Infinite fusion settings
   NB_POKEMON = 501
   CUSTOM_BASE_SPRITES_FOLDER = "Graphics/CustomBattlers/local_spritesBaseSprites/"
@@ -36,29 +36,28 @@ module Settings
   CUSTOM_DEX_ENTRIES_PATH = "Data/pokedex/dex.json"
   AI_DEX_ENTRIES_PATH = "Data/pokedex/generated_entries.json"
   POKEDEX_ENTRIES_PATH = "Data/pokedex/all_entries.json"
-
+  
   UPDATED_SPRITESHEETS_CACHE = "Data/sprites/updated_spritesheets_cache"
-
+  
   BACK_ITEM_ICON_PATH = "Graphics/Items/back.png"
-
+  
   PLAYER_GRAPHICS_FOLDER = "Graphics/Characters/player/"
   PLAYER_HAT_FOLDER = 'hat'
   PLAYER_HAIR_FOLDER = 'hair'
   PLAYER_CLOTHES_FOLDER = 'clothes'
   PLAYER_BALL_FOLDER = 'balls'
   PLAYER_TEMP_OUTFIT_FALLBACK = 'temp'
-
-
+  
   HATS_DATA_PATH = "Data/outfits/hats_data.json"
   HAIRSTYLE_DATA_PATH = "Data/outfits/hairstyles_data.json"
   CLOTHES_DATA_PATH = "Data/outfits/clothes_data.json"
-
+  
   PLAYER_SURFBASE_FOLDER = 'surf_base/'
   OW_SHINE_ANIMATION_ID=25
-
+  
   HTTP_CONFIGS_FILE_URL = "https://raw.githubusercontent.com/infinitefusion/pif-downloadables/refs/heads/master/Settings.rb"
   HTTP_CONFIGS_FILE_PATH = "Data/Scripts/DownloadedSettings.rb"
-
+  
   SPRITES_FILE_URL = "https://raw.githubusercontent.com/infinitefusion/infinitefusion-e18/main/Data/sprites/CUSTOM_SPRITES"
   BASE_SPRITES_FILE_URL = "https://raw.githubusercontent.com/infinitefusion/infinitefusion-e18/main/Data/sprites/BASE_SPRITES"
 
@@ -483,8 +482,8 @@ module Settings
     [561, 50, :FLETCHINDER,32,45],      #Mt. Ember
     [562, 50, :NINJASK,45,50],          #Boon Island
     [603, 50, :KECLEON,45,50],          #Chrono Island
-    [654, 50, :WHIMSICOTT,32,45],        #Brine Road
-    [654, 50, :SCRAGGY,32,45]        #Kindle Road
+    [654, 50, :WHIMSICOTT,32,45],       #Brine Road
+    [654, 50, :SCRAGGY,32,45]           #Kindle Road
   ]
 
   #=============================================================================
