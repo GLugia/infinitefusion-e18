@@ -608,48 +608,31 @@ class PokemonEvolutionScene
     # Check for consumed item and check if Pokémon should be duplicated
     pbEvolutionMethodAfterEvolution if !reversing
     
-    if @pokemon.ability == nil
-      raise Exception.new("Pokemon's ability was nil")
-    end
-    
-    # find the index of the previous ability
-    hidden_ability = @pokemon.hasHiddenAbility?
-    ability_id = nil
-    ability_index = -1
-    
-    if hidden_ability
-      for ability in @pokemon.species_data.hidden_abilities
-        ability_index += 1
-        ability_id = GameData::Ability.get(ability).id
-        if @pokemon.ability == ability_id
-          break
-        end
+    # validate the ability is still the same index yet also legal
+    ability = @pokemon.ability
+    # pokemon is fused so validate each part separately
+    if @pokemon.fused
+      old_body_id = getBodyID(@pokemon.species)
+      old_head_id = getHeadID(@pokemon.species, old_body_id)
+      new_body_id = getBodyID(@newspecies)
+      new_head_id = getHeadID(@newspecies, new_body_id)
+      
+      # ensure parts keep the same ability index
+      if old_body_id != new_body_id
+        ability = pbGetAbilityForEvolution(old_body_id, new_body_id)
+        @pokemon.body_ability = ability
+      elsif old_head_id != new_head_id
+        ability = pbGetAbilityForEvolution(old_head_id, new_head_id)
+        @pokemon.head_ability = ability
       end
+    # not fused so validate species itself
     else
-      for ability in @pokemon.species_data.abilities
-        ability_index += 1
-        ability_id = GameData::Ability.get(ability).id
-        if @pokemon.ability == ability_id
-          break
-        end
-      end
-    end
-    
-    if ability_index == -1
-      raise Exception.new("Failed to match ability to proper index")
+      ability = pbGetAbilityForEvolution(@pokemon.species, @newspecies)
     end
     
     # Modify Pokémon to make it evolved
     @pokemon.species = @newspecies
-    
-    # change the ability to one at the same index of the previous
-    # bug fix for evolutions not changing abilities properly
-    if hidden_ability
-      @pokemon.ability = GameData::Ability.get(@pokemon.species_data.hidden_abilities[ability_index]).id
-    else
-      @pokemon.ability = GameData::Ability.get(@pokemon.species_data.abilities[ability_index]).id
-    end
-    
+    @pokemon.ability = ability
     @pokemon.form    = 0 if @pokemon.isSpecies?(:MOTHIM)
     @pokemon.calc_stats
     # See and own evolved species
@@ -690,5 +673,34 @@ class PokemonEvolutionScene
     # See and own duplicate Pokémon
     $Trainer.pokedex.register(new_pkmn)
     $Trainer.pokedex.set_owned(new_species)
+  end
+  
+  def pbGetAbilityForEvolution(old_species_id, new_species_id)
+    old_species = GameData::Species.get(old_species_id)
+    new_species = GameData::Species.get(new_species_id)
+    
+    is_hidden = false
+    ability_index = -1
+    if old_species.abilities.include?(@pokemon.ability)
+      for ability in old_species.abilities
+        ability_index += 1
+        if ability == @pokemon.ability
+          break
+        end
+      end
+    elsif old_species.hidden_abilities.include?(@pokemon.ability)
+      is_hidden = true
+      for ability in old_species.hidden_abilities
+        ability_index += 1
+        if ability == @pokemon.ability
+          break
+        end
+      end
+    else
+      return @pokemon.ability
+    end
+    
+    return new_species.hidden_abilities[ability_index] if is_hidden
+    return new_species.abilities[ability_index]
   end
 end
