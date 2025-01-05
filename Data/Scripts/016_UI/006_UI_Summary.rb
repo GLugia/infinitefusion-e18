@@ -102,6 +102,7 @@ end
 #
 #===============================================================================
 class PokemonSummary_Scene
+  attr_accessor :partyindex
   NB_PAGES = 5
 
   def pbUpdate
@@ -970,9 +971,15 @@ class PokemonSummary_Scene
 
   def pbGoToPrevious
     newindex = @partyindex
-    while newindex > 0
+    scan_twice = false
+    while newindex > -1
       newindex -= 1
-      if @party[newindex] && (@page == 1 || !@party[newindex].egg?)
+      if newindex == -1
+        if !scan_twice
+          newindex = @party.length
+          scan_twice = true
+        end
+      elsif @party[newindex] && (@page == 1 || !@party[newindex].egg?)
         @partyindex = newindex
         break
       end
@@ -981,9 +988,15 @@ class PokemonSummary_Scene
 
   def pbGoToNext
     newindex = @partyindex
-    while newindex < @party.length - 1
+    scan_twice = false
+    while newindex < @party.length
       newindex += 1
-      if @party[newindex] && (@page == 1 || !@party[newindex].egg?)
+      if newindex == @party.length
+        if !scan_twice
+          newindex = -1
+          scan_twice = true
+        end
+      elsif @party[newindex] && (@page == 1 || !@party[newindex].egg?)
         @partyindex = newindex
         break
       end

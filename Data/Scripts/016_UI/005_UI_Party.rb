@@ -679,6 +679,7 @@ class PokemonParty_Scene
     screen.pbStartScreen(@party, pkmnid)
     yield if block_given?
     pbFadeInAndShow(@sprites, oldsprites)
+    return scene.partyindex
   end
 
   def pbChooseItem(bag)
@@ -1101,7 +1102,7 @@ class PokemonPartyScreen
         statuses[pkmnid] = 1
         pbRefreshSingle(pkmnid)
       elsif cmdSummary >= 0 && command == cmdSummary
-        @scene.pbSummary(pkmnid) {
+        pkmnid = @scene.pbSummary(pkmnid) {
           @scene.pbSetHelpText((@party.length > 1) ? _INTL("Choose a Pokémon.") : _INTL("Choose Pokémon or cancel."))
         }
       end
@@ -1319,7 +1320,7 @@ class PokemonPartyScreen
       end
       next if havecommand
       if cmdSummary >= 0 && command == cmdSummary
-        @scene.pbSummary(pkmnid) {
+        pkmnid = @scene.pbSummary(pkmnid) {
           @scene.pbSetHelpText((@party.length > 1) ? _INTL("Choose a Pokémon.") : _INTL("Choose Pokémon or cancel."))
         }
       elsif cmdHat >= 0 && command == cmdHat
