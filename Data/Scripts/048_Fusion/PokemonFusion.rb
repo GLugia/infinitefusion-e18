@@ -987,7 +987,7 @@ class PokemonFusionScene
       @pokemon1.body_hidden_power = @pokemon2.hidden_power
       @pokemon1.hidden_power = ((@pokemon1.hidden_power + @pokemon2.hidden_power) / 2).floor
 
-      @pokemon1.level = setPokemonLevel(@pokemon1.level, @pokemon2.level, superSplicer)
+      @pokemon1.level = setPokemonLevel(superSplicer)
       @pokemon1.name = newspeciesname if @pokemon1.name == oldspeciesname
       @pokemon1.calc_stats
 
