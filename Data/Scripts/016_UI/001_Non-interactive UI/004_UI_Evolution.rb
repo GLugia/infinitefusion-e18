@@ -607,10 +607,6 @@ class PokemonEvolutionScene
     @sprites["msgwindow"].text = ""
     # Check for consumed item and check if Pokémon should be duplicated
     pbEvolutionMethodAfterEvolution if !reversing
-
-
-    #oldAbility = @pokemon.ability if @pokemon.ability
-    newSpecies = GameData::Species.get(@newspecies)
     
     if @pokemon.ability == nil
       raise Exception.new("Pokemon's ability was nil")
@@ -618,22 +614,31 @@ class PokemonEvolutionScene
     
     # find the index of the previous ability
     hidden_ability = @pokemon.hasHiddenAbility?
-    ability_index = nil
+    ability_id = nil
+    ability_index = -1
     
     if hidden_ability
-      ability_index = (@pokemon.species_data.hidden_abilities.each_with_index.map { |a, i| GameData::Ability.get(a).id == @pokemon.ability ? i : nil }.compact)[0]
-      if ability_index == nil
-        raise Exception.new("Hidden failed to set the ability_index")
+      for ability in @pokemon.species_data.hidden_abilities
+        ability_index += 1
+        ability_id = GameData::Ability.get(ability).id
+        if @pokemon.ability == ability_id
+          break
+        end
       end
     else
-      ability_index = (@pokemon.species_data.abilities.each_with_index.map { |a, i| GameData::Ability.get(a) == @pokemon.ability ? i : nil }.compact)[0]
-      if ability_index == nil
-        raise Exception.new("Regular failed to set the ability_index")
+      for ability in @pokemon.species_data.abilities
+        ability_index += 1
+        ability_id = GameData::Ability.get(ability).id
+        if @pokemon.ability == ability_id
+          break
+        end
       end
     end
-
-    #allNewPossibleAbilities = newSpecies.abilities + newSpecies.hidden_abilities
-
+    
+    if ability_index == -1
+      raise Exception.new("Failed to match ability to proper index")
+    end
+    
     # Modify Pokémon to make it evolved
     @pokemon.species = @newspecies
     
