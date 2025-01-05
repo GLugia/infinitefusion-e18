@@ -333,13 +333,13 @@ module GameData
         end
         
         if pkmn_data[:ability] != nil
-          if pkmn_data[:ability].is_of?(Integer)
+          if pkmn_data[:ability].is_a?(Integer)
             pkmn.ability = pkmn_data[:ability]
           else
             pkmn.ability = pkmn_data[:ability].id
           end
         elsif pkmn_data[:ability_index] != nil
-          if pkmn_data[:ability_index].is_of?(Integer)
+          if pkmn_data[:ability_index].is_a?(Integer)
             abilities = pkmn.getAbilityList
             pkmn.ability = abilities[pkmn_data[:ability_index]]
           else
