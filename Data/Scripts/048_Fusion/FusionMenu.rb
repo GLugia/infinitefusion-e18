@@ -88,7 +88,7 @@ class FusionSelectOptionsScene < PokemonOption_Scene
     options = []
     
     if shouldSelectNickname
-      options << EnumOption.new(
+      nickname_option = EnumOption.new(
         _INTL("Nickname"),
         [_INTL(@head.name), _INTL(@body.name)],
         proc { @nicknameIndex },
@@ -97,9 +97,11 @@ class FusionSelectOptionsScene < PokemonOption_Scene
         },
         "Select the Pokémon's nickname"
       )
+      nickname_option.set(0)
+      options << nickname_option
     end
     
-    options << EnumOption.new(
+    ability_option = EnumOption.new(
       _INTL("Ability"),
       [_INTL(@abilityList[0].real_name), _INTL(@abilityList[1].real_name)],
       proc { @abilityIndex },
@@ -108,8 +110,10 @@ class FusionSelectOptionsScene < PokemonOption_Scene
       },
       [@abilityList[0].real_description, @abilityList[1].real_description]
     )
+    ability_option.set(0)
+    options << ability_option
     
-    options << EnumOption.new(
+    nature_option = EnumOption.new(
       _INTL("Nature"),
       [_INTL(@natureList[0].real_name), _INTL(@natureList[1].real_name)],
       proc { @natureIndex },
@@ -118,6 +122,8 @@ class FusionSelectOptionsScene < PokemonOption_Scene
       },
       [getNatureDescription(@natureList[0]), getNatureDescription(@natureList[1])]
     )
+    nature_option.set(0)
+    options << nature_option
     
     return options
   end
