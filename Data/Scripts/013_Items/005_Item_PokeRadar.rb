@@ -181,10 +181,11 @@ def pbPokeRadarHighlightGrass(showmessage = true)
         # Choose a rarity for the grass (0=normal, 1=rare, 2=shiny)
         s = (rand(100) < 25) ? 1 : 0
         if $PokemonTemp.pokeradar && $PokemonTemp.pokeradar[2] > 0
-          v = [(65536 / Settings::SHINY_POKEMON_CHANCE) - $PokemonTemp.pokeradar[2] * 200, 200].max
-          v = 0xFFFF / v
-          v = rand(65536) / v
-          s = 2 if v == 0
+          rate = Settings::SHINY_POKEMON_CHANCE / 2
+          rate = [((0xFFFF / rate) + rate) - ($PokemonTemp.pokeradar[2] * 200), 200].max
+          rate = (0xFFFF / rate) + 1
+          rate = rand(0xFFFF) / rate
+          s = 2 if rate < 200
         end
         grasses.push([x, y, i, s])
       end
