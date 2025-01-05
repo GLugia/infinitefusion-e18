@@ -55,10 +55,6 @@ def pbUsePokeRadar
   playPokeradarLightAnimation(rareAllowed)
   pbWait(20)
   pbPokeRadarHighlightGrass
-  if $PokemonGlobal.repel <= 0
-    $PokemonGlobal.repel=10
-    $PokemonGlobal.tempRepel=true
-  end
   return true
 end
 
@@ -173,6 +169,14 @@ def pbPokeRadarHighlightGrass(showmessage = true)
       x = $game_player.x - i + r - (i + 1) * 6
       y = $game_player.y + i + 1
     end
+    
+    if x == $game_player.x
+      x += rand(2) == 0 ? -1 : 1
+    end
+    if y == $game_player.y
+      y += rand(2) == 0 ? -1 : 1
+    end
+    
     # Add tile to grasses array if it's a valid grass tile
     if x >= 0 && x < $game_map.width &&
       y >= 0 && y < $game_map.height
@@ -181,16 +185,16 @@ def pbPokeRadarHighlightGrass(showmessage = true)
         # Choose a rarity for the grass (0=normal, 1=rare, 2=shiny)
         s = (rand(100) < 25) ? 1 : 0
         if $PokemonTemp.pokeradar && $PokemonTemp.pokeradar[2] > 0
-          rate = Settings::SHINY_POKEMON_CHANCE / 2
-          rate = [((0xFFFF / rate) + rate) - ($PokemonTemp.pokeradar[2] * 200), 200].max
-          rate = (0xFFFF / rate) + 1
-          rate = rand(0xFFFF) / rate
-          s = 2 if rate < 200
+          half_shiny_chance = Settings::SHINY_POKEMON_CHANCE / 2
+          chain_rate = [((0xFFFF / half_shiny_chance) + half_shiny_chance) - ($PokemonTemp.pokeradar[2] * 200), 200].max
+          chain_rate = 0xFFFF / chain_rate
+          s = 2 if rand(0xFFFF) < chain_rate
         end
         grasses.push([x, y, i, s])
       end
     end
   end
+  
   if grasses.length == 0
     # No shaking grass found, break the chain
     pbMessage(_INTL("Nothing happened...")) if showmessage
@@ -208,6 +212,8 @@ def pbPokeRadarHighlightGrass(showmessage = true)
       end
     end
     $PokemonTemp.pokeradar[3] = grasses if $PokemonTemp.pokeradar
+    $PokemonGlobal.repel = 10
+    $PokemonGlobal.tempRepel=true
     pbWait(Graphics.frame_rate / 2)
   end
 end
@@ -265,7 +271,7 @@ EncounterModifier.register(proc { |encounter|
     rarity = 0 # 0 = rustle, 1 = vigorous rustle, 2 = shiny rustle
     $PokemonTemp.pokeradar[3].each { |g| rarity = g[3] if g[2] == ring }
     if $PokemonTemp.pokeradar[2] > 0 # Chain count, i.e. is chaining
-      if rarity == 2 || rand(100) < 86 + ring * 4 + ($PokemonTemp.pokeradar[2] / 4).floor
+      if rarity == 2 || rand(100) < 86 + ring * 4 + ($PokemonTemp.pokeradar[2] / 2).floor
         # Continue the chain
         encounter = [$PokemonTemp.pokeradar[0], $PokemonTemp.pokeradar[1]]
         $PokemonTemp.forceSingleBattle = true
@@ -285,7 +291,7 @@ EncounterModifier.register(proc { |encounter|
     end
   else
     # Encounter triggered by stepping in non-rustling grass
-    pbPokeRadarCancel if encounter  && $PokemonGlobal.repel <= 0
+    pbPokeRadarCancel if encounter && $PokemonGlobal.repel <= 0
   end
   next encounter
 })
