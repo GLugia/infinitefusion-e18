@@ -2346,7 +2346,7 @@ class PokemonStorageScreen
             $PokemonBag.pbDeleteItem(@fusionItem)
           end
           
-          if head == selected_pokemon
+          if head == held_pokemon
             deleteSelectedPokemon(held_pokemon, selected)
           else
             deleteHeldPokemon(held_pokemon, selected)
