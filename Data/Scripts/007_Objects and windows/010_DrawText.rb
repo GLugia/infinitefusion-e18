@@ -1222,22 +1222,25 @@ def pbCopyBitmap(dstbm,srcbm,x,y,opacity=255)
 end
 
 def pbDrawImagePositions(bitmap,textpos)
+  return if !bitmap
   for i in textpos
+    next if !i
     srcbitmap=AnimatedBitmap.new(pbBitmapName(i[0]))
-    x=i[1]
-    y=i[2]
-    srcx=i[3] || 0
-    srcy=i[4] || 0
-    width=(i[5] && i[5]>=0) ? i[5] : srcbitmap.width
-    height=(i[6] && i[6]>=0) ? i[6] : srcbitmap.height
-    color = i[7] || nil
+    x = i[1]
+    y = i[2]
+    srcx = i[3] ? i[3] : 0
+    srcy = i[4] ? i[4] : 0
+    width = (i[5] && i[5] >= 0) ? i[5] : srcbitmap.width
+    height = (i[6] && i[6] >= 0) ? i[6] : srcbitmap.height
+    
+    color = i[7] ? i[7] : nil
     if color
       srcbitmap.pbSetColorValue(color)
     end
-    srcrect=Rect.new(srcx,srcy,width,height)
-    bitmap.blt(x,y,srcbitmap.bitmap,srcrect)
-
-
+    
+    srcrect = Rect.new(srcx, srcy, width, height)
+    bitmap.blt(x, y, srcbitmap.bitmap, srcrect)
+    
     srcbitmap.dispose
   end
 end
