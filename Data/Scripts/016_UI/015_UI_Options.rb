@@ -410,14 +410,15 @@ class PokemonOption_Scene
   
   def updateDescription(index)
     index = 0 if !index
-    horizontal_position = @PokemonOptions[index].get
-    horizontal_position = @sprites["option"].selected_position if horizontal_position == nil
-    description = @PokemonOptions[index].description
-    if description.is_a?(Array)
-      if horizontal_position < description.size
-        description = description[horizontal_position]
+    description = getDefaultDescription
+    if index < @PokemonOptions.length
+      horizontal_position = @PokemonOptions[index].get
+      horizontal_position = @sprites["option"].selected_position if horizontal_position == nil
+      selected_description = @PokemonOptions[index].description
+      if selected_description.is_a?(Array) && horizontal_position < selected_description.size
+        description = selected_description[horizontal_position]
       else
-        description = getDefaultDescription
+        description = selected_description
       end
     end
     @sprites["textbox"].text = description
