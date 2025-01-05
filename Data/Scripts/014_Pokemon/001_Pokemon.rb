@@ -283,7 +283,7 @@ class Pokemon
     calc_stats
   end
 
-  def sprite_scale()
+  def sprite_scale
     @sprite_scale = 1 if !@sprite_scale
     return @sprite_scale
   end
@@ -746,17 +746,18 @@ class Pokemon
   def hasHiddenAbility?
     if self.isFusion?
       # head
-      part = GameData::Species.get(getHeadID(@species))
-      return true if part.hidden_abilities.include?(@ability)
+      head = GameData::Species.get(getHeadID(@species))
       # body
-      part = GameData::Species.get(getBodyID(@species))
-      return true if part.hidden_abilities.include?(@ability)
-      # not in list of hidden abilities
-      return false
-    else
-      return true if self.species_data.hidden_abilities.include?(@ability) && !self.species_data.abilities.include?(@ability)
+      body = GameData::Species.get(getBodyID(@species))
+      return true if head.hidden_abilities.include?(@ability) &&
+                    !head.abilities.include?(@ability)
+      return true if body.hidden_abilities.include?(@ability) &&
+                    !body.abilities.include?(@ability)
       return false
     end
+    return true if self.species_data.hidden_abilities.include?(@ability) &&
+                  !self.species_data.abilities.include?(@ability)
+    return false
   end
 
   # return all possible abilities for this species
