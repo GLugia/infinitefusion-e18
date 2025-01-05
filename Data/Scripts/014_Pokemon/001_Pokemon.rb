@@ -720,7 +720,7 @@ class Pokemon
 
   # @return [Integer] the index of this Pokémon's ability
   def ability
-    @ability = species_data.abilities[rand(species_data.abilities.length)] if !@ability
+    @ability = self.species_data.abilities[rand(self.species_data.abilities.length)] if !@ability
     return @ability
   end
 
@@ -1750,45 +1750,64 @@ class Pokemon
   # overhaul to how fusion data is stored; including changing how abilities are stored in general
   # calling this will ensure the ability is legit
   def validate_ability
-    if !@ability || (!self.species_data.abilities.include?(@ability) && !self.species_data.hidden_abilities.include?(@ability))
-      # we handle this differently if the pokemon is a fusion
-      if self.isFusion?
-        # parts had abilities already, just pick between them
-        if @head_ability && @body_ability
-          @ability = rand(2) == 0 ? @head_ability : @body_ability
-        # parts weren't set so we generate a list and randomly choose one
-        else
-          head = GameData::Species.get(getHeadID(@species))
-          body = GameData::Species.get(getBodyID(@species))
-          abilities = []
-          # the head's pokeball was an ability ball
-          if @head_poke_ball == :ABILITYBALL
-            abilities.push(*head.hidden_abilities)
-          # the body's pokeball was an ability ball
-          elsif @body_poke_ball == :ABILITYBALL
-            abilities.push(*body.hidden_abilities)
-          # neither part has stored data but the fusion pokemon is in an ability ball
-          elsif @poke_ball == :ABILITYBALL
-            abilities.push(*self.species_data.hidden_abilities)
-          # no ability ball to be found, take from both parts regular abilities
-          else
-            abilities.push(*head.abilities)
-            abilities.push(*body.abilities)
-          end
-          # randomly select one of the abilities from the list
-          @ability = abilities[rand(abilities.length)]
-        end
-      # not a fusion
-      else
-        # set hidden ability
-        if @poke_ball == :ABILITYBALL
-          @ability = self.species_data.hidden_abilities[rand(self.species_data.hidden_abilities.length)]
-        # set regular ability
-        else
-          @ability = self.species_data.abilities[rand(self.species_data.abilities.length)]
-        end
+    if !@ability
+      if self.fused
+        randomly_set_fused_ability
+        return
       end
+      randomly_set_self_ability
+    else
+      if self.fused
+        return if (@head_ability && @ability == @head_ability) || (@body_ability && @ability == @body_ability)
+        randomly_set_fused_ability
+        return
+      end
+      return if self.species_data.hidden_abilities.include?(@ability) || self.species_data.abilities.include?(@ability)
+      randomly_set_self_ability
     end
+  end
+  
+  def randomly_set_fused_ability
+    abilities = []
+    
+    body_id = getBodyID(@species)
+    body = GameData::Species.get(body_id)
+    return if @ability && (body.hidden_abilities.include?(@ability) || body.abilities.include?(@ability))
+    if @body_poke_ball && @body_poke_ball == :ABILITYBALL
+      abilities.push(*body.hidden_abilities)
+    end
+    
+    head_id = getHeadID(@species, body_id)
+    head = GameData::Species.get(head_id)
+    return if @ability && (head.hidden_abilities.include?(@ability) || head.abilities.include?(@ability))
+    if @head_poke_ball && @head_poke_ball == :ABILITYBALL
+      abilities.push(*head.hidden_abilities)
+    end
+    
+    return if @ability && (self.species_data.hidden_abilities.include?(@ability) || self.species_data.abilities.include?(@ability))
+    if @poke_ball && @poke_ball == :ABILITYBALL
+      abilities.push(*self.species_data.hidden_abilities)
+    end
+    
+    if abilities.length > 0
+      abilities = abilities.uniq
+      @ability = abilities[rand(abilities.length)]
+      return
+    end
+    
+    abilities.push(*head.abilities)
+    abilities.push(*body.abilities)
+    
+    abilities = abilities.uniq
+    @ability = abilities[rand(abilities.length)]
+  end
+  
+  def randomly_set_self_ability
+    if @poke_ball == :ABILITYBALL
+      @ability = self.species_data.hidden_abilities[rand(self.species_data.hidden_abilities.length)]
+      return
+    end
+    @ability = self.species_data.abilities[rand(self.species_data.abilities.length)]
   end
 
   def initialize(species, level, owner = $Trainer, withMoves = true, recheck_form = true)
@@ -1803,7 +1822,7 @@ class Pokemon
     heal_status
     @gender = nil
     self.shiny?
-    self.ability
+    @ability = nil
     @ability2 = nil
     self.nature
     @item = nil
