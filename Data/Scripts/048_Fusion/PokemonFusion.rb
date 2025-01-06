@@ -817,7 +817,8 @@ class PokemonFusionScene
     metaplayer3.play
     metaplayer4.play
     pbBGMStop()
-    pbPlayCry(@pokemon)
+    pbPlayCry(@pokemon1)
+    pbPlayCry(@pokemon2)
     Kernel.pbMessageDisplay(@sprites["msgwindow"], _INTL("The Pokémon are being fused!"))
 
     Kernel.pbMessageWaitForInput(@sprites["msgwindow"], 100, true)
@@ -858,138 +859,155 @@ class PokemonFusionScene
         Graphics.update
       end
       
-      newSpecies = GameData::Species.get(@newspecies)
-      newspeciesname = newSpecies.real_name
-      oldspeciesname = GameData::Species.get(@pokemon1.species).real_name
-
-      overlay = BitmapSprite.new(Graphics.width, Graphics.height, @viewport).bitmap
-
-      sprite_bitmap = @sprites["rsprite2"].getBitmap
-
-      drawSpriteCredits(@fusion_pif_sprite, @viewport)
-      pbBGMPlay(pbGetWildVictoryME)
-      Kernel.pbMessageDisplay(@sprites["msgwindow"], _INTL("\\se[]Congratulations! Your Pokémon were fused into {1}!\\wt[80]", newspeciesname))
-      
-      #add to pokedex
-      if !$Trainer.pokedex.owned?(newSpecies)
-        $Trainer.pokedex.set_seen(newSpecies)
-        $Trainer.pokedex.set_owned(newSpecies)
-        Kernel.pbMessageDisplay(@sprites["msgwindow"],
-                                _INTL("{1}'s data was added to the Pokédex", newspeciesname))
-        @scene.pbShowPokedex(@newspecies)
-      end
-      
-      overlay.dispose
-      
+      # ensure each pokemon's abilities are legal
       @pokemon1.validate_ability
       @pokemon2.validate_ability
       
-      # allow player to choose the ability and nature
-      pbSelectAbilityAndNature
+      # calculate level
+      level = setPokemonLevel(superSplicer)
       
-      # allow player to select moves
-      pbSelectFusionMoves if !noMoves
+      # copy the head to a new pokemon
+      # we need this to store all the information of the head while also keeping the
+      # species information kept in @pokemon1 and @pokemon2
+      # used in pbSelectFusionMoves to display the proper pokemon icon and typing
+      fused_pokemon = Pokemon.new(@newspecies, level, $Trainer, false, true)
+      # fused flag
+      fused_pokemon.fused = true
+      @pokemon1.moves.each { |m| fused_pokemon.moves.push(m) if m }
+      fused_pokemon.record_first_moves
       
-      # set fused flag early
-      @pokemon1.fused = true
+      overlay = BitmapSprite.new(Graphics.width, Graphics.height, @viewport).bitmap
       
-      # species
-      @pokemon1.species = newSpecies
+      sprite_bitmap = @sprites["rsprite2"].getBitmap
+      
+      drawSpriteCredits(@fusion_pif_sprite, @viewport)
+      pbBGMPlay(pbGetWildVictoryME)
+      Kernel.pbMessageDisplay(@sprites["msgwindow"], _INTL("\\se[]Congratulations! Your Pokémon were fused into {1}!\\wt[80]", fused_pokemon.species_data.real_name))
+      
+      #add to pokedex
+      if !$Trainer.pokedex.owned?(fused_pokemon.species_data)
+        $Trainer.pokedex.set_seen(fused_pokemon.species_data)
+        $Trainer.pokedex.set_owned(fused_pokemon.species_data)
+        Kernel.pbMessageDisplay(@sprites["msgwindow"],
+                                _INTL("{1}'s data was added to the Pokédex", fused_pokemon.species_data.real_name))
+        @scene.pbShowPokedex(@newspecies)
+      end
       
       # track the exp for each part
-      @pokemon1.head_exp = @pokemon1.exp
-      @pokemon1.body_exp = @pokemon2.exp
-      @pokemon1.exp_gained_since_fused = 0
+      fused_pokemon.head_exp = @pokemon1.exp
+      fused_pokemon.body_exp = @pokemon2.exp
+      fused_pokemon.exp_gained_since_fused = 0
       
       # track if the parts were shiny
-      @pokemon1.head_shiny = @pokemon1.shiny?
-      @pokemon1.body_shiny = @pokemon2.shiny?
-      @pokemon1.debug_shiny = @pokemon1.debug_shiny || @pokemon2.debug_shiny
+      fused_pokemon.head_shiny = @pokemon1.shiny?
+      fused_pokemon.body_shiny = @pokemon2.shiny?
+      fused_pokemon.debug_shiny = @pokemon1.debug_shiny || @pokemon2.debug_shiny
       
       # forced shiny if either part is shiny
       if @pokemon1.head_shiny || @pokemon1.body_shiny
-        @pokemon1.makeShiny
+        fused_pokemon.makeShiny
         if !(@pokemon1.debug_shiny || @pokemon2.debug_shiny)
-          @pokemon1.natural_shiny = true
+          fused_pokemon.natural_shiny = true
         end
       end
       
       # gender
-      @pokemon1.head_gender = @pokemon1.gender
-      @pokemon1.body_gender = @pokemon2.gender
-      if (@pokemon1.male? && @pokemon2.female?) || (@pokemon1.female? && @pokemon2.male?) || @pokemon1.genderless?
-        @pokemon1.gender = 2 # force genderless
+      fused_pokemon.head_gender = @pokemon1.gender
+      fused_pokemon.body_gender = @pokemon2.gender
+      expected_gender = 0
+      if @pokemon1.gender != @pokemon2.gender
+        expected_gender = 2
+        fused_pokemon.gender = 2
+      else
+        expected_gender = @pokemon1.gender
+        fused_pokemon.gender = @pokemon1.gender
       end
 
-      # met information
-      @pokemon1.head_obtain_method = @pokemon1.obtain_method
-      @pokemon1.body_obtain_method = @pokemon2.obtain_method
-      @pokemon1.obtain_method = 0
-      @pokemon1.head_obtain_map = @pokemon1.obtain_map
-      @pokemon1.body_obtain_map = @pokemon2.obtain_map
-      @pokemon1.head_obtain_level = @pokemon1.obtain_level
-      @pokemon1.body_obtain_level = @pokemon2.obtain_level
-      @pokemon1.head_hatched_map = @pokemon1.hatched_map
-      @pokemon1.body_hatched_map = @pokemon2.hatched_map
+      # obtain information
+      fused_pokemon.head_obtain_method = @pokemon1.obtain_method
+      fused_pokemon.body_obtain_method = @pokemon2.obtain_method
+      fused_pokemon.head_obtain_map = @pokemon1.obtain_map
+      fused_pokemon.body_obtain_map = @pokemon2.obtain_map
+      fused_pokemon.head_obtain_level = @pokemon1.obtain_level
+      fused_pokemon.body_obtain_level = @pokemon2.obtain_level
+      fused_pokemon.head_hatched_map = @pokemon1.hatched_map
+      fused_pokemon.body_hatched_map = @pokemon2.hatched_map
       
       # ribbons
-      @pokemon1.head_ribbons = @pokemon1.ribbons
-      @pokemon1.body_ribbons = @pokemon2.ribbons
-      @pokemon2.ribbons.each_with_index { |a, i| @pokemon1.ribbons.push([a, i]) if a }
+      fused_pokemon.head_ribbons = @pokemon1.ribbons
+      fused_pokemon.body_ribbons = @pokemon2.ribbons
+      @pokemon1.ribbons.each_with_index { |a, i| fused_pokemon.ribbons.push([a, i]) if a }
+      @pokemon2.ribbons.each_with_index { |a, i| fused_pokemon.ribbons.push([a, i]) if a }
       
       # pokerus
-      @pokemon1.head_pokerus = @pokemon1.pokerus
-      @pokemon1.body_pokerus = @pokemon2.pokerus
-      @pokemon1.pokerus = ((@pokemon1.pokerus + @pokemon2.pokerus) / 2).floor
+      fused_pokemon.head_pokerus = @pokemon1.pokerus
+      fused_pokemon.body_pokerus = @pokemon2.pokerus
+      fused_pokemon.pokerus = ((@pokemon1.pokerus + @pokemon2.pokerus) / 2).floor
       
       # happiness
-      @pokemon1.head_happiness = @pokemon1.happiness
-      @pokemon1.body_happiness = @pokemon2.happiness
-      @pokemon1.happiness = ((@pokemon1.happiness + @pokemon2.happiness) / 2).floor
+      fused_pokemon.head_happiness = @pokemon1.happiness
+      fused_pokemon.body_happiness = @pokemon2.happiness
+      fused_pokemon.happiness = ((@pokemon1.happiness + @pokemon2.happiness) / 2).floor
       
       # markings
-      @pokemon1.head_markings = @pokemon1.markings
-      @pokemon1.body_markings = @pokemon2.markings
-      @pokemon1.markings |= @pokemon2.markings
+      fused_pokemon.head_markings = @pokemon1.markings
+      fused_pokemon.body_markings = @pokemon2.markings
+      fused_pokemon.markings = @pokemon1.markings | @pokemon2.markings
       
       # poke ball
-      @pokemon1.head_poke_ball = @pokemon1.poke_ball
-      @pokemon1.body_poke_ball = @pokemon2.poke_ball
+      fused_pokemon.head_poke_ball = @pokemon1.poke_ball
+      fused_pokemon.body_poke_ball = @pokemon2.poke_ball
+      fused_pokemon.poke_ball = @pokemon1.poke_ball > @pokemon2.poke_ball ? @pokemon1.poke_ball : @pokemon2.poke_ball
       
       # IV
-      @pokemon1.head_iv = @pokemon1.iv
-      @pokemon1.body_iv = @pokemon2.iv
+      fused_pokemon.head_iv = @pokemon1.iv
+      fused_pokemon.body_iv = @pokemon2.iv
       GameData::Stat.each_main do |s|
-        @pokemon1.iv[s.id] = ((@pokemon1.head_iv[s.id] + @pokemon1.body_iv[s.id]) / 2).floor
+        fused_pokemon.iv[s.id] = ((@pokemon1.iv[s.id] + @pokemon2.iv[s.id]) / 2).floor
       end
-      @pokemon1.head_iv_maxed = @pokemon1.iv_maxed
-      @pokemon1.body_iv_maxed = @pokemon2.iv_maxed
+      fused_pokemon.head_iv_maxed = @pokemon1.iv_maxed
+      fused_pokemon.body_iv_maxed = @pokemon2.iv_maxed
       GameData::Stat.each_main do |s|
-        @pokemon1.iv_maxed[s.id] = @pokemon1.head_iv_maxed[s.id] && @pokemon1.body_iv_maxed[s.id]
+        fused_pokemon.iv_maxed[s.id] = @pokemon1.iv_maxed[s.id] && @pokemon2.iv_maxed[s.id]
       end
       
       # EV
-      @pokemon1.head_ev = @pokemon1.ev
-      @pokemon1.body_ev = @pokemon2.ev
+      fused_pokemon.head_ev = @pokemon1.ev
+      fused_pokemon.body_ev = @pokemon2.ev
       GameData::Stat.each_main do |s|
-        @pokemon1.ev[s.id] = ((@pokemon1.head_ev[s.id] + @pokemon1.body_ev[s.id]) / 2).floor
+        fused_pokemon.ev[s.id] = ((@pokemon1.ev[s.id] + @pokemon2.ev[s.id]) / 2).floor
       end
       
       # OT
-      @pokemon1.head_owner = @pokemon1.owner
-      @pokemon1.body_owner = @pokemon2.owner
-      if @pokemon1.owner.name.eql?($Trainer.name)
-        @pokemon1.owner = @pokemon2.owner
+      fused_pokemon.head_owner = @pokemon1.owner
+      fused_pokemon.body_owner = @pokemon2.owner
+      if fused_pokemon.owner.name.eql?($Trainer.name)
+        fused_pokemon.owner = @pokemon2.owner
+      else
+        fused_pokemoon.owner = @pokemon1.owner
       end
       
       # hidden power
-      @pokemon1.head_hidden_power = @pokemon1.hidden_power
-      @pokemon1.body_hidden_power = @pokemon2.hidden_power
-      @pokemon1.hidden_power = ((@pokemon1.hidden_power + @pokemon2.hidden_power) / 2).floor
-
-      @pokemon1.level = setPokemonLevel(superSplicer)
-      @pokemon1.name = newspeciesname if @pokemon1.name == oldspeciesname
-      @pokemon1.calc_stats
+      fused_pokemon.head_hidden_power = @pokemon1.hidden_power
+      fused_pokemon.body_hidden_power = @pokemon2.hidden_power
+      fused_pokemon.hidden_power = ((@pokemon1.hidden_power + @pokemon2.hidden_power) / 2).floor
+      
+      # calculate stats
+      fused_pokemon.calc_stats
+      
+      # dispose of the current overlay so we can render a new one
+      overlay.dispose
+      
+      # allow player to choose the ability and nature
+      pbSelectAbilityAndNature(fused_pokemon)
+      
+      # allow player to select moves
+      pbSelectFusionMoves(fused_pokemon) if !noMoves
+      
+      # use the head as a base and copy the fused pokemon to it
+      @pokemon1.copy(fused_pokemon)
+      # allow fused_pokemon and @pokemon2 to fall out of scope
+      # they are each cleaned up by GC
 
       pbSEPlay("Voltorb Flip Point")
       
@@ -1022,7 +1040,7 @@ def drawSpriteCredits(pif_sprite, viewport)
   pbDrawTextPositions(overlay, textpos)
 end
 
-def pbSelectAbilityAndNature
+def pbSelectAbilityAndNature(fused_pokemon)
   addBackgroundOrColoredPlane(@sprites, "background", "DNAbg",
                               Color.new(248, 248, 248), @viewport)
   pbDisposeSpriteHash(@sprites)
@@ -1031,26 +1049,26 @@ def pbSelectAbilityAndNature
   screen = PokemonOptionScreen.new(scene)
   screen.pbStartScreen
   
-  @pokemon1.head_ability = @pokemon1.ability
-  @pokemon1.body_ability = @pokemon2.ability
+  fused_pokemon.head_ability = @pokemon1.ability
+  fused_pokemon.body_ability = @pokemon2.ability
   
   if $game_switches[SWITCH_DOUBLE_ABILITIES]
-    @pokemon1.ability2 = @pokemon2.ability
+    fused_pokemon.ability2 = @pokemon2.ability
   else
-    @pokemon1.ability = scene.selectedAbility
+    fused_pokemon.ability = scene.selectedAbility
   end
   
-  @pokemon1.head_nature = @pokemon1.nature
-  @pokemon1.body_nature = @pokemon2.nature
-  @pokemon1.nature = scene.selectedNature
+  fused_pokemon.head_nature = @pokemon1.nature
+  fused_pokemon.body_nature = @pokemon2.nature
+  fused_pokemon.nature = scene.selectedNature
   
   if scene.hasNickname
-    @pokemon1.name = scene.selectedNickname
+    fused_pokemon.name = scene.selectedNickname
   end
 end
 
 # somehow, even though pokemon2 is the base here, it's considered the head?
-def pbSelectFusionMoves
+def pbSelectFusionMoves(fused_pokemon)
   choice = Kernel.pbMessage("What to do with the moveset?", [
                             _INTL("Combine movesets"),
                             _INTL("Keep {1}'s moveset", @pokemon1.species_data.real_name),
@@ -1062,11 +1080,12 @@ def pbSelectFusionMoves
     movelist = @pokemon2.moves
     for move in movelist
       if move.id != 0
-        pbLearnMove(@pokemon1, move.id, true, false, true)
+        pbLearnMove(fused_pokemon, move.id, true, false, true)
       end
     end
   when 2 then
-    @pokemon1.moves = @pokemon2.moves
+    fused_pokemon.moves = []
+    @pokemon2.moves.each { |m| fused_pokemon.moves.push(m) if m }
   end
 end
 
