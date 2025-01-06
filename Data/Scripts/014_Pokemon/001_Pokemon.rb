@@ -1602,111 +1602,143 @@ class Pokemon
   end
   
   def copy(other)
-    self.species = other.species
+    @spriteform_body = other.spriteform_body
+    @spriteform_head = other.spriteform_head
     
-    self.exp = other.exp
-    self.exp_gained_since_fused = other.exp_gained_since_fused if other.exp_gained_since_fused
-    self.head_exp = other.head_exp if other.head_exp
-    self.body_exp = other.body_exp if other.body_exp
+    @species = other.species
     
-    self.steps_to_hatch = other.steps_to_hatch
+    @forced_form = other.forced_form
+    @time_form_set = other.time_form_set
     
-    self.hp = other.hp
+    @exp = other.exp
+    @head_exp = other.head_exp
+    @body_exp = other.body_exp
+    @exp_gained_since_fused = other.exp_gained_since_fused
     
-    self.status = other.status
-    self.status_count = other.status_count
+    @hat = other.hat
+    @hat_x = other.hat_x
+    @hat_y = other.hat_y
     
-    self.glitter = other.glitter
-    self.head_shiny = other.head_shiny
-    self.body_shiny = other.body_shiny
-    self.debug_shiny = other.debug_shiny
-    self.natural_shiny = other.natural_shiny
+    @steps_to_hatch = other.steps_to_hatch
     
-    self.gender = other.gender
-    self.head_gender = other.head_gender if other.head_gender
-    self.body_gender = other.body_gender if other.body_gender
+    @hp = other.hp
     
-    self.ability = other.ability
-    self.ability2 = other.ability2
-    self.head_ability = other.head_ability if other.head_ability
-    self.body_ability = other.body_ability if other.body_ability
+    @status = other.status
+    @status_count = other.status_count
     
-    self.nature = other.nature
-    self.head_nature = other.head_nature if other.head_nature
-    self.body_nature = other.body_nature if other.body_nature
+    @glitter = other.glitter
+    @head_shiny = other.head_shiny
+    @body_shiny = other.body_shiny
+    @debug_shiny = other.debug_shiny
+    @natural_shiny = other.natural_shiny
     
-    self.moves = other.moves
-    self.first_moves = other.first_moves
+    @gender = other.gender
+    @head_gender = other.head_gender
+    @body_gender = other.body_gender
     
-    self.ribbons = other.ribbons
-    self.head_ribbons = other.head_ribbons if other.head_ribbons
-    self.body_ribbons = other.body_ribbons if other.body_ribbons
+    @ability = other.ability
+    @ability2 = other.ability2
+    @head_ability = other.head_ability
+    @body_ability = other.body_ability
     
-    self.cool = other.cool
-    self.beauty = other.beauty
-    self.cute = other.cute
-    self.smart = other.smart
-    self.tough = other.tough
-    self.sheen = other.sheen
+    @nature = other.nature
+    @head_nature = other.head_nature
+    @body_nature = other.body_nature
     
-    self.pokerus = other.pokerus
-    self.head_pokerus = other.head_pokerus if other.head_pokerus
-    self.body_pokerus = other.body_pokerus if other.body_pokerus
+    @moves = []
+    other.moves.each { |m| @moves.push(m) if m }
+    @first_moves = []
+    other.first_moves.each { |m| @first_moves.push(m) if m }
     
-    self.happiness = other.happiness
-    self.head_happiness = other.head_happiness if other.head_happiness
-    self.body_happiness = other.body_happiness if other.body_happiness
+    @ribbons = []
+    other.ribbons.each { |r| @ribbons.push(r) if r }
+    if other.head_ribbons
+      @head_ribbons = []
+      other.head_ribbons.each_with_index { |r, i| @ribbons.push([r, i]) if r }
+    else
+      @head_ribbons = nil
+    end
+    if other.body_ribbons
+      @body_ribbons = []
+      other.body_ribbons.each_with_index { |r, i| @ribbons.push([r, i]) if r }
+    else
+      @body_ribbons = nil
+    end
     
-    self.poke_ball = other.poke_ball
-    self.head_poke_ball = other.head_poke_ball if other.head_poke_ball
-    self.body_poke_ball = other.body_poke_ball if other.body_poke_ball
+    @cool = other.cool
+    @beauty = other.beauty
+    @cute = other.cute
+    @smart = other.smart
+    @tough = other.tough
+    @sheen = other.sheen
     
-    self.markings = other.markings
-    self.head_markings = other.head_markings if other.head_markings
-    self.body_markings = other.body_markings if other.body_markings
+    @pokerus = other.pokerus
+    @head_pokerus = other.head_pokerus
+    @body_pokerus = other.body_pokerus
     
-    self.iv = other.iv
-    self.head_iv = other.head_iv if other.head_iv
-    self.body_iv = other.body_iv if other.body_iv
-    self.iv_maxed = other.iv_maxed
-    self.head_iv_maxed = other.head_iv_maxed if other.head_iv_maxed
-    self.body_iv_maxed = other.body_iv_maxed if other.body_iv_maxed
+    @happiness = other.happiness
+    @head_happiness = other.head_happiness
+    @body_happiness = other.body_happiness
     
-    self.ev = other.ev
-    self.head_ev = other.head_ev if other.head_ev
-    self.body_ev = other.body_ev if other.body_ev
+    @poke_ball = other.poke_ball
+    @head_poke_ball = other.head_poke_ball
+    @body_poke_ball = other.body_poke_ball
     
-    self.owner = other.owner
-    self.head_owner = other.head_owner if other.head_owner
-    self.body_owner = other.body_owner if other.body_owner
+    @markings = other.markings
+    @head_markings = other.head_markings
+    @body_markings = other.body_markings
     
-    self.obtain_method = other.obtain_method
-    self.head_obtain_method = other.head_obtain_method if other.head_obtain_method
-    self.body_obtain_method = other.body_obtain_method if other.body_obtain_method
+    GameData::Stat.each_main do |s|
+      @iv[s.id] = other.iv[s.id]
+      self.head_iv[s.id] = other.head_iv[s.id]
+      self.body_iv[s.id] = other.body_iv[s.id]
+      
+      @iv_maxed[s.id] = other.iv_maxed[s.id]
+      self.head_iv_maxed[s.id] = other.head_iv_maxed[s.id]
+      self.body_iv_maxed[s.id] = other.body_iv_maxed[s.id]
+      
+      @ev[s.id] = other.ev[s.id]
+      self.head_ev[s.id] = other.head_ev[s.id]
+      self.body_ev[s.id] = other.body_ev[s.id]
+    end
     
-    self.obtain_map = other.obtain_map
-    self.head_obtain_map = other.head_obtain_map if other.head_obtain_map
-    self.body_obtain_map = other.body_obtain_map if other.body_obtain_map
+    @owner = other.owner
+    @head_owner = other.head_owner
+    @body_owner = other.body_owner
     
-    self.obtain_level = other.obtain_level
-    self.head_obtain_level = other.head_obtain_level if other.head_obtain_level
-    self.body_obtain_level = other.body_obtain_level if other.body_obtain_level
+    @obtain_method = other.obtain_method
+    @head_obtain_method = other.head_obtain_method
+    @body_obtain_method = other.body_obtain_method
     
-    self.hatched_map = other.hatched_map
-    self.head_hatched_map = other.head_hatched_map if other.head_hatched_map
-    self.body_hatched_map = other.body_hatched_map if other.body_hatched_map
+    @obtain_map = other.obtain_map
+    @head_obtain_map = other.head_obtain_map
+    @body_obtain_map = other.body_obtain_map
     
-    self.fused = other.fused
+    @obtain_level = other.obtain_level
+    @head_obtain_level = other.head_obtain_level
+    @body_obtain_level = other.body_obtain_level
     
-    self.hidden_power = other.hidden_power
-    self.head_hidden_power = other.head_hidden_power if other.head_hidden_power
-    self.body_hidden_power = other.body_hidden_power if other.body_hidden_power
+    @hatched_map = other.hatched_map
+    @head_hatched_map = other.head_hatched_map
+    @body_hatched_map = other.body_hatched_map
     
-    self.force_disobey = other.force_disobey
-    self.head_force_disobey = other.head_force_disobey if other.head_force_disobey
-    self.body_force_disobey = other.body_force_disobey if other.body_force_disobey
+    @timeReceived = other.timeReceived
+    @timeEggHatched = other.timeEggHatched
     
-    self.name = other.name
+    @fused = other.fused
+    
+    @hidden_power = other.hidden_power
+    @head_hidden_power = other.head_hidden_power
+    @body_hidden_power = other.body_hidden_power
+    
+    @sprite_scale = other.sprite_scale
+    @size_category = other.size_category
+    
+    @force_disobey = other.force_disobey
+    @head_force_disobey = other.head_force_disobey
+    @body_force_disobey = other.body_force_disobey
+    
+    @name = other.name
     self.validate_ability
     self.calc_stats
   end
@@ -1828,7 +1860,7 @@ class Pokemon
     @item = nil
     @mail = nil
     @moves = []
-    reset_moves if withMoves
+    self.reset_moves if withMoves
     @first_moves = []
     @ribbons = []
     @cool = 0
