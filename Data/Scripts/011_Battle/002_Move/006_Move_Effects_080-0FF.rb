@@ -3188,12 +3188,13 @@ class PokeBattle_Move_0F0 < PokeBattle_Move
        target.item && !target.unlosableItem?(target.item)
        # NOTE: Damage is still boosted even if target has Sticky Hold or a
        #       substitute.
-      baseDmg = (baseDmg*1.5).round
+      baseDmg = (baseDmg * 1.5).round
     end
     return baseDmg
   end
 
-  def pbEffectAfterAllHits(user,target)
+  # bug fix: item should be knocked off immediately after use
+  def pbEffectAgainstTarget(user,target) # pbEffectAfterAllHits
     return if @battle.wildBattle? && user.opposes?   # Wild Pokémon can't knock off
     return if user.fainted?
     return if target.damageState.unaffected || target.damageState.substitute
@@ -3201,7 +3202,7 @@ class PokeBattle_Move_0F0 < PokeBattle_Move
     return if target.hasActiveAbility?(:STICKYHOLD) && !@battle.moldBreaker
     itemName = target.itemName
     target.pbRemoveItem(false)
-    @battle.pbDisplay(_INTL("{1} dropped its {2}!",target.pbThis,itemName))
+    @battle.pbDisplay(_INTL("{1}'s {2} was knocked off!",target.pbThis,itemName))
   end
 end
 
