@@ -198,19 +198,6 @@ module GameData
       return abilities_hash
     end
 
-    # def calculate_abilities(pokemon1, pokemon2)
-    #   abilities_hash = []
-    #
-    #   ability1 = pokemon1.abilities[0]
-    #   ability2 = pokemon2.abilities[1]
-    #   if !ability2
-    #     ability2 = pokemon2.abilities[0]
-    #   end
-    #   abilities_hash << ability1
-    #   abilities_hash << ability2
-    #   return abilities_hash
-    # end
-
     def calculate_hidden_abilities()
       abilities_hash = []
 

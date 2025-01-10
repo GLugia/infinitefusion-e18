@@ -350,11 +350,6 @@ module GameData
           pkmn.ability = abilities[rand(abilities.length)]
         end
 
-        if $game_switches[SWITCH_DOUBLE_ABILITIES] && pkmn.isFusion?
-          secondary_ability = pkmn.ability == 0 ? 1 : 0
-          pkmn.ability2 = secondary_ability
-        end
-
         pkmn.gender = pkmn_data[:gender] || ((trainer.male?) ? 0 : 1)
         pkmn.shiny = (pkmn_data[:shininess]) ? true : false
         if pkmn_data[:nature]

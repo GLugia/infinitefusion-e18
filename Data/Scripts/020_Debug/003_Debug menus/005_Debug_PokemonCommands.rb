@@ -710,59 +710,6 @@ PokemonDebugMenuCommands.register("setability", {
   }
 })
 
-
-PokemonDebugMenuCommands.register("setability2", {
-  "parent"      => "main",
-  "name"        => _INTL("Set secondary ability"),
-  "always_show" => true,
-  "effect"      => proc { |pkmn, pkmnid, heldpoke, settingUpBattle, screen|
-    cmd = 0
-    commands = [
-      _INTL("Set possible ability"),
-      _INTL("Set any ability"),
-      _INTL("Reset")
-    ]
-    loop do
-      if pkmn.ability2
-        msg = _INTL("Ability 2 is {1} (id {2}).", GameData::Ability.get(pkmn.ability2).name, pkmn.ability2)
-      else
-        msg = _INTL("No ability (id {1}).", pkmn.ability2)
-      end
-      cmd = screen.pbShowCommands(msg, commands, cmd)
-      break if cmd < 0
-      case cmd
-      when 0   # Set possible ability
-        ability_commands = []
-        abil_cmd = 0
-        # regular abilities
-        for ability in pkmn.species_data.abilities
-          ability_commands.push(GameData::Ability.get(ability).name)
-          abil_cmd = ability_commands.length - 1 if pkmn.ability2 == ability
-        end
-        # hidden abilities
-        for ability in pkmn.species_data.hidden_abilities
-          ability_commands.push("(H) " + GameData::Ability.get(ability).name)
-          abil_cmd = ability_commands.length - 1 if pkmn.ability2 == ability
-        end
-        abil_cmd = screen.pbShowCommands(_INTL("Choose an ability."), ability_commands, abil_cmd)
-        next if abil_cmd < 0
-        pkmn.ability2 = ability_commands[abil_cmd]
-        screen.pbRefreshSingle(pkmnid)
-      when 1   # Set any ability
-        new_ability = pbChooseAbilityList(pkmn.ability2)
-        if new_ability && new_ability != pkmn.ability2
-          pkmn.ability2 = new_ability
-          screen.pbRefreshSingle(pkmnid)
-        end
-      when 2   # Reset
-        pkmn.ability2 = nil
-        screen.pbRefreshSingle(pkmnid)
-      end
-    end
-    next false
-  }
-})
-
 PokemonDebugMenuCommands.register("setnature", {
   "parent"      => "main",
   "name"        => _INTL("Set nature"),

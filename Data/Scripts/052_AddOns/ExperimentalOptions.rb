@@ -53,17 +53,6 @@ class ExperimentalOptionsScene < PokemonOption_Scene
                        $game_switches[SWITCH_REVERSED_MODE] = value == 0
                      }, "Inverts the fusions of all the trainers in the game."
       )
-
-    #,
-          # EnumOption.new(_INTL("Double abilities"), [_INTL("On"), _INTL("Off")],
-          #                proc {
-          #                  $game_switches[SWITCH_DOUBLE_ABILITIES] ? 0 : 1
-          #                },
-          #                proc { |value|
-          #                  $game_switches[SWITCH_DOUBLE_ABILITIES] = value == 0
-          #                }, "Fused Pokémon have two abilities at the same time"
-          #)
-
     ]
     return options
   end
