@@ -2,9 +2,9 @@ module PokeBattle_BattleCommon
   #=============================================================================
   # Store caught Pokémon
   #=============================================================================
-  def pbStorePokemon(pkmn)
+  def pbStorePokemon(pkmn, nickname = true)
     # Nickname the Pokémon (unless it's a Shadow Pokémon)
-    if !pkmn.shadowPokemon?
+    if !pkmn.shadowPokemon? && nickname
       if pbDisplayConfirm(_INTL("Would you like to give a nickname to {1}?", pkmn.name))
         nickname = @scene.pbNameEntry(_INTL("{1}'s nickname?", pkmn.speciesName), pkmn)
         pkmn.name = nickname
@@ -33,7 +33,7 @@ module PokeBattle_BattleCommon
       if creator
         pbDisplayPaused(_INTL("{1} was transferred to {2}'s PC.", pkmn.name, creator))
       else
-        pbDisplayPaused(_INTL("{1} was transferred to someone's PC.", pkmn.name))
+        pbDisplayPaused(_INTL("{1} was transferred to Someone's PC.", pkmn.name))
       end
       pbDisplayPaused(_INTL("It was stored in box \"{1}\".", boxName))
     end

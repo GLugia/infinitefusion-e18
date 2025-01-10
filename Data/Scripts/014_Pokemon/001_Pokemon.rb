@@ -1676,6 +1676,7 @@ class Pokemon
 
   # Creates a copy of this Pokémon and returns it.
   # @return [Pokemon] a copy of this Pokémon
+  # TODO: finish writing this function
   def clone
     ret = super
     ret.iv = {}
@@ -1694,6 +1695,7 @@ class Pokemon
     return ret
   end
   
+  # Copies all data from the Pokemon
   def copy(other)
     @spriteform_body = other.spriteform_body
     @spriteform_head = other.spriteform_head
@@ -1703,18 +1705,19 @@ class Pokemon
     @forced_form = other.forced_form
     @time_form_set = other.time_form_set
     
+    self.level = other.level
     @exp = other.exp
     @head_exp = other.head_exp
     @body_exp = other.body_exp
     @exp_gained_since_fused = other.exp_gained_since_fused
+    
+    @item = other.item_id
     
     @hat = other.hat
     @hat_x = other.hat_x
     @hat_y = other.hat_y
     
     @steps_to_hatch = other.steps_to_hatch
-    
-    @hp = other.hp
     
     @status = other.status
     @status_count = other.status_count
@@ -1838,6 +1841,14 @@ class Pokemon
     @name = other.name
     self.validate_ability
     self.calc_stats
+    
+    self.hp = other.hp
+  end
+  
+  def swap(pokemon)
+    temp = pokemon.clone
+    pokemon.copy(self)
+    self.copy(temp)
   end
 
   # Creates a new Pokémon object.
@@ -2014,9 +2025,5 @@ class Pokemon
         reset_moves if withMoves
       end
     end
-  end
-
-  def totalIv()
-
   end
 end
