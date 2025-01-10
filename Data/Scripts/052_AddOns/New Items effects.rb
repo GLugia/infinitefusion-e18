@@ -697,6 +697,8 @@ def getReverseSpeciesAndSwapData(pokemon)
   pokemon.head_obtain_map, pokemon.body_obtain_map = pokemon.body_obtain_map, pokemon.head_obtain_map
   pokemon.head_obtain_level, pokemon.body_obtain_level = pokemon.body_obtain_level, pokemon.head_obtain_level
   pokemon.head_hatched_map, pokemon.body_hatched_map = pokemon.body_hatched_map, pokemon.head_hatched_map
+  pokemon.head_time_hatched, pokemon.body_time_hatched = pokemon.body_time_hatched, pokemon.head_time_hatched
+  pokemon.head_time_received, pokemon.body_time_received = pokemon.body_time_received, pokemon.head_time_received
   
   # ribbons
   pokemon.head_ribbons, pokemon.body_ribbons = pokemon.body_ribbons, pokemon.head_ribbons
@@ -1396,10 +1398,15 @@ def pbUnfuse(pokemon, scene, supersplicers, pcPosition = nil)
   head.obtain_map = pokemon.head_obtain_map if pokemon.head_obtain_map
   head.obtain_level = pokemon.head_obtain_level if pokemon.head_obtain_level
   head.hatched_map = pokemon.head_hatched_map if pokemon.head_hatched_map
+  head.time_hatched = pokemon.head_time_hatched if pokemon.head_time_hatched
+  head.time_received = pokemon.head_time_received if pokemon.head_time_received
+  head.time_received = pokemon.head_time_received if pokemon.head_time_received
   body.obtain_method = pokemon.body_obtain_method if pokemon.body_obtain_method
   body.obtain_map = pokemon.body_obtain_map if pokemon.body_obtain_map
   body.obtain_level = pokemon.body_obtain_level if pokemon.body_obtain_level
   body.hatched_map = pokemon.body_hatched_map if pokemon.body_hatched_map
+  body.time_hatched = pokemon.body_time_hatched if pokemon.body_time_hatched
+  body.time_received = pokemon.body_time_received if pokemon.body_time_received
   
   # ribbons
   head.ribbons = pokemon.head_ribbons if pokemon.head_ribbons

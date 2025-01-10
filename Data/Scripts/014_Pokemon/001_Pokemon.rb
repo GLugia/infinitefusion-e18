@@ -112,6 +112,12 @@ class Pokemon
   # @return [Integer] the map ID where egg was hatched (0 by default)
   attr_accessor :hatched_map
   attr_accessor :body_hatched_map, :head_hatched_map
+  
+  attr_accessor :time_hatched
+  attr_accessor :head_time_hatched, :body_time_hatched
+  
+  attr_accessor :time_received
+  attr_accessor :head_time_received, :body_time_received
   # Another Pokémon which has been fused with this Pokémon (or nil if there is none).
   # Currently only used by Kyurem, to record a fused Reshiram or Zekrom.
   # @return [Pokemon, nil] the Pokémon fused into this one (nil if there is none)
@@ -1234,25 +1240,112 @@ class Pokemon
   end
 
   # @return [Time] the time when this Pokémon was obtained
-  def timeReceived
-    return Time.at(@timeReceived)
+  def time_received
+    @time_received = Time.new.to_i if !@time_received
+    return Time.at(@time_received)
   end
 
   # Sets the time when this Pokémon was obtained.
   # @param value [Integer, Time, #to_i] time in seconds since Unix epoch
-  def timeReceived=(value)
-    @timeReceived = value.to_i
+  def time_received=(value)
+    if value != nil
+      if value.is_a?(Time)
+        @time_received = value.to_i
+      elsif value.is_a?(Integer)
+        @time_received = value
+      end
+    else
+      @time_received = nil
+    end
+  end
+  
+  def head_time_received
+    return (@head_time_received) ? Time.at(@head_time_received) : nil
+  end
+  
+  def head_time_received=(value)
+    if value != nil
+      if value.is_a?(Time)
+        @head_time_received = value.to_i
+      elsif value.is_a?(Integer)
+        @head_time_received = value
+      end
+    else
+      @head_time_received = nil
+    end
+  end
+  
+  def body_time_received
+    return (@body_time_received) ? Time.at(@body_time_received) : nil
+  end
+  
+  def body_time_received=(value)
+    if value != nil
+      if value.is_a?(Time)
+        @body_time_received = value.to_i
+      elsif value.is_a?(Integer)
+        @body_time_received = value
+      end
+    else
+      @body_time_received = nil
+    end
   end
 
   # @return [Time] the time when this Pokémon hatched
-  def timeEggHatched
-    return (obtain_method == 1) ? Time.at(@timeEggHatched) : nil
+  def time_hatched
+    @time_hatched = Time.new.to_i if !@time_hatched && @obtain_method == 1
+    return nil if !@time_hatched
+    return (@obtain_method == 1) ? Time.at(@time_hatched) : nil
   end
 
   # Sets the time when this Pokémon hatched.
   # @param value [Integer, Time, #to_i] time in seconds since Unix epoch
-  def timeEggHatched=(value)
-    @timeEggHatched = value.to_i
+  def time_hatched=(value)
+    if value != nil
+      if value.is_a?(Time)
+        @time_hatched = value.to_i
+      elsif value.is_a?(Integer)
+        @time_hatched = value
+      end
+    else
+      @time_hatched = nil
+    end
+  end
+  
+  def head_time_hatched
+    @head_time_hatched = Time.new.to_i if !@head_time_hatched && @head_obtain_method == 1
+    return nil if !@head_time_hatched
+    return (@head_obtain_method == 1) ? Time.at(@head_time_hatched) : nil
+  end
+  
+  def head_time_hatched=(value)
+    if value != nil
+      if value.is_a?(Time)
+        @head_time_hatched = value.to_i
+      elsif value.is_a?(Integer)
+        @head_time_hatched = value
+      end
+    else
+      @head_time_hatched = nil
+    end
+  end
+  
+  def body_time_hatched
+    @body_time_hatched = Time.new.to_i if !@body_time_hatched && @body_obtain_method == 1
+    return nil if !@body_time_hatched
+    return (@body_obtain_method == 1) ? Time.at(@body_time_hatched) : nil
+  end
+  
+  def body_time_hatched=(value)
+    if value != nil
+      if value.is_a?(Time)
+        @body_time_hatched = value.to_i
+      elsif value.is_a?(Integer)
+        @body_time_hatched = value
+      end
+    else
+      @body_time_hatched = nil
+    end
   end
 
   #=============================================================================
@@ -1637,7 +1730,6 @@ class Pokemon
     @body_gender = other.body_gender
     
     @ability = other.ability
-    @ability2 = other.ability2
     @head_ability = other.head_ability
     @body_ability = other.body_ability
     
@@ -1722,8 +1814,13 @@ class Pokemon
     @head_hatched_map = other.head_hatched_map
     @body_hatched_map = other.body_hatched_map
     
-    @timeReceived = other.timeReceived
-    @timeEggHatched = other.timeEggHatched
+    @time_received = other.time_received
+    @head_time_received = other.head_time_received
+    @body_time_received = other.body_time_received
+    
+    @time_hatched = other.time_hatched
+    @head_time_hatched = other.head_time_hatched
+    @body_time_hatched = other.body_time_hatched
     
     @fused = other.fused
     
@@ -1855,7 +1952,6 @@ class Pokemon
     @gender = nil
     self.shiny?
     @ability = nil
-    @ability2 = nil
     self.nature
     @item = nil
     @mail = nil
@@ -1896,8 +1992,8 @@ class Pokemon
     @obtain_text = nil
     @obtain_level = level
     @hatched_map = 0
-    @timeReceived = Time.new.to_i
-    @timeEggHatched = nil
+    @time_received = Time.new.to_i
+    @time_hatched = nil
     @fused = nil
     @hp = 1
     @totalhp = 1

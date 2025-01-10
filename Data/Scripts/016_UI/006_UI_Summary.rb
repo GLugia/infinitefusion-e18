@@ -560,10 +560,10 @@ class PokemonSummary_Scene
     pbDrawTextPositions(overlay, textpos)
     memo = ""
     # Write date received
-    if @pokemon.timeReceived
-      date = @pokemon.timeReceived.day
-      month = pbGetMonthName(@pokemon.timeReceived.mon)
-      year = @pokemon.timeReceived.year
+    if @pokemon.time_received
+      date = @pokemon.time_received.day
+      month = pbGetMonthName(@pokemon.time_received.mon)
+      year = @pokemon.time_received.year
       memo += _INTL("<c3=404040,B0B0B0>{1} {2}, {3}\n", date, month, year)
     end
     # Write map name egg was received on
@@ -598,10 +598,10 @@ class PokemonSummary_Scene
       memo += _INTL("<c3=F83820,E09890>{1}<c3=404040,B0B0B0> nature.\n", natureName)
     end
     # Write date received
-    if @pokemon.timeReceived
-      date = @pokemon.timeReceived.day
-      month = pbGetMonthName(@pokemon.timeReceived.mon)
-      year = @pokemon.timeReceived.year
+    if @pokemon.time_received
+      date = @pokemon.time_received.day
+      month = pbGetMonthName(@pokemon.time_received.mon)
+      year = @pokemon.time_received.year
       memo += _INTL("<c3=404040,B0B0B0>{1} {2}, {3}\n", date, month, year)
     end
     # Write map name Pokémon was received on
@@ -619,10 +619,10 @@ class PokemonSummary_Scene
     memo += sprintf("<c3=404040,B0B0B0>%s\n", mettext) if mettext && mettext != ""
     # If Pokémon was hatched, write when and where it hatched
     if @pokemon.obtain_method == 1
-      if @pokemon.timeEggHatched
-        date = @pokemon.timeEggHatched.day
-        month = pbGetMonthName(@pokemon.timeEggHatched.mon)
-        year = @pokemon.timeEggHatched.year
+      if @pokemon.time_hatched
+        date = @pokemon.time_hatched.day
+        month = pbGetMonthName(@pokemon.time_hatched.mon)
+        year = @pokemon.time_hatched.year
         memo += _INTL("<c3=404040,B0B0B0>{1} {2}, {3}\n", date, month, year)
       end
       mapname = pbGetMapNameFromId(@pokemon.hatched_map)
@@ -717,14 +717,6 @@ class PokemonSummary_Scene
       textpos.push([ability.name, 362, 278, 0, Color.new(64, 64, 64), Color.new(176, 176, 176)])
       drawTextEx(overlay, 224, 320, 282, 2, ability.description, Color.new(64, 64, 64), Color.new(176, 176, 176))
     end
-
-    #fixme temp double abilities
-    # if ability
-    #   textpos.push([ability.name, 362, 278, 0, Color.new(64, 64, 64), Color.new(176, 176, 176)])
-    #   if ability2
-    #     drawTextEx(overlay, 224, 320, 282, 2, ability2.name, Color.new(64, 64, 64), Color.new(176, 176, 176))
-    #   end
-    # end
 
     # Draw all text
     pbDrawTextPositions(overlay, textpos)

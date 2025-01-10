@@ -932,6 +932,10 @@ class PokemonFusionScene
       fused_pokemon.body_obtain_level = @pokemon2.obtain_level
       fused_pokemon.head_hatched_map = @pokemon1.hatched_map
       fused_pokemon.body_hatched_map = @pokemon2.hatched_map
+      fused_pokemon.head_time_hatched = @pokemon1.time_hatched
+      fused_pokemon.body_time_hatched = @pokemon2.time_hatched
+      fused_pokemon.head_time_received = @pokemon1.time_received
+      fused_pokemon.body_time_received = @pokemon2.time_received
       
       # ribbons
       fused_pokemon.head_ribbons = @pokemon1.ribbons
@@ -1052,11 +1056,7 @@ def pbSelectAbilityAndNature(fused_pokemon)
   fused_pokemon.head_ability = @pokemon1.ability
   fused_pokemon.body_ability = @pokemon2.ability
   
-  if $game_switches[SWITCH_DOUBLE_ABILITIES]
-    fused_pokemon.ability2 = @pokemon2.ability
-  else
-    fused_pokemon.ability = scene.selectedAbility
-  end
+  fused_pokemon.ability = scene.selectedAbility
   
   fused_pokemon.head_nature = @pokemon1.nature
   fused_pokemon.body_nature = @pokemon2.nature

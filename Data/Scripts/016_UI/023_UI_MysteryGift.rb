@@ -379,7 +379,7 @@ def pbReceiveMysteryGift(id)
     gift[2].personalID = rand(2**16) | rand(2**16) << 16
     gift[2].calc_stats
     time=pbGetTimeNow
-    gift[2].timeReceived=time.getgm.to_i
+    gift[2].time_received=time.getgm.to_i
     gift[2].obtain_method = 4   # Fateful encounter
     gift[2].record_first_moves
     if $game_map

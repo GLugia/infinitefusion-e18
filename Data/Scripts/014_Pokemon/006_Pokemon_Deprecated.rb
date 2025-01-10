@@ -72,8 +72,8 @@ class PokeBattle_Pokemon
     ret.obtain_text      = pkmn.obtainText
     ret.obtain_level     = pkmn.obtainLevel if pkmn.obtainLevel
     ret.hatched_map      = pkmn.hatchedMap
-    ret.timeReceived     = pkmn.timeReceived
-    ret.timeEggHatched   = pkmn.timeEggHatched
+    ret.time_received    = pkmn.timeReceived
+    ret.time_hatched     = pkmn.timeEggHatched
     if pkmn.fused
       ret.fused = PokeBattle_Pokemon.convert(pkmn.fused) if pkmn.fused.is_a?(PokeBattle_Pokemon)
       ret.fused = pkmn.fused if pkmn.fused.is_a?(Pokemon)
