@@ -1838,7 +1838,7 @@ class Pokemon
     @head_force_disobey = other.head_force_disobey
     @body_force_disobey = other.body_force_disobey
     
-    @name = other.name
+    @name = other.nicknamed? ? other.name : nil
     self.validate_ability
     self.calc_stats
     
