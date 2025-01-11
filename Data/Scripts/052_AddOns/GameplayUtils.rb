@@ -969,13 +969,11 @@ def swapCaughtPokemon(caughtPokemon)
                   })
   index = pbGet(1)
   return false if index == -1
-  $PokemonStorage.pbStoreCaught($Trainer.party[index])
-  pbRemovePokemonAt(index)
-  pbStorePokemon(caughtPokemon)
-
-  tmp = $Trainer.party[index]
-  $Trainer.party[index] = $Trainer.party[-1]
-  $Trainer.party[-1] = tmp
+  temp = Pokemon.new(1, 1)
+  temp.copy($Trainer.party[index])
+  $Trainer.party[index].copy(caughtPokemon)
+  pbDisplayPaused(_INTL("{1} has been added to your party.", caughtPokemon.name))
+  pbStorePokemon(temp, false)
   return true
 end
 
@@ -987,14 +985,8 @@ def swapReleaseCaughtPokemon(caughtPokemon)
                   })
   index = pbGet(1)
   return false if index == -1
-  releasedPokemon = $Trainer.party[index]
-  pbMessage("#{releasedPokemon.name} was released.")
-  pbRemovePokemonAt(index)
-  pbStorePokemon(caughtPokemon)
-
-  tmp = $Trainer.party[index]
-  $Trainer.party[index] = $Trainer.party[-1]
-  $Trainer.party[-1] = tmp
+  pbMessage("#{$Trainer.party[index].name} was released.")
+  $Trainer.party[index].copy(caughtPokemon)
   return true
 end
 

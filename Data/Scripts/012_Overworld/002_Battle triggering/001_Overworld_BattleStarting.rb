@@ -13,7 +13,7 @@ end
 class PokemonTemp
   attr_accessor :encounterTriggered
   attr_accessor :encounterType
-  attr_accessor :evolutionLevels
+  attr_accessor :pokemon_evolution_data
 
   def battleRules
     @battleRules = {} if !@battleRules
@@ -229,9 +229,9 @@ end
 Events.onStartBattle += proc { |_sender|
   # Record current levels of Pokémon in party, to see if they gain a level
   # during battle and may need to evolve afterwards
-  $PokemonTemp.evolutionLevels = []
+  $PokemonTemp.pokemon_evolution_data = []
   for i in 0...$Trainer.party.length
-    $PokemonTemp.evolutionLevels[i] = $Trainer.party[i].level
+    $PokemonTemp.pokemon_evolution_data[i] = [$Trainer.party[i].species, $Trainer.party[i].level]
   end
 }
 
@@ -737,10 +737,10 @@ end
 Events.onEndBattle += proc { |_sender,e|
   decision = e[0]
   canLose  = e[1]
-  if Settings::CHECK_EVOLUTION_AFTER_ALL_BATTLES || (decision!=2 && decision!=5)   # not a loss or a draw
-    if $PokemonTemp.evolutionLevels
-      pbEvolutionCheck($PokemonTemp.evolutionLevels)
-      $PokemonTemp.evolutionLevels = nil
+  if Settings::CHECK_EVOLUTION_AFTER_ALL_BATTLES || (decision!=2 && decision!=5) # not a loss or a draw
+    if $PokemonTemp.pokemon_evolution_data
+      pbEvolutionCheck($PokemonTemp.pokemon_evolution_data)
+      $PokemonTemp.pokemon_evolution_data = nil
     end
   end
   case decision
@@ -759,15 +759,15 @@ Events.onEndBattle += proc { |_sender,e|
   end
 }
 
-def pbEvolutionCheck(currentLevels,scene=nil)
-  for i in 0...currentLevels.length
+def pbEvolutionCheck(pokemon_evolution_data, scene=nil)
+  for i in 0...pokemon_evolution_data.length
     pkmn = $Trainer.party[i]
-    next if !pkmn || (pkmn.hp==0 && !Settings::CHECK_EVOLUTION_FOR_FAINTED_POKEMON)
-    next if currentLevels[i] && pkmn.level==currentLevels[i]
+    next if !pkmn || (pkmn.hp == 0 && !Settings::CHECK_EVOLUTION_FOR_FAINTED_POKEMON)
+    next if pokemon_evolution_data[i] && pkmn.species == pokemon_evolution_data[i][0] && pkmn.level == pokemon_evolution_data[i][1]
     newSpecies = pkmn.check_evolution_on_level_up()
     next if !newSpecies
     evo = PokemonEvolutionScene.new
-    evo.pbStartScreen(pkmn,newSpecies)
+    evo.pbStartScreen(pkmn, newSpecies)
     evo.pbEvolution
     evo.pbEndScreen
   end
