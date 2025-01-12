@@ -972,8 +972,8 @@ def swapCaughtPokemon(caughtPokemon)
   temp = Pokemon.new(1, 1)
   temp.copy($Trainer.party[index])
   $Trainer.party[index].copy(caughtPokemon)
-  pbDisplayPaused(_INTL("{1} has been added to your party.", caughtPokemon.name))
-  pbStorePokemon(temp, false)
+  pbMessage(_INTL("{1} has been added to your party.", caughtPokemon.name))
+  pbStorePokemon(temp)
   return true
 end
 
