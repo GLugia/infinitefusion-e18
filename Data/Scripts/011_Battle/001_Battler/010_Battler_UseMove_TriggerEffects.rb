@@ -103,15 +103,15 @@ class PokeBattle_Battler
     if !user.fainted? && !user.effects[PBEffects::Transform] &&
        user.isSpecies?(:GRENINJA) && user.ability == :BATTLEBOND
       if !@battle.pbAllFainted?(user.idxOpposingSide) &&
-         !@battle.battleBond[user.index&1][user.pokemonIndex]
+         !@battle.battleBond[user.index & 1][user.pokemonIndex]
         numFainted = 0
         targets.each { |b| numFainted += 1 if b.damageState.fainted }
-        if numFainted>0 && user.form==1
-          @battle.battleBond[user.index&1][user.pokemonIndex] = true
-          @battle.pbDisplay(_INTL("{1} became fully charged due to its bond with its Trainer!",user.pbThis))
-          @battle.pbShowAbilitySplash(user,true)
+        if numFainted > 0 && user.form == 1
+          @battle.battleBond[user.index & 1][user.pokemonIndex] = true
+          @battle.pbDisplay(_INTL("{1} became fully charged due to its bond with its Trainer!", user.pbThis))
+          @battle.pbShowAbilitySplash(user, true)
           @battle.pbHideAbilitySplash(user)
-          user.pbChangeForm(2,_INTL("{1} became Ash-Greninja!",user.pbThis))
+          user.pbChangeForm(2, _INTL("{1} became Ash-Greninja!", user.pbThis))
         end
       end
     end

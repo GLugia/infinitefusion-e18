@@ -140,8 +140,8 @@ class PokeBattle_Battler
   #=============================================================================
   # Forms
   #=============================================================================
-  def pbChangeForm(newForm,msg)
-    return if fainted? || @effects[PBEffects::Transform] || @form==newForm
+  def pbChangeForm(newForm, msg)
+    return if fainted? || @effects[PBEffects::Transform] || @form == newForm
     oldForm = @form
     oldDmg = @totalhp-@hp
     self.form = newForm
