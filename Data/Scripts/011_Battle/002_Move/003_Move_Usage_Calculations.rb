@@ -242,13 +242,13 @@ class PokeBattle_Move
     atk, atkStage = pbGetAttackStats(user,target)
     if !target.hasActiveAbility?(:UNAWARE) || @battle.moldBreaker
       atkStage = 6 if target.damageState.critical && atkStage<6
-      atk = (atk.to_f*stageMul[atkStage]/stageDiv[atkStage]).floor
+      atk = (atk.to_f * stageMul[atkStage] / stageDiv[atkStage]).floor
     end
     # Calculate target's defense stat
     defense, defStage = pbGetDefenseStats(user,target)
     if !user.hasActiveAbility?(:UNAWARE)
-      defStage = 6 if target.damageState.critical && defStage>6
-      defense = (defense.to_f*stageMul[defStage]/stageDiv[defStage]).floor
+      defStage = 6 if target.damageState.critical && defStage > 6
+      defense = (defense.to_f * stageMul[defStage] / stageDiv[defStage]).floor
     end
     # Calculate all multiplier effects
     multipliers = {

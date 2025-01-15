@@ -137,10 +137,12 @@ end
 
 end
 
-GYM_LEADERS=[:LEADER_Brock,:LEADER_Misty, :LEADER_Surge, :LEADER_Erika, :LEADER_Koga, :LEADER_Sabrina, :LEADER_Blaine,
-             :LEADER_Giovanni, :ELITEFOUR_Lorelei, :ELITEFOUR_Bruno, :ELITEFOUR_Agatha, :ELITEFOUR_Lance, :CHAMPION,
-             :LEADER_Whitney, :LEADER_Kurt, :LEADER_Falkner, :LEADER_Clair, :LEADER_Morty, :LEADER_Pryce, :LEADER_Chuck,
-             :LEADER_Jasmine, :CHAMPION_Sinnoh]
+GYM_LEADERS=[:LEADER_Brock,:LEADER_Misty, :LEADER_Surge, :LEADER_Erika,
+             :LEADER_Koga, :LEADER_Sabrina, :LEADER_Blaine, :LEADER_Giovanni,
+             :ELITEFOUR_Lorelei, :ELITEFOUR_Bruno, :ELITEFOUR_Agatha, :ELITEFOUR_Lance, :CHAMPION,
+             :LEADER_Whitney, :LEADER_Kurt, :LEADER_Falkner, :LEADER_Clair,
+             :LEADER_Morty, :LEADER_Pryce, :LEADER_Chuck, :LEADER_Jasmine,
+             :CHAMPION_Sinnoh]
 def is_gym_leader(trainer)
   return GYM_LEADERS.include?(trainer.trainer_type)
 end
