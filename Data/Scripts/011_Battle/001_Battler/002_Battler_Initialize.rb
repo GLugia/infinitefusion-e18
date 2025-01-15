@@ -2,7 +2,7 @@ class PokeBattle_Battler
   #=============================================================================
   # Creating a battler
   #=============================================================================
-  def initialize(btl,idxBattler)
+  def initialize(btl, idxBattler)
     @battle      = btl
     @index       = idxBattler
     @captured    = false
@@ -33,35 +33,6 @@ class PokeBattle_Battler
     @moves          = []
     @iv             = {}
     GameData::Stat.each_main { |s| @iv[s.id] = 0 }
-  end
-
-  # Used by Future Sight only, when Future Sight's user is no longer in battle.
-  def pbInitDummyPokemon(pkmn,idxParty)
-    raise _INTL("An egg can't be an active Pokémon.") if pkmn.egg?
-    @name         = pkmn.name
-    @species      = pkmn.species
-    @form         = pkmn.form
-    @level        = pkmn.level
-    @hp           = pkmn.hp
-    @totalhp      = pkmn.totalhp
-    @type1        = pkmn.type1
-    @type2        = pkmn.type2
-    # ability and item intentionally not copied across here
-    @gender       = pkmn.gender
-    @attack       = pkmn.attack
-    @defense      = pkmn.defense
-    @spatk        = pkmn.spatk
-    @spdef        = pkmn.spdef
-    @speed        = pkmn.speed
-    @status       = pkmn.status
-    @status_count = pkmn.status_count
-    @pokemon      = pkmn
-    @pokemonIndex = idxParty
-    @participants = []
-    # moves intentionally not copied across here
-    @iv           = {}
-    GameData::Stat.each_main { |s| @iv[s.id] = pkmn.iv[s.id] }
-    @dummy        = true
   end
 
   def pbInitialize(pkmn,idxParty,batonPass=false)

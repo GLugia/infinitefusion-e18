@@ -695,7 +695,8 @@ BattleHandlers::MoveImmunityTargetAbility.copy(:WATERABSORB,:DRYSKIN)
 BattleHandlers::MoveImmunityTargetAbility.add(:WONDERGUARD,
   proc { |ability,user,target,move,type,battle|
     next false if move.statusMove?
-    next false if move.id == :FUTURESIGHT || move.id == :DOOMDESIRE
+    # Bugfix: Future Sight and Doom Desire can still target
+    next false if [:FUTURESIGHT, :DOOMDESIRE].include?(move.id)
     next false if !type || Effectiveness.super_effective?(target.damageState.typeMod)
     battle.pbShowAbilitySplash(target)
     if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
@@ -1583,9 +1584,9 @@ BattleHandlers::TargetAbilityOnHit.add(:WEAKARMOR,
     next if !target.pbCanLowerStatStage?(:DEFENSE, target) &&
             !target.pbCanRaiseStatStage?(:SPEED, target)
     battle.pbShowAbilitySplash(target)
-    target.pbLowerStatStageByAbility(:DEFENSE, 1, target, false, GameData::Ability.get(ability).real_name)
-    target.pbRaiseStatStageByAbility(:SPEED,
-       (Settings::MECHANICS_GENERATION >= 7) ? 2 : 1, target, false, GameData::Ability.get(ability).real_name)
+    target.pbLowerStatStageByAbility(:DEFENSE, 1, target, false, false, GameData::Ability.get(ability).real_name)
+    speed_stages = Settings::MECHANICS_GENERATION >= 7 ? 2 : 1
+    target.pbRaiseStatStageByAbility(:SPEED, speed_stages, target, false, false, GameData::Ability.get(ability).real_name)
     battle.pbHideAbilitySplash(target)
   }
 )

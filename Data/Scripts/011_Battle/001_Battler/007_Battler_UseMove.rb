@@ -673,7 +673,9 @@ class PokeBattle_Battler
   # Attack a single target
   #=============================================================================
   def pbProcessMoveHit(move, user, targets, hitNum, skipAccuracyCheck)
-    return false if user.fainted?
+    # Bugfix: Future Sight and Doom Desire do not fail if the user is fainted
+    # during the turn it deals damage.
+    return false if user.fainted? && ![:FUTURESIGHT, :DOOMDESIRE].include?(move.id)
     # For two-turn attacks being used in a single turn
     move.pbInitialEffect(user, targets, hitNum)
     numTargets = 0 # Number of targets that are affected by this hit

@@ -208,39 +208,49 @@ class PokeBattle_Battle
     # Weather
     pbEORWeather(priority)
     # Future Sight/Doom Desire
-    @positions.each_with_index do |pos,idxPos|
-      next if !pos || pos.effects[PBEffects::FutureSightCounter]==0
+    @positions.each_with_index do |pos, idxPos|
+      next if !pos || pos.effects[PBEffects::FutureSightCounter] == 0
       pos.effects[PBEffects::FutureSightCounter] -= 1
-      next if pos.effects[PBEffects::FutureSightCounter]>0
-      next if !@battlers[idxPos] || @battlers[idxPos].fainted?   # No target
+      next if pos.effects[PBEffects::FutureSightCounter] > 0
+      next if !@battlers[idxPos] || @battlers[idxPos].fainted? # No target
       moveUser = nil
+      
       eachBattler do |b|
         next if b.opposes?(pos.effects[PBEffects::FutureSightUserIndex])
-        next if b.pokemonIndex!=pos.effects[PBEffects::FutureSightUserPartyIndex]
+        next if b.pokemonIndex != pos.effects[PBEffects::FutureSightUserPartyIndex]
         moveUser = b
         break
       end
-      next if moveUser && moveUser.index==idxPos   # Target is the user
+      
+      next if moveUser && moveUser.index == idxPos   # Target is the user
+      
+      fainted = false
       if !moveUser   # User isn't in battle, get it from the party
         party = pbParty(pos.effects[PBEffects::FutureSightUserIndex])
         pkmn = party[pos.effects[PBEffects::FutureSightUserPartyIndex]]
-        if pkmn && pkmn.able?
-          moveUser = PokeBattle_Battler.new(self,pos.effects[PBEffects::FutureSightUserIndex])
-          moveUser.pbInitDummyPokemon(pkmn,pos.effects[PBEffects::FutureSightUserPartyIndex])
-        end
+        
+        # Bugfix: Future Sight and Doom Desire do not fail if the user is fainted
+        # during the turn it deals damage.
+        next if !pkmn # || !pkmn.able?
+        moveUser = PokeBattle_Battler.new(self, pos.effects[PBEffects::FutureSightUserIndex])
+        moveUser.pbInitPokemon(pkmn, pos.effects[PBEffects::FutureSightUserPartyIndex])
       end
-      next if !moveUser   # User is fainted
+      
+      # See bugfix above
+      # next if !moveUser   # User is fainted
       move = pos.effects[PBEffects::FutureSightMove]
-      pbDisplay(_INTL("{1} took the {2} attack!",@battlers[idxPos].pbThis,
-         GameData::Move.get(move).name))
+      pbDisplay(_INTL("{1} took the {2} attack!", @battlers[idxPos].pbThis,
+        GameData::Move.get(move).name))
+      
       # NOTE: Future Sight failing against the target here doesn't count towards
       #       Stomping Tantrum.
       userLastMoveFailed = moveUser.lastMoveFailed
       @futureSight = true
-      moveUser.pbUseMoveSimple(move,idxPos)
+      moveUser.pbUseMoveSimple(move, idxPos)
       @futureSight = false
       moveUser.lastMoveFailed = userLastMoveFailed
       @battlers[idxPos].pbFaint if @battlers[idxPos].fainted?
+      
       pos.effects[PBEffects::FutureSightCounter]        = 0
       pos.effects[PBEffects::FutureSightMove]           = nil
       pos.effects[PBEffects::FutureSightUserIndex]      = -1
