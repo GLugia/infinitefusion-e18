@@ -196,7 +196,7 @@ def pbBalancedLevel(party)
   # sample is being taken.
   stdev = Math.sqrt(varianceTimesN / party.length)
   mean = 0
-  weights = []
+  weightSum = 0
   # Skew weights according to standard deviation
   party.each do |pkmn|
     weight = pkmn.level.to_f / sum.to_f
@@ -207,15 +207,10 @@ def pbBalancedLevel(party)
       weight += (stdev / mLevel.to_f)
       weight = 0.999 if weight >= 0.999
     end
-    weights.push(weight)
+    mean += pkmn.level * weight
+    weightSum += weight
   end
-  weightSum = 0
-  weights.each { |w| weightSum += w }
-  # Calculate the weighted mean, assigning each weight to each level's
-  # contribution to the sum
-  party.each_with_index { |pkmn, i| mean += pkmn.level * weights[i] }
-  mean /= weightSum
-  mean = mean.round
+  mean = (mean / weightSum).round
   mean = 1 if mean < 1
   # Add 2 to the mean to challenge the player
   mean += 2
