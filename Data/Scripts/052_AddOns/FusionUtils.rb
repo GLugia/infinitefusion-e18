@@ -230,7 +230,8 @@ def getRandomLocalFusion()
 end
 
 def getRandomFusionForIntro()
-  random_pokemon = $game_temp.custom_sprites_list.keys.sample || :PIKACHU
+  random_pokemon = $game_temp.custom_sprites_list.keys.sample
+  random_pokemon = :PIKACHU if !random_pokemon
   alt_letter = $game_temp.custom_sprites_list[random_pokemon]
   body_id = get_body_number_from_symbol(random_pokemon)
   head_id = get_head_number_from_symbol(random_pokemon)
