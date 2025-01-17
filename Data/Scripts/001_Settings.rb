@@ -5,8 +5,8 @@
 #==============================================================================#
 module Settings
   # The version of your game. It has to adhere to the MAJOR.MINOR.PATCH format.
-  GAME_VERSION = '6.4.4'
-  GAME_VERSION_NUMBER = "6.4.4"
+  GAME_VERSION = '6.4.5'
+  GAME_VERSION_NUMBER = "6.4.5"
   LATEST_GAME_RELEASE = "6.4"
   
   POKERADAR_LIGHT_ANIMATION_RED_ID = 17
@@ -22,10 +22,11 @@ module Settings
   
   #Infinite fusion settings
   NB_POKEMON = 501
-  CUSTOM_BASE_SPRITES_FOLDER = "Graphics/CustomBattlers/local_spritesBaseSprites/"
+  CUSTOM_BASE_SPRITES_FOLDER = "Graphics/CustomBattlers/local_sprites/BaseSprites/"
   CUSTOM_BATTLERS_FOLDER = "Graphics/CustomBattlers/"
   CUSTOM_SPRITES_TO_IMPORT_FOLDER = "Graphics/CustomBattlers/Sprites to import/"
   CUSTOM_BATTLERS_FOLDER_INDEXED = "Graphics/CustomBattlers/local_sprites/indexed/"
+  CUSTOM_BASE_SPRITE_FOLDER = "Graphics/CustomBattlers/local_sprites/BaseSprites/"
   BATTLERS_FOLDER = "Graphics/Battlers/Autogens/"
   DOWNLOADED_SPRITES_FOLDER = "Graphics/temp/"
   DEFAULT_SPRITE_PATH = "Graphics/Battlers/Special/000.png"
@@ -102,6 +103,9 @@ module Settings
 
   BASE_POKEMON_SPRITESHEET_URL = "https://infinitefusion.net/spritesheets/spritesheets_base/"
   CUSTOM_FUSIONS_SPRITESHEET_URL = "https://infinitefusion.net/spritesheets/spritesheets_custom/"
+
+  BASE_POKEMON_SPRITESHEET_TRUE_SIZE_URL = "https://infinitefusion.net/spritesheets_truesize/spritesheets_base/"
+  CUSTOM_FUSIONS_SPRITESHEET_TRUE_SIZE_URL = "https://infinitefusion.net/spritesheets_truesize/spritesheets_custom/"
 
   RIVAL_STARTER_PLACEHOLDER_SPECIES = :MEW #(MEW)
   VAR_1_PLACEHOLDER_SPECIES = :DIALGA

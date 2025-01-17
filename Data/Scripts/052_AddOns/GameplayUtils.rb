@@ -1390,7 +1390,7 @@ def get_mart_exclusive_items(city)
   return items_list
 end
 
-def calculate_pokemon_weight(pokemon)
+def calculate_pokemon_weight(pokemon,nerf=0)
 
   base_weight = pokemon.weight
   ivs = []
@@ -1418,18 +1418,20 @@ def calculate_pokemon_weight(pokemon)
 
   # Cap the weight between min and max values
   weight = [[weight, min_weight].max, max_weight].min
-
+  weight -= nerf if nerf > nerf
   return weight.round(2) # Round to 2 decimal places
 end
 
-def generate_weight_contest_entries(species, level, resultsVariable)
+#nerf: remove x kg from each generated pokemon
+def generate_weight_contest_entries(species, level, resultsVariable,nerf=0)
   #echoln "Generating Pokemon"
   pokemon1 = pbGenerateWildPokemon(species, level) #Pokemon.new(species,level)
   pokemon2 = pbGenerateWildPokemon(species, level) #Pokemon.new(species,level)
   new_weights = []
-  new_weights << calculate_pokemon_weight(pokemon1)
-  new_weights << calculate_pokemon_weight(pokemon2)
+  new_weights << calculate_pokemon_weight(pokemon1,nerf)
+  new_weights << calculate_pokemon_weight(pokemon2,nerf)
   echoln new_weights
+  echoln "(nerfed by -#{nerf})"
   pbSet(resultsVariable, new_weights.max)
 
 end
@@ -1519,8 +1521,8 @@ QUEST_REWARDS = [
   QuestReward.new(10, :LANTERN, 1, "This will allow you to illuminate caves without having to use a HM! Practical, isn't it?"),
   QuestReward.new(15, :LINKINGCORD, 3, "This strange cable triggers the evolution of Pokémon that typically evolve via trade. I know you'll put it to good use!"),
   QuestReward.new(20, :SLEEPINGBAG, 1, "This handy item will allow you to sleep anywhere you want. You won't even need hotels anymore!"),
-  QuestReward.new(30, :MISTSTONE, 1, "This rare stone can evolve any Pokémon, regardless of their level or evolution method. Use it wisely!"),
-  QuestReward.new(45, :MASTERBALL, 1, "This rare ball can catch any Pokémon. Don't waste it!"),
+  QuestReward.new(30, :MISTSTONE, 1, "This rare stone can evolve any Pokémon, regardless of their level or evolution method. Use it wisely!",true),
+  QuestReward.new(45, :MASTERBALL, 1, "This rare ball can catch any Pokémon. Don't waste it!",true),
   QuestReward.new(60, :GSBALL, 1, "This mysterious ball is rumored to be the key to call upon the protector of Ilex Forest.  It's a precious relic."),
 ]
 

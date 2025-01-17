@@ -378,11 +378,23 @@ class PokemonLoadScreen
 
   def check_for_spritepack_update()
     $updated_spritesheets = [] if !$updated_spritesheets
-    echoln new_spritepack_was_released()
     if new_spritepack_was_released()
+      reset_updated_spritesheets_cache()
       $updated_spritesheets = []
     end
   end
+
+  def reset_updated_spritesheets_cache()
+    echoln "resetting updated spritesheets list"
+    begin
+      File.open(Settings::UPDATED_SPRITESHEETS_CACHE, 'w') { |file| file.truncate(0) }
+      echoln "File reset successfully."
+    rescue => e
+      echoln "Failed to reset file: #{e.message}"
+    end
+  end
+
+
 
   def preload_party(trainer)
     spriteLoader = BattleSpriteLoader.new
