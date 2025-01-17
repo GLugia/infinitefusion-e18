@@ -48,8 +48,8 @@ class PokeBattle_Move_083 < PokeBattle_Move
   def pbEffectGeneral(user)
     user.pbOwnSide.effects[PBEffects::Round] = true
     user.eachAlly do |b|
-      next if @battle.choices[b.index][0]!=:UseMove || b.movedThisRound?
-      next if @battle.choices[b.index][2].function!=@function
+      next if @battle.choices[b.index][0] != :UseMove || b.movedThisRound?
+      next if @battle.choices[b.index][2].function != @function
       b.effects[PBEffects::MoveNext] = true
       b.effects[PBEffects::Quash]    = 0
       break
@@ -64,9 +64,9 @@ end
 #===============================================================================
 class PokeBattle_Move_084 < PokeBattle_Move
   def pbBaseDamage(baseDmg, user, target)
-    if @battle.choices[target.index][0]!=:None &&
-       ((@battle.choices[target.index][0]!=:UseMove &&
-       @battle.choices[target.index][0]!=:Shift) || target.movedThisRound?)
+    if @battle.choices[target.index][0] != :None &&
+       ((@battle.choices[target.index][0] != :UseMove &&
+       @battle.choices[target.index][0] != :Shift) || target.movedThisRound?)
       baseDmg *= 2
     end
     return baseDmg
@@ -81,7 +81,7 @@ end
 class PokeBattle_Move_085 < PokeBattle_Move
   def pbBaseDamage(baseDmg, user, target)
     lrf = user.pbOwnSide.effects[PBEffects::LastRoundFainted]
-    baseDmg *= 2 if lrf  > = 0 && lrf == @battle.turnCount-1
+    baseDmg *= 2 if lrf >= 0 && lrf == @battle.turnCount-1
     return baseDmg
   end
 end
@@ -243,53 +243,14 @@ end
 #===============================================================================
 class PokeBattle_Move_090 < PokeBattle_Move
   def pbBaseType(user)
-    hp = pbHiddenPower(user, user.pokemon.hiddenPowerType)
-    return hp[0]
+    return user.hidden_power[0]
   end
 
   def pbBaseDamage(baseDmg, user, target)
-    return super if Settings::MECHANICS_GENERATION  > = 6
-    hp = pbHiddenPower(user, user.pokemon.hiddenPowerType)
-    return hp[1]
+    return super if Settings::MECHANICS_GENERATION >= 6
+    return user.hidden_power[1]
   end
 end
-
-
-
-def pbHiddenPower(pkmn, forcedType=nil)
-  # NOTE: This allows Hidden Power to be Fairy-type (if you have that type in
-  #       your game). I don't care that the official games don't work like that.
-  iv = pkmn.iv
-  idxType = 0; power = 60
-  types = []
-  GameData::Type.each { |t| types.push(t.id) if !t.pseudo_type && ![:NORMAL, :SHADOW].include?(t.id)}
-  types.sort! { |a, b| GameData::Type.get(a).id_number <=> GameData::Type.get(b).id_number }
-  idxType |= (iv[:HP]&1)
-  idxType |= (iv[:ATTACK]&1)<<1
-  idxType |= (iv[:DEFENSE]&1)<<2
-  idxType |= (iv[:SPEED]&1)<<3
-  idxType |= (iv[:SPECIAL_ATTACK]&1)<<4
-  idxType |= (iv[:SPECIAL_DEFENSE]&1)<<5
-  idxType = (types.length-1)*idxType/63
-  type = types[idxType]
-  if Settings::MECHANICS_GENERATION <= 5
-    powerMin = 30
-    powerMax = 70
-    power |= (iv[:HP]&2) >  > 1
-    power |= (iv[:ATTACK]&2)
-    power |= (iv[:DEFENSE]&2)<<1
-    power |= (iv[:SPEED]&2)<<2
-    power |= (iv[:SPECIAL_ATTACK]&2)<<3
-    power |= (iv[:SPECIAL_DEFENSE]&2)<<4
-    power = powerMin+(powerMax-powerMin)*power/63
-  end
-  if forcedType != nil
-    return [forcedType, power]
-  end
-  return [type, power]
-end
-
-
 
 #===============================================================================
 # Power doubles for each consecutive use. (Fury Cutter)
@@ -302,11 +263,11 @@ class PokeBattle_Move_091 < PokeBattle_Move
     while (@baseDamage<<(maxMult-1))<160
       maxMult += 1   # 1-4 for base damage of 20, 1-3 for base damage of 40
     end
-    user.effects[PBEffects::FuryCutter] = (oldVal  > = maxMult) ? maxMult : oldVal+1
+    user.effects[PBEffects::FuryCutter] = (oldVal >= maxMult) ? maxMult : oldVal+1
   end
 
   def pbBaseDamage(baseDmg, user, target)
-    return baseDmg<<(user.effects[PBEffects::FuryCutter]-1)
+    return baseDmg << (user.effects[PBEffects::FuryCutter]-1)
   end
 end
 
@@ -321,7 +282,7 @@ class PokeBattle_Move_092 < PokeBattle_Move
     oldVal = user.pbOwnSide.effects[PBEffects::EchoedVoiceCounter]
     super
     if !user.pbOwnSide.effects[PBEffects::EchoedVoiceUsed]
-      user.pbOwnSide.effects[PBEffects::EchoedVoiceCounter] = (oldVal  > = 5) ? 5 : oldVal+1
+      user.pbOwnSide.effects[PBEffects::EchoedVoiceCounter] = (oldVal >= 5) ? 5 : oldVal+1
     end
     user.pbOwnSide.effects[PBEffects::EchoedVoiceUsed] = true
   end
@@ -508,7 +469,7 @@ class PokeBattle_Move_096 < PokeBattle_Move
     @damageArray.each do |dmg, items|
       next if !items.include?(heldItem)
       ret = dmg
-      ret += 20 if Settings::MECHANICS_GENERATION  > = 6
+      ret += 20 if Settings::MECHANICS_GENERATION >= 6
       break
     end
     return ret
@@ -568,10 +529,10 @@ class PokeBattle_Move_099 < PokeBattle_Move
   def pbBaseDamage(baseDmg, user, target)
     ret = 40
     n = user.pbSpeed/target.pbSpeed
-    if n  > = 4;    ret = 150
-    elsif n  > = 3; ret = 120
-    elsif n  > = 2; ret = 80
-    elsif n  > = 1; ret = 60
+    if n >= 4;    ret = 150
+    elsif n >= 3; ret = 120
+    elsif n >= 2; ret = 80
+    elsif n >= 1; ret = 60
     end
     return ret
   end
@@ -586,11 +547,11 @@ class PokeBattle_Move_09A < PokeBattle_Move
   def pbBaseDamage(baseDmg, user, target)
     ret = 20
     weight = target.pbWeight
-    if weight  > = 2000;    ret = 120
-    elsif weight  > = 1000; ret = 100
-    elsif weight  > = 500;  ret = 80
-    elsif weight  > = 250;  ret = 60
-    elsif weight  > = 100;  ret = 40
+    if weight >= 2000;    ret = 120
+    elsif weight >= 1000; ret = 100
+    elsif weight >= 500;  ret = 80
+    elsif weight >= 250;  ret = 60
+    elsif weight >= 100;  ret = 40
     end
     return ret
   end
@@ -604,17 +565,17 @@ end
 #===============================================================================
 class PokeBattle_Move_09B < PokeBattle_Move
   def tramplesMinimize?(param=1)
-    return true if Settings::MECHANICS_GENERATION  > = 7   # Perfect accuracy and double damage
+    return true if Settings::MECHANICS_GENERATION >= 7   # Perfect accuracy and double damage
     return super
   end
 
   def pbBaseDamage(baseDmg, user, target)
     ret = 40
     n = (user.pbWeight/target.pbWeight).floor
-    if n  > = 5;    ret = 120
-    elsif n  > = 4; ret = 100
-    elsif n  > = 3; ret = 80
-    elsif n  > = 2; ret = 60
+    if n >= 5;    ret = 120
+    elsif n >= 4; ret = 100
+    elsif n >= 3; ret = 80
+    elsif n >= 2; ret = 60
     end
     return ret
   end
@@ -650,7 +611,7 @@ end
 #===============================================================================
 class PokeBattle_Move_09D < PokeBattle_Move
   def pbMoveFailed?(user, targets)
-    if Settings::MECHANICS_GENERATION  > = 6
+    if Settings::MECHANICS_GENERATION >= 6
       if @battle.field.effects[PBEffects::MudSportField] > 0
         @battle.pbDisplay(_INTL("But it failed!"))
         return true
@@ -666,7 +627,7 @@ class PokeBattle_Move_09D < PokeBattle_Move
   end
 
   def pbEffectGeneral(user)
-    if Settings::MECHANICS_GENERATION  > = 6
+    if Settings::MECHANICS_GENERATION >= 6
       @battle.field.effects[PBEffects::MudSportField] = 5
     else
       user.effects[PBEffects::MudSport] = true
@@ -682,7 +643,7 @@ end
 #===============================================================================
 class PokeBattle_Move_09E < PokeBattle_Move
   def pbMoveFailed?(user, targets)
-    if Settings::MECHANICS_GENERATION  > = 6
+    if Settings::MECHANICS_GENERATION >= 6
       if @battle.field.effects[PBEffects::WaterSportField] > 0
         @battle.pbDisplay(_INTL("But it failed!"))
         return true
@@ -698,7 +659,7 @@ class PokeBattle_Move_09E < PokeBattle_Move
   end
 
   def pbEffectGeneral(user)
-    if Settings::MECHANICS_GENERATION  > = 6
+    if Settings::MECHANICS_GENERATION >= 6
       @battle.field.effects[PBEffects::WaterSportField] = 5
     else
       user.effects[PBEffects::WaterSport] = true
@@ -918,7 +879,7 @@ class PokeBattle_Move_0A4 < PokeBattle_Move
     return if target.fainted?
     return if target.damageState.unaffected || target.damageState.substitute
     chance = pbAdditionalEffectChance(user, target)
-    return if @battle.pbRandom(100)  > = chance
+    return if @battle.pbRandom(100) >= chance
     case @secretPower
     when 2
       target.pbSleep if target.pbCanSleep?(user, false, self)
@@ -1195,7 +1156,7 @@ class PokeBattle_Move_0AF < PokeBattle_Move
        "133",   # Hold Hands
        "134"    # Celebrate
     ]
-    if Settings::MECHANICS_GENERATION  > = 6
+    if Settings::MECHANICS_GENERATION >= 6
       @moveBlacklist += [
          # Target-switching moves
          "0EB",   # Roar, Whirlwind
@@ -1326,7 +1287,7 @@ class PokeBattle_Move_0B3 < PokeBattle_Move
     else
       case @battle.environment
       when :Grass, :TallGrass, :Forest, :ForestGrass
-        if Settings::MECHANICS_GENERATION  > = 6
+        if Settings::MECHANICS_GENERATION >= 6
           @npMove = :ENERGYBALL if GameData::Move.exists?(:ENERGYBALL)
         else
           @npMove = :SEEDBOMB if GameData::Move.exists?(:SEEDBOMB)
@@ -1336,25 +1297,25 @@ class PokeBattle_Move_0B3 < PokeBattle_Move
       when :Puddle
         @npMove = :MUDBOMB if GameData::Move.exists?(:MUDBOMB)
       when :Cave
-        if Settings::MECHANICS_GENERATION  > = 6
+        if Settings::MECHANICS_GENERATION >= 6
           @npMove = :POWERGEM if GameData::Move.exists?(:POWERGEM)
         else
           @npMove = :ROCKSLIDE if GameData::Move.exists?(:ROCKSLIDE)
         end
       when :Rock
-        if Settings::MECHANICS_GENERATION  > = 6
+        if Settings::MECHANICS_GENERATION >= 6
           @npMove = :EARTHPOWER if GameData::Move.exists?(:EARTHPOWER)
         else
           @npMove = :ROCKSLIDE if GameData::Move.exists?(:ROCKSLIDE)
         end
       when :Sand
-        if Settings::MECHANICS_GENERATION  > = 6
+        if Settings::MECHANICS_GENERATION >= 6
           @npMove = :EARTHPOWER if GameData::Move.exists?(:EARTHPOWER)
         else
           @npMove = :EARTHQUAKE if GameData::Move.exists?(:EARTHQUAKE)
         end
       when :Snow
-        if Settings::MECHANICS_GENERATION  > = 6
+        if Settings::MECHANICS_GENERATION >= 6
           @npMove = :FROSTBREATH if GameData::Move.exists?(:FROSTBREATH)
         else
           @npMove = :BLIZZARD if GameData::Move.exists?(:BLIZZARD)
@@ -1520,7 +1481,7 @@ class PokeBattle_Move_0B5 < PokeBattle_Move
        "133",   # Hold Hands
        "134"    # Celebrate
     ]
-    if Settings::MECHANICS_GENERATION  > = 6
+    if Settings::MECHANICS_GENERATION >= 6
       @moveBlacklist += [
          # Moves that call other moves
          "0B3",   # Nature Power
@@ -1551,7 +1512,7 @@ class PokeBattle_Move_0B5 < PokeBattle_Move
     # NOTE: This includes the Pokémon of ally trainers in multi battles.
     @battle.pbParty(user.index).each_with_index do |pkmn, i|
       next if !pkmn || i == user.pokemonIndex
-      next if Settings::MECHANICS_GENERATION  > = 6 && pkmn.egg?
+      next if Settings::MECHANICS_GENERATION >= 6 && pkmn.egg?
       pkmn.moves.each do |move|
         next if @moveBlacklist.include?(move.function_code)
         next if move.type == :SHADOW
@@ -1750,7 +1711,7 @@ class PokeBattle_Move_0B9 < PokeBattle_Move
     return true if pbMoveFailedAromaVeil?(user, target)
     canDisable = false
     target.eachMove do |m|
-      next if m.id!=target.lastRegularMoveUsed
+      next if m.id != target.lastRegularMoveUsed
       next if m.pp == 0 && m.total_pp > 0
       canDisable = true
       break
@@ -1785,7 +1746,7 @@ class PokeBattle_Move_0BA < PokeBattle_Move
       return true
     end
     return true if pbMoveFailedAromaVeil?(user, target)
-    if Settings::MECHANICS_GENERATION  > = 6 && target.hasActiveAbility?(:OBLIVIOUS) &&
+    if Settings::MECHANICS_GENERATION >= 6 && target.hasActiveAbility?(:OBLIVIOUS) &&
        !@battle.moldBreaker
       @battle.pbShowAbilitySplash(target)
       if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
@@ -1850,7 +1811,7 @@ class PokeBattle_Move_0BC < PokeBattle_Move
        # Moves that call other moves (see also below)
        "0AE"    # Mirror Move
     ]
-    if Settings::MECHANICS_GENERATION  > = 7
+    if Settings::MECHANICS_GENERATION >= 7
       @moveBlacklist += [
          # Moves that call other moves
 #         "0AE",   # Mirror Move                                     # See above
@@ -1881,7 +1842,7 @@ class PokeBattle_Move_0BC < PokeBattle_Move
     return true if pbMoveFailedAromaVeil?(user, target)
     canEncore = false
     target.eachMove do |m|
-      next if m.id!=target.lastRegularMoveUsed
+      next if m.id != target.lastRegularMoveUsed
       next if m.pp == 0 && m.total_pp > 0
       canEncore = true
       break
@@ -2241,16 +2202,16 @@ class PokeBattle_Move_0CE < PokeBattle_TwoTurnMove
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
-    if Settings::MECHANICS_GENERATION  > = 6 && target.pbWeight  > = 2000   # 200.0kg
+    if Settings::MECHANICS_GENERATION >= 6 && target.pbWeight >= 2000   # 200.0kg
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
     if target.semiInvulnerable? ||
-       (target.effects[PBEffects::SkyDrop]  > = 0 && @chargingTurn)
+       (target.effects[PBEffects::SkyDrop] >= 0 && @chargingTurn)
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
-    if target.effects[PBEffects::SkyDrop]!=user.index && @damagingTurn
+    if target.effects[PBEffects::SkyDrop] != user.index && @damagingTurn
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
@@ -2291,7 +2252,7 @@ class PokeBattle_Move_0CF < PokeBattle_Move
     return if target.effects[PBEffects::Trapping] > 0
     # Set trapping effect duration and info
     if user.hasActiveItem?(:GRIPCLAW)
-      target.effects[PBEffects::Trapping] = (Settings::MECHANICS_GENERATION  > = 5) ? 8 : 6
+      target.effects[PBEffects::Trapping] = (Settings::MECHANICS_GENERATION >= 5) ? 8 : 6
     else
       target.effects[PBEffects::Trapping] = 5+@battle.pbRandom(2)
     end
@@ -2414,16 +2375,16 @@ end
 #===============================================================================
 class PokeBattle_Move_0D4 < PokeBattle_FixedDamageMove
   def pbAddTarget(targets, user)
-    return if user.effects[PBEffects::Bide]!=1   # Not the attack turn
+    return if user.effects[PBEffects::Bide] != 1   # Not the attack turn
     idxTarget = user.effects[PBEffects::BideTarget]
-    t = (idxTarget  > = 0) ? @battle.battlers[idxTarget] : nil
+    t = (idxTarget >= 0) ? @battle.battlers[idxTarget] : nil
     if !user.pbAddTarget(targets, user, t, self, false)
       user.pbAddTargetRandomFoe(targets, user, self, false)
     end
   end
 
   def pbMoveFailed?(user, targets)
-    return false if user.effects[PBEffects::Bide]!=1   # Not the attack turn
+    return false if user.effects[PBEffects::Bide] != 1   # Not the attack turn
     if user.effects[PBEffects::BideDamage] == 0
       @battle.pbDisplay(_INTL("But it failed!"))
       user.effects[PBEffects::Bide] = 0   # No need to reset other Bide variables
@@ -2626,7 +2587,7 @@ end
 #===============================================================================
 class PokeBattle_Move_0DC < PokeBattle_Move
   def pbFailsAgainstTarget?(user, target)
-    if target.effects[PBEffects::LeechSeed]  > = 0
+    if target.effects[PBEffects::LeechSeed] >= 0
       @battle.pbDisplay(_INTL("{1} evaded the attack!", target.pbThis))
       return true
     end
@@ -2654,7 +2615,7 @@ end
 # User gains half the HP it inflicts as damage.
 #===============================================================================
 class PokeBattle_Move_0DD < PokeBattle_Move
-  def healingMove?; return Settings::MECHANICS_GENERATION  > = 6; end
+  def healingMove?; return Settings::MECHANICS_GENERATION >= 6; end
 
   def pbEffectAgainstTarget(user, target)
     return if target.damageState.hpLost<=0
@@ -2670,7 +2631,7 @@ end
 # (Dream Eater)
 #===============================================================================
 class PokeBattle_Move_0DE < PokeBattle_Move
-  def healingMove?; return Settings::MECHANICS_GENERATION  > = 6; end
+  def healingMove?; return Settings::MECHANICS_GENERATION >= 6; end
 
   def pbFailsAgainstTarget?(user, target)
     if !target.asleep?
@@ -2728,7 +2689,7 @@ class PokeBattle_Move_0E0 < PokeBattle_Move
   def pbMoveFailed?(user, targets)
     if !@battle.moldBreaker
       bearer = @battle.pbCheckGlobalAbility(:DAMP)
-      if bearer!=nil
+      if bearer != nil
         @battle.pbShowAbilitySplash(bearer)
         if PokeBattle_SceneConstants::USE_ABILITY_SPLASH
           @battle.pbDisplay(_INTL("{1} cannot use {2}!", user.pbThis, @name))
@@ -2905,7 +2866,7 @@ end
 #===============================================================================
 class PokeBattle_Move_0E7 < PokeBattle_Move
   def pbMoveFailed?(user, targets)
-    if Settings::MECHANICS_GENERATION  > = 7 && user.effects[PBEffects::DestinyBondPrevious]
+    if Settings::MECHANICS_GENERATION >= 7 && user.effects[PBEffects::DestinyBondPrevious]
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
@@ -3150,7 +3111,7 @@ end
 class PokeBattle_Move_0EF < PokeBattle_Move
   def pbFailsAgainstTarget?(user, target)
     return false if damagingMove?
-    if target.effects[PBEffects::MeanLook]  > = 0
+    if target.effects[PBEffects::MeanLook] >= 0
       @battle.pbDisplay(_INTL("But it failed!"))
       return true
     end
@@ -3169,7 +3130,7 @@ class PokeBattle_Move_0EF < PokeBattle_Move
 
   def pbAdditionalEffect(user, target)
     return if target.fainted? || target.damageState.substitute
-    return if target.effects[PBEffects::MeanLook]  > = 0
+    return if target.effects[PBEffects::MeanLook] >= 0
     return if Settings::MORE_TYPE_EFFECTS && target.pbHasType?(:GHOST)
     target.effects[PBEffects::MeanLook] = user.index
     @battle.pbDisplay(_INTL("{1} can no longer escape!", target.pbThis))
@@ -3184,7 +3145,7 @@ end
 #===============================================================================
 class PokeBattle_Move_0F0 < PokeBattle_Move
   def pbBaseDamage(baseDmg, user, target)
-    if Settings::MECHANICS_GENERATION  > = 6 &&
+    if Settings::MECHANICS_GENERATION >= 6 &&
        target.item && !target.unlosableItem?(target.item)
        # NOTE: Damage is still boosted even if target has Sticky Hold or a
        #       substitute.
@@ -3194,7 +3155,7 @@ class PokeBattle_Move_0F0 < PokeBattle_Move
   end
 
   # bug fix: item should be knocked off immediately after use
-  def pbEffectAgainstTarget(user, target) # pbEffectAfterAllHits
+  def pbEffectWhenDealingDamage(user, target) # pbEffectAfterAllHits
     return if @battle.wildBattle? && user.opposes? # Wild Pokémon can't knock off
     return if user.fainted?
     return if target.damageState.unaffected || target.damageState.substitute
@@ -3307,7 +3268,7 @@ end
 #===============================================================================
 class PokeBattle_Move_0F3 < PokeBattle_Move
   def ignoresSubstitute?(user)
-    return true if Settings::MECHANICS_GENERATION  > = 6
+    return true if Settings::MECHANICS_GENERATION >= 6
     return super
   end
 
@@ -3371,7 +3332,7 @@ class PokeBattle_Move_0F5 < PokeBattle_Move
   def pbEffectWhenDealingDamage(user, target)
     return if target.damageState.substitute || target.damageState.berryWeakened
     return if !target.item || (!target.item.is_berry? &&
-              !(Settings::MECHANICS_GENERATION  > = 6 && target.item.is_gem?))
+              !(Settings::MECHANICS_GENERATION >= 6 && target.item.is_gem?))
     target.pbRemoveItem
     @battle.pbDisplay(_INTL("{1}'s {2} was incinerated!", target.pbThis, target.itemName))
   end

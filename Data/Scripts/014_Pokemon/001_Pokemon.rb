@@ -908,9 +908,44 @@ class Pokemon
   # Hidden Power
   #=============================================================================
   
+  # calculates and returns the hidden power type and power
   def hidden_power
-    @hidden_power = 0 if !@hidden_power
-    return @hidden_power
+    return @hidden_power if @hidden_power
+    iv = self.iv
+    idxType = 0; power = 60
+    if Settings::MECHANICS_GENERATION <= 5
+      powerMin = 30
+      powerMax = 70
+      power |= (iv[:HP]              & 2) >> 1
+      power |= (iv[:ATTACK]          & 2)
+      power |= (iv[:DEFENSE]         & 2) << 1
+      power |= (iv[:SPEED]           & 2) << 2
+      power |= (iv[:SPECIAL_ATTACK]  & 2) << 3
+      power |= (iv[:SPECIAL_DEFENSE] & 2) << 4
+      power = powerMin + (powerMax - powerMin) * power / 63
+    end
+    types = []
+    types_not_included = [:NORMAL, :SHADOW]
+    if Settings::MECHANICS_GENERATION <= 5
+      types_not_included.push(:FAIRY)
+    end
+    GameData::Type.each { |t| types.push(t.id) if !t.pseudo_type && !types_not_included.include?(t.id) }
+    types.sort! { |a, b| GameData::Type.get(a).id_number <=> GameData::Type.get(b).id_number }
+    idxType |= (iv[:HP]              & 1)
+    idxType |= (iv[:ATTACK]          & 1) << 1
+    idxType |= (iv[:DEFENSE]         & 1) << 2
+    idxType |= (iv[:SPEED]           & 1) << 3
+    idxType |= (iv[:SPECIAL_ATTACK]  & 1) << 4
+    idxType |= (iv[:SPECIAL_DEFENSE] & 1) << 5
+    idxType = (types.length - 1) * idxType / 63
+    type = types[idxType]
+    @hidden_power = [type, power]
+  end
+  
+  # allows setting the type of the hidden power. the power cannot be set.
+  def hidden_power=(value)
+    self.hidden_power
+    @hidden_power[0] = value
   end
 
   #=============================================================================

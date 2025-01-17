@@ -2070,7 +2070,7 @@ BattleHandlers::AbilityOnSwitchIn.add(:ANTICIPATION,
         if type1
           moveType = m.type
           if Settings::MECHANICS_GENERATION >= 6 && m.function == "090"   # Hidden Power
-            moveType = pbHiddenPower(b.pokemon)[0]
+            moveType = b.pokemon.hidden_power[0]
           end
           eff = Effectiveness.calculate(moveType, type1, type2, type3)
           next if Effectiveness.ineffective?(eff)

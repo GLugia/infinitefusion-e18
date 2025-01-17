@@ -316,7 +316,6 @@ PokemonDebugMenuCommands.register("hiddenvalues", {
       when 1   # Set IVs
         cmd2 = 0
         loop do
-          hiddenpower = pbHiddenPower(pkmn)
           totaliv = 0
           ivcommands = []
           iv_id = []
@@ -326,7 +325,7 @@ PokemonDebugMenuCommands.register("hiddenvalues", {
             totaliv += pkmn.iv[s.id]
           end
           msg = _INTL("Change which IV?\nHidden Power:\n{1}, power {2}\nTotal: {3}/{4} ({5}%)",
-             GameData::Type.get(hiddenpower[0]).name, hiddenpower[1], totaliv,
+             GameData::Type.get(pokemon.hidden_power[0]).name, pokemon.hidden_power[1], totaliv,
              iv_id.length * Pokemon::IV_STAT_LIMIT, 100 * totaliv / (iv_id.length * Pokemon::IV_STAT_LIMIT))
           ivcommands.push(_INTL("Randomise all"))
           cmd2 = screen.pbShowCommands(msg, ivcommands, cmd2)

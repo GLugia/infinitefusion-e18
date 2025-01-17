@@ -1495,8 +1495,7 @@ def optionsMenu(options = [], cmdIfCancel = -1, startingOption = 0)
 end
 
 def getHiddenPowerName(pokemon)
-  hiddenpower = pbHiddenPower(pokemon)
-  hiddenPowerType = hiddenpower[0]
+  hiddenPowerType = pokemon.hidden_power[0]
 
   echoln hiddenPowerType
   if Settings::TRIPLE_TYPES.include?(hiddenPowerType)
