@@ -75,4 +75,6 @@ module Settings
   CHECK_EVOLUTION_AFTER_ALL_BATTLES   = (MECHANICS_GENERATION >= 6)
   # Whether fainted Pokémon can try to evolve after a battle.
   CHECK_EVOLUTION_FOR_FAINTED_POKEMON = true
+  # Whether or not to balance trainer pokemon levels around the player's average party level
+  SCALE_TRAINER_POKEMON_LEVELS = true
 end

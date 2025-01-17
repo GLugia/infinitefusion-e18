@@ -309,35 +309,33 @@ class Pokemon
   end
   # @param check_species [Integer, Symbol, String] id of the species to check for
   # @return [Boolean] whether this Pokémon is of the specified species
-  def isSpecies?(check_species)
-    return @species == check_species || (GameData::Species.exists?(check_species) &&
-      @species == GameData::Species.get(check_species).species)
+  def isSpecies?(check_species, check_fusion = false)
+    return @species == check_species || (GameData::Species.exists?(check_species) && @species == GameData::Species.get(check_species).species)
+    return self.head_id == check_species || self.body_id == check_species if @fused && check_fusion
+    return false
   end
-
 
   def hasBodyOf?(check_species)
     if !self.isFusion?
       return isSpecies?(check_species)
     end
-    bodySpecies = getBodyID(species)
-    checkSpeciesId = getID(nil, check_species)
-    return bodySpecies == checkSpeciesId
+    species_id = getID(nil, check_species)
+    return self.body_id == species_id
   end
 
   def hasHeadOf?(check_species)
     if !self.isFusion?
       return isSpecies?(check_species)
     end
-    headSpecies = getHeadID(species)
-    checkSpeciesId = getID(nil, check_species)
-    return headSpecies == checkSpeciesId
+    species_id = getID(nil, check_species)
+    return self.head_id == species_id
   end
 
-  def head_id()
+  def head_id
     return get_head_id_from_symbol(@species)
   end
 
-  def body_id()
+  def body_id
     return get_body_id_from_symbol(@species)
   end
 
@@ -380,11 +378,11 @@ class Pokemon
 
 
   def dexNum
-    return species_data.id_number
+    return self.species_data.id_number
   end
 
   def isSelfFusion?
-    return isFusion? && getHeadID(species) == getBodyID(species)
+    return isFusion? && self.head_id == self.body_id
   end
 
   def isFusion?
@@ -752,9 +750,9 @@ class Pokemon
   def hasHiddenAbility?
     if self.isFusion?
       # head
-      head = GameData::Species.get(getHeadID(@species))
+      head = GameData::Species.get(self.head_id)
       # body
-      body = GameData::Species.get(getBodyID(@species))
+      body = GameData::Species.get(self.body_id)
       return true if head.hidden_abilities.include?(@ability) &&
                     !head.abilities.include?(@ability)
       return true if body.hidden_abilities.include?(@ability) &&
@@ -986,10 +984,19 @@ class Pokemon
     return @moves.any? { |m| m.id == move_data.id }
   end
 
-  # Returns the list of moves this Pokémon can learn by levelling up.
+  # Returns the list of moves this Pokémon can learn by leveling up.
   # @return [Array<Array<Integer,Symbol>>] this Pokémon's move list, where every element is [level, move ID]
   def getMoveList
-    return species_data.moves
+    if @fused
+      this_level = self.level
+      moves = []
+      body = GameData::Species.get(self.body_id)
+      head = GameData::Species.get(self.head_id)
+      moves.concat(body.moves)
+      moves.concat(head.moves)
+      return moves | []
+    end
+    return species_data.moves | []
   end
 
   # Sets this Pokémon's movelist to the default movelist it originally had.
@@ -1000,9 +1007,7 @@ class Pokemon
     knowable_moves = []
     moveset.each { |m| knowable_moves.push(m[1]) if m[0] <= this_level }
     # Remove duplicates (retaining the latest copy of each move)
-    knowable_moves = knowable_moves.reverse
-    knowable_moves |= []
-    knowable_moves = knowable_moves.reverse
+    knowable_moves = knowable_moves.uniq
     # Add all moves
     @moves.clear
     first_move_index = knowable_moves.length - MAX_MOVES
@@ -1666,6 +1671,7 @@ class Pokemon
     @speed = stats[:SPEED]
   end
   
+  # @Deprecated
   def personalID
     return @personalID
   end
@@ -1851,12 +1857,6 @@ class Pokemon
     self.copy(temp)
   end
 
-  # Creates a new Pokémon object.
-  # @param species [Symbol, String, Integer] Pokémon species
-  # @param level [Integer] Pokémon level
-  # @param owner [Owner, Player, NPCTrainer] Pokémon owner (the player by default)
-  # @param withMoves [TrueClass, FalseClass] whether the Pokémon should have moves
-  # @param rechech_form [TrueClass, FalseClass] whether to auto-check the form
   def determine_scale
     return :AVERAGE if !@size_category
     size_roll = rand(100) # Random number between 0-99
@@ -1910,14 +1910,14 @@ class Pokemon
   def randomly_set_fused_ability
     abilities = []
     
-    body_id = getBodyID(@species)
+    body_id = self.body_id
     body = GameData::Species.get(body_id)
     return if @ability && (body.hidden_abilities.include?(@ability) || body.abilities.include?(@ability))
     if @body_poke_ball && @body_poke_ball == :ABILITYBALL
       abilities.push(*body.hidden_abilities)
     end
     
-    head_id = getHeadID(@species, body_id)
+    head_id = self.head_id
     head = GameData::Species.get(head_id)
     return if @ability && (head.hidden_abilities.include?(@ability) || head.abilities.include?(@ability))
     if @head_poke_ball && @head_poke_ball == :ABILITYBALL
@@ -1950,6 +1950,12 @@ class Pokemon
     @ability = self.species_data.abilities[rand(self.species_data.abilities.length)]
   end
 
+  # Creates a new Pokémon object.
+  # @param species [Symbol, String, Integer] Pokémon species
+  # @param level [Integer] Pokémon level
+  # @param owner [Owner, Player, NPCTrainer] Pokémon owner (the player by default)
+  # @param withMoves [TrueClass, FalseClass] whether the Pokémon should have moves
+  # @param rechech_form [TrueClass, FalseClass] whether to auto-check the form
   def initialize(species, level, owner = $Trainer, withMoves = true, recheck_form = true)
     @species_data = GameData::Species.get(species)
     @species = @species_data.species
