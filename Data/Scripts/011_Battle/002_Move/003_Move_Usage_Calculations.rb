@@ -166,41 +166,41 @@ class PokeBattle_Move
   def pbCritialOverride(user,target); return 0; end
 
   # Returns whether the move will be a critical hit.
-  def pbIsCritical?(user,target)
-    return false if target.pbOwnSide.effects[PBEffects::LuckyChant]>0
+  def pbIsCritical?(user, target)
+    return false if target.pbOwnSide.effects[PBEffects::LuckyChant] > 0
     # Set up the critical hit ratios
-    ratios = (Settings::NEW_CRITICAL_HIT_RATE_MECHANICS) ? [24,8,2,1] : [16,8,4,3,2]
+    ratios = (Settings::NEW_CRITICAL_HIT_RATE_MECHANICS) ? [24, 8, 2, 1] : [16, 8, 4, 3, 2]
     c = 0
     # Ability effects that alter critical hit rate
-    if c>=0 && user.abilityActive?
-      c = BattleHandlers.triggerCriticalCalcUserAbility(user.ability,user,target,c)
+    if user.abilityActive?
+      c = BattleHandlers.triggerCriticalCalcUserAbility(user.ability, user,target, c)
     end
-    if c>=0 && target.abilityActive? && !@battle.moldBreaker
-      c = BattleHandlers.triggerCriticalCalcTargetAbility(target.ability,user,target,c)
+    if c >= 0 && target.abilityActive? && !@battle.moldBreaker
+      c = BattleHandlers.triggerCriticalCalcTargetAbility(target.ability, user, target, c)
     end
     # Item effects that alter critical hit rate
-    if c>=0 && user.itemActive?
-      c = BattleHandlers.triggerCriticalCalcUserItem(user.item,user,target,c)
+    if c >= 0 && user.itemActive?
+      c = BattleHandlers.triggerCriticalCalcUserItem(user.item, user, target, c)
     end
-    if c>=0 && target.itemActive?
-      c = BattleHandlers.triggerCriticalCalcTargetItem(target.item,user,target,c)
+    if c >= 0 && target.itemActive?
+      c = BattleHandlers.triggerCriticalCalcTargetItem(target.item, user,target, c)
     end
-    return false if c<0
+    return false if c < 0
     # Move-specific "always/never a critical hit" effects
-    case pbCritialOverride(user,target)
+    case pbCritialOverride(user, target)
     when 1  then return true
     when -1 then return false
     end
     # Other effects
     return true if user.hasActiveItem?(:MANKEYPAW)
-    return true if c>50   # Merciless
-    return true if user.effects[PBEffects::LaserFocus]>0
+    return true if c > 50 # Merciless
+    return true if user.effects[PBEffects::LaserFocus] > 0
     c += 1 if highCriticalRate?
     c += user.effects[PBEffects::FocusEnergy]
     c += 1 if user.inHyperMode? && @type == :SHADOW
-    c = ratios.length-1 if c>=ratios.length
+    c = ratios.length - 1 if c >= ratios.length
     # Calculation
-    return @battle.pbRandom(ratios[c])==0
+    return @battle.pbRandom(ratios[c]) == 0
   end
 
   #=============================================================================
