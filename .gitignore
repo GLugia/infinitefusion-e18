@@ -1,8 +1,8 @@
 
-Graphics/Pokemon/FusionIcons/*
-Graphics/CustomBattlers/spritesheets/*
-Data/sprites/*
-Data/VERSION
+/Graphics/Pokemon/FusionIcons/*
+/Graphics/CustomBattlers/spritesheets/*
+/Data/sprites/*
+/Data/VERSION
  
-Data/pokedex/rate_limit.log
-Data/pokedex/generated_entries.json
+/Data/pokedex/rate_limit.log
+/Data/pokedex/generated_entries.json
