@@ -1460,7 +1460,7 @@ BattleHandlers::TargetAbilityOnHit.add(:ILLUSION,
 
 BattleHandlers::TargetAbilityOnHit.add(:INNARDSOUT,
   proc { |ability, user, target, move, battle|
-    next if !target.fainted? || user.dummy
+    next if !target.fainted?
     next unless user.takesIndirectDamage?
     battle.pbShowAbilitySplash(target)
     battle.scene.pbDamageAnimation(user)

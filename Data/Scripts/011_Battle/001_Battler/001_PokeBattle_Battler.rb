@@ -20,7 +20,6 @@ class PokeBattle_Battler
   attr_reader :totalhp
   attr_reader :fainted # Boolean to mark whether self has fainted properly
   attr_accessor :captured # Boolean to mark whether self was captured
-  attr_reader :dummy
   attr_accessor :effects
   # Things the battler has done in battle
   attr_accessor :turnCount

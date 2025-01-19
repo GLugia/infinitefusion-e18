@@ -6,7 +6,6 @@ class PokeBattle_Battler
     @battle      = btl
     @index       = idxBattler
     @captured    = false
-    @dummy       = false
     @stages      = {}
     @effects     = []
     @damageState = PokeBattle_DamageState.new
