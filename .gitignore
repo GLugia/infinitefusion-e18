@@ -1,4 +1,3 @@
-
 /Graphics/Pokemon/FusionIcons/*
 /Graphics/CustomBattlers/spritesheets/*
 /Data/sprites/*
@@ -6,3 +5,4 @@
  
 /Data/pokedex/rate_limit.log
 /Data/pokedex/generated_entries.json
+*.png
