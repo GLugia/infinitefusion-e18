@@ -130,11 +130,20 @@ class PokeBattle_AI
       if list.length>0
         if batonPass>=0 && @battle.pbRegisterMove(idxBattler,batonPass,false)
           PBDebug.log("[AI] #{battler.pbThis} (#{idxBattler}) will use Baton Pass to avoid Perish Song")
+          trainer = @battle.pbGetOwnerFromBattlerIndex(idxBattler)
+          match_history = pbGetMatchHistory(trainer)
+          pokemon = @battle.pbParty(idxBattler)[list[0]]
+          battler_info = [pokemon, trainer, list[0]]
+          Events.onTrainerSwitchPokemon.trigger(self, @battle, match_history, trainer, battler_info)
           return true
         end
         if @battle.pbRegisterSwitch(idxBattler,list[0])
-          PBDebug.log("[AI] #{battler.pbThis} (#{idxBattler}) will switch with " +
-                      "#{@battle.pbParty(idxBattler)[list[0]].name}")
+          PBDebug.log("[AI] #{battler.pbThis} (#{idxBattler}) will switch with " + "#{@battle.pbParty(idxBattler)[list[0]].name}")
+          trainer = @battle.pbGetOwnerFromBattlerIndex(idxBattler)
+          match_history = pbGetMatchHistory(trainer)
+          pokemon = @battle.pbParty(idxBattler)[list[0]]
+          battler_info = [pokemon, trainer, list[0]]
+          Events.onTrainerSwitchPokemon.trigger(self, @battle, match_history, trainer, battler_info)
           return true
         end
       end

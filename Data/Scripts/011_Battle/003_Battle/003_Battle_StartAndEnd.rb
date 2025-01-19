@@ -467,26 +467,6 @@ class PokeBattle_Battle
     when 4
       @scene.pbWildBattleSuccess if !Settings::GAIN_EXP_FOR_CAPTURE
     end
-    # Register captured Pokémon in the Pokédex, and store them
-    #pbRecordAndStoreCaughtPokemon
-
-    isRematch = $game_switches[SWITCH_IS_REMATCH]
-    begin
-    if isRematch
-      if @opponent.is_a?(Array)
-        for trainer in @opponent
-          rematchId = getRematchId(trainer.name, trainer.trainer_type)
-          incrNbRematches(rematchId)
-        end
-      else
-        rematchId = getRematchId(@opponent.name, @opponent.trainer_type)
-        incrNbRematches(rematchId)
-      end
-    end
-    rescue
-      $game_switches[SWITCH_IS_REMATCH]=false
-    end
-
 
     # Collect Pay Day money in a wild battle that ended in a capture
     pbGainMoney if @decision == 4

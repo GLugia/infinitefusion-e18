@@ -287,6 +287,7 @@ def pbWildBattleCore(*args)
       sp = arg
     end
   end
+  
   raise _INTL("Expected a level after being given {1}, but one wasn't found.",sp) if sp
   # Calculate who the trainers and their party are
   playerTrainers    = [$Trainer]
@@ -308,6 +309,8 @@ def pbWildBattleCore(*args)
     ally.party.each { |pkmn| playerParty.push(pkmn) }
     setBattleRule("double") if !$PokemonTemp.battleRules["size"]
   end
+  # Allow the wild battle to be edited by Events
+  Events.onWildBattleStart.trigger(self, foeParty, playerParty)
   # Create the battle scene (the visual side of it)
   scene = pbNewBattleScene
   # Create the battle class (the mechanics side of it)
@@ -323,6 +326,7 @@ def pbWildBattleCore(*args)
       decision = battle.pbStartBattle
     }
     pbAfterBattle(decision,canLose)
+    Events.onWildBattleEnd.trigger(battle, foeParty, playerParty, decision)
   }
   Input.update
   # Save the result of the battle in a Game Variable (1 by default)
@@ -493,7 +497,7 @@ def pbTrainerBattleCore(*args)
         trainer.name = name_override
       end
       #####
-      Events.onTrainerPartyLoad.trigger(nil,trainer)
+      Events.onTrainerPartyLoad.trigger(nil, trainer, pbGetMatchHistory(trainer))
       foeTrainers.push(trainer)
       foePartyStarts.push(foeParty.length)
       trainer.party.each { |pkmn| foeParty.push(pkmn) }
@@ -536,6 +540,12 @@ def pbTrainerBattleCore(*args)
   $PokemonTemp.clearBattleRules
   # End the trainer intro music
   Audio.me_stop
+  # Allow battle to be edited by Events
+  match_histories = []
+  foeTrainers.each do |trainer|
+    match_histories.push(pbGetMatchHistory(trainer))
+  end
+  Events.onTrainerBattleStart.trigger(self, battle, match_histories, foeTrainers, foeParty, playerTrainers, playerParty)
   # Perform the battle itself
   decision = 0
   pbBattleAnimation(pbGetTrainerBattleBGM(foeTrainers),(battle.singleBattle?) ? 1 : 3,foeTrainers) {
@@ -543,6 +553,7 @@ def pbTrainerBattleCore(*args)
       decision = battle.pbStartBattle
     }
     pbAfterBattle(decision,canLose)
+    Events.onTrainerBattleEnd.trigger(nil, battle, match_histories, foeTrainers, foeParty, playerTrainers, playerParty, decision)
   }
   Input.update
   # Save the result of the battle in a Game Variable (1 by default)
@@ -582,21 +593,20 @@ def customTrainerBattle(trainerName, trainerType, party_array, default_level=50,
   # trainer_info_hash[:pokemon] = party
 
   #trainer = GameData::Trainer.new(trainer_info_hash)
-  trainer = NPCTrainer.new(trainerName,trainerType,sprite_override)
-  trainer.lose_text=endSpeech
+  trainer = NPCTrainer.new(trainerName, trainerType, sprite_override)
+  trainer.lose_text = endSpeech
   party = []
   party_array.each { |pokemon|
     if pokemon.is_a?(Pokemon)
       party << pokemon
     elsif pokemon.is_a?(Symbol)
-      party << Pokemon.new(pokemon,default_level,trainer)
+      party << Pokemon.new(pokemon, default_level, trainer)
     end
   }
-  trainer.party=party
-  Events.onTrainerPartyLoad.trigger(nil,trainer)
-
-
-
+  trainer.party = party
+  # allow trainer and party to be modified by events
+  Events.onTrainerPartyLoad.trigger(nil, trainer, pbGetMatchHistory(trainer))
+  
   decision = pbTrainerBattleCore(trainer)
   # Return true if the player won the battle, and false if any other result
   return (decision==1)
@@ -642,7 +652,8 @@ def pbTrainerBattle(trainerID, trainerName, endSpeech=nil,
     end
     pbMissingTrainer(trainerID,trainerName,trainerPartyID) if !trainer
     return false if !trainer
-    Events.onTrainerPartyLoad.trigger(nil,trainer)
+    # allow the party to be edited by events
+    Events.onTrainerPartyLoad.trigger(nil, trainer, pbGetMatchHistory(trainer))
     # If there is exactly 1 other triggered trainer event, and this trainer has
     # 6 or fewer Pokémon, record this trainer for a double battle caused by the
     # other triggered trainer event

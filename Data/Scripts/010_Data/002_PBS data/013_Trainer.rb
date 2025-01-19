@@ -271,9 +271,7 @@ module GameData
       trainer.items = @items.clone
       trainer.lose_text = self.lose_text
 
-      isRematch = $game_switches[SWITCH_IS_REMATCH]
       isPlayingRandomized = $game_switches[SWITCH_RANDOM_TRAINERS] && !$game_switches[SWITCH_FIRST_RIVAL_BATTLE]
-      rematchId = getRematchId(trainer.name, trainer.trainer_type)
 
       # Create each Pokémon owned by the trainer
       index = 0
@@ -306,12 +304,6 @@ module GameData
         end
         ####
 
-        #trainer rematch infinite fusion edit
-        if isRematch
-          nbRematch = getNumberRematch(rematchId)
-          level = getRematchLevel(level, nbRematch)
-          species = getSpecies(evolveRematchPokemon(nbRematch, species)).id
-        end
         pkmn = Pokemon.new(species, level, trainer, false)
 
         trainer.party.push(pkmn)

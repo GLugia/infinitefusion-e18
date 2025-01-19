@@ -56,7 +56,7 @@ class PokemonGlobalMetadata
   # Save file
   attr_accessor :safesave
   #Trainers rematch
-  attr_accessor :rematchedTrainers
+  attr_accessor :match_history
   attr_accessor :questRewardsObtained
 
   def initialize
@@ -115,6 +115,7 @@ class PokemonGlobalMetadata
     @pokerusTime          = nil
     # Save file
     @safesave             = false
+    @match_history        = {}
     @questRewardsObtained = []
   end
 
@@ -196,6 +197,16 @@ class PokemonGlobalMetadata
     else
       $Trainer.seen_storage_creator = value
     end
+  end
+  
+  def match_history
+    @match_history = {} if !@match_history
+    return @match_history
+  end
+  
+  def match_history=(value)
+    return if !value
+    @match_history = value
   end
 end
 

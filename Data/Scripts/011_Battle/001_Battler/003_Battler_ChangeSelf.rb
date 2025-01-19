@@ -45,6 +45,27 @@ class PokeBattle_Battler
       end
     end
   end
+  
+  # Gets an array of opposing battlers
+  # Returns: [[Pokemon, Owner, PartyIndex], ...]
+  def pbGetBattlersOpposingFainted
+    return [] if !self.fainted?
+    party = @battle.pbOpposingParty(self.index)
+    opposing_pokemon = []
+    @battle.eachOtherSideBattler(self.index) do |battler|
+      party_index = -1
+      party.each_with_index do |pokemon, i|
+        next if pokemon != battler.pokemon
+        party_index = i
+        break
+      end
+      owner = nil
+      owner = @battle.pbGetOwnerFromBattlerIndex(battler.index) if @battle.opponent != nil # wild battle
+      # raise _INTL("Failed to find index of #{@pokemon.to_s}") if index == -1
+      opposing_pokemon << [battler, owner, party_index]
+    end
+    return opposing_pokemon
+  end
 
   def pbFaint(showMessage=true)
     if !fainted?
@@ -55,6 +76,33 @@ class PokeBattle_Battler
     @battle.pbDisplayBrief(_INTL("{1} fainted!",pbThis)) if showMessage
     updateSpirits()
     PBDebug.log("[Pokémon fainted] #{pbThis} (#{@index})") if !showMessage
+    
+    # proc events depending on which side's pokemon fainted
+    if @battle.trainerBattle?
+      # player pokemon fainted
+      if self.pbOwnedByPlayer?
+        battler_info = pbGetBattlersOpposingFainted
+        match_histories = []
+        battler_info.each do |info|
+          match_histories.push(pbGetMatchHistory(info[1]))
+        end
+        Events.onPlayerPokemonFainted.trigger(self, @battle, match_histories, battler_info, @pokemon)
+      # trainer pokemon fainted
+      else
+        battler_info = pbGetBattlersOpposingFainted
+        Events.onTrainerPokemonFainted.trigger(self, @battle, battler_info, @pokemon)
+      end
+    # wild pokemon fainted
+    else
+      if !self.pbOwnedByPlayer?
+        battler_info = pbGetBattlersOpposingFainted
+        Events.onWildPokemonFainted.trigger(self, @battle, battler_info, @pokemon)
+      end
+    # We intentionally do not handle the player's Pokemon fainting in a wild
+    # battle. Wild Pokemon cannot gain exp how the player and trainer Pokemon
+    # can.
+    end
+    
     @battle.scene.pbFaintBattler(self)
     pbInitEffects(false)
     # Reset status

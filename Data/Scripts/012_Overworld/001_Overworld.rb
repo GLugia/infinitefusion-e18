@@ -793,7 +793,7 @@ def pbRegisterPartner(tr_type, tr_name, tr_id = 0)
   tr_type = GameData::TrainerType.get(tr_type).id
   pbCancelVehicles
   trainer = pbLoadTrainer(tr_type, tr_name, tr_id)
-  Events.onTrainerPartyLoad.trigger(nil, trainer)
+  Events.onTrainerPartyLoad.trigger(nil, trainer, pbGetMatchHistory(trainer))
   for i in trainer.party
     i.owner = Pokemon::Owner.new_from_trainer(trainer)
     i.calc_stats

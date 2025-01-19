@@ -710,10 +710,6 @@ end
 #   return success ? [opponent,items,party] : nil
 # end
 
-def getRematchId(trainername, trainerid)
-  return trainername + trainerid.to_s
-end
-
 def replaceRivalStarterIfNecessary(species)
   if species == RIVAL_STARTER_PLACEHOLDER_SPECIES
     if !$game_switches[840] || pbGet(250) == 0 #not DEFINED_RIVAL_STARTER
